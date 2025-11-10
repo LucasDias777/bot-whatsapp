@@ -82,7 +82,7 @@ Modelo inicial:
     "hora": "08:31", // Horário que deseja enviar, pode criar vários
     "mensagem": "🚛 Olá! Mensagem automática de teste",
     "destinatarios": [
-      { "nome": "NOME DO CONTATO", "numero": "NUMERO DO CONTATO EX: 5544997990099" }
+      { "nome": "NOME SALVO NOS CONTATOS", "numero": "NUMERO DO CONTATO EX: 5544997990099" }
     ]
   }
 ]
