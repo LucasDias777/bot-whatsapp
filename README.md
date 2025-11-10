@@ -72,14 +72,14 @@ cd bot-whatsapp
 npm install
 ```
 
-### 3️⃣ Criar o arquivo `agendamentos.json`
+### 3️⃣ Crie o arquivo ou edite `agendamentos.json`
 
 Modelo inicial:
 
 ```json
 [
   {
-    "hora": "08:31", // Horário que deseja enviar, pode criar vários
+    "hora": "08:31",
     "mensagem": "🚛 Olá! Mensagem automática de teste",
     "destinatarios": [
       { "nome": "NOME SALVO NOS CONTATOS", "numero": "NUMERO DO CONTATO EX: 5544997990099" }
