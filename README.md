@@ -79,10 +79,10 @@ Modelo inicial:
 ```json
 [
   {
-    "hora": "08:31",
-    "mensagem": "🚛 Olá Motorista! Mensagem automática de teste",
+    "hora": "08:31", //Horário que deseja enviar, pode criar vários
+    "mensagem": "🚛 Olá! Mensagem automática de teste",
     "destinatarios": [
-      { "nome": "AMAZONAS TRANSPORTES", "numero": "5544997690037" }
+      { "nome": "NOME DO CONTATO", "numero": "NUMERO DO CONTATO EX: 5544997990099" }
     ]
   }
 ]
