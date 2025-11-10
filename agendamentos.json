@@ -1,0 +1,38 @@
+[
+  {
+    "hora": "15:44",
+    "recurrence": "daily",
+    "mensagem": "🚛 Olá Motorista! Mensagem automática de teste",
+    "destinatarios": [
+      { "nome": "AMAZONAS TRANSPORTES", "numero": "5544997690037" },
+      { "nome": "Lucas Dias", "numero": "5544997125278" }
+    ]
+  },
+  {
+    "hora": "17:45",
+    "recurrence": "daily",
+    "mensagem": "🚛 Olá Motorista! Mensagem automática de teste",
+    "destinatarios": [
+      { "nome": "AMAZONAS TRANSPORTES", "numero": "5544997690037" },
+      { "nome": "Lucas Dias", "numero": "5544997125278" }
+    ]
+  },
+  {
+    "hora": "17:46",
+    "recurrence": "daily",
+    "mensagem": "🚛 Olá Motorista! Mensagem automática de teste",
+    "destinatarios": [
+      { "nome": "AMAZONAS TRANSPORTES", "numero": "5544997690037" },
+      { "nome": "Lucas Dias", "numero": "5544997125278" }
+    ]
+  },
+  {
+    "hora": "17:47",
+    "recurrence": "daily",
+    "mensagem": "🚛 Olá Motorista! Mensagem automática de teste",
+    "destinatarios": [
+      { "nome": "AMAZONAS TRANSPORTES", "numero": "5544997690037" },
+      { "nome": "Lucas Dias", "numero": "5544997125278" }
+    ]
+  }
+]
