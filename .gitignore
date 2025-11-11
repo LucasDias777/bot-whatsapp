@@ -5,6 +5,9 @@ node_modules/
 .wwebjs_auth/
 .wwebjs_cache/
 
+# Banco de dados local (contém informações sensíveis)
+database.db
+
 # Logs
 logs/
 *.log

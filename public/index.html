@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel WhatsApp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body { background: #f5f7fa; }
+    .card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .btn-primary { background-color: #0d6efd; border: none; }
+    .btn-danger { background-color: #dc3545; border: none; }
+    .list-item { display:flex; justify-content:space-between; align-items:center; padding:.6rem 1rem; border-bottom:1px solid #eee; }
+    .list-item:last-child { border-bottom: none; }
+    .list-item button { border-radius:6px; }
+    .grupo-contatos { background:#fff; border:1px solid #eee; border-radius:8px; padding:8px 10px; margin-top:6px; }
+    .small-muted { color:#666; font-size:0.9rem; }
+    .list-item.flex-column { flex-direction: column; align-items:flex-start;}
+  </style>
+</head>
+
+<body class="p-4">
+  <div class="container">
+    <h1 class="mb-4 text-center text-primary"><i class="bi bi-whatsapp"></i> Painel do BOT WhatsApp</h1>
+
+    <!-- STATUS -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-broadcast-pin"></i> Status de Conexão</h5>
+        <p id="status" class="fs-5 mb-2 text-secondary">Carregando...</p>
+        <div id="qrContainer" class="text-center"></div>
+      </div>
+    </div>
+
+    <!-- CONTATOS -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-person-lines-fill"></i> Contatos</h5>
+        <div class="input-group mb-3">
+          <input id="novoNumero" class="form-control" placeholder="+55 4499999999">
+          <button class="btn btn-success" onclick="salvarContato()">
+            <i class="bi bi-plus-circle"></i> Adicionar
+          </button>
+        </div>
+        <div id="listaContatos" class="border rounded bg-light"></div>
+      </div>
+    </div>
+
+    <!-- GRUPOS -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-people-fill"></i> Grupos</h5>
+
+        <!-- criar grupo -->
+        <div class="input-group mb-3">
+          <input id="novoGrupo" class="form-control" placeholder="Nome do grupo">
+          <button class="btn btn-success" onclick="criarGrupo()">
+            <i class="bi bi-plus-circle"></i> Criar Grupo
+          </button>
+        </div>
+
+        <!-- lista grupos -->
+        <div id="listaGrupos" class="border rounded bg-light p-2"></div>
+      </div>
+    </div>
+
+    <!-- MENSAGENS -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-chat-dots"></i> Mensagens</h5>
+        <textarea id="novaMensagem" class="form-control mb-3" placeholder="Digite a mensagem..."></textarea>
+        <button class="btn btn-success mb-3" onclick="salvarMensagem()">
+          <i class="bi bi-plus-circle"></i> Salvar Mensagem
+        </button>
+        <div id="listaMensagens" class="border rounded bg-light"></div>
+      </div>
+    </div>
+
+    <!-- AGENDAMENTO -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-calendar-check"></i> Agendamentos</h5>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Enviar para</label>
+            <select id="agTipo" class="form-select mb-2" onchange="alternarDestinoAgendamento()">
+              <option value="numero">Número individual</option>
+              <option value="grupo">Grupo</option>
+            </select>
+            <select id="agNumero" class="form-select mb-2"></select>
+            <select id="agGrupo" class="form-select" style="display:none"></select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Mensagem</label>
+            <select id="agMensagem" class="form-select"></select>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label class="form-label">Horário (HH:MM)</label>
+          <input type="time" id="agHorario" class="form-control">
+        </div>
+
+        <div class="mt-3">
+          <label class="form-label">Dias da semana</label><br>
+          <div class="d-flex flex-wrap gap-2">
+            <label><input type="checkbox" value="1"> Seg</label>
+            <label><input type="checkbox" value="2"> Ter</label>
+            <label><input type="checkbox" value="3"> Qua</label>
+            <label><input type="checkbox" value="4"> Qui</label>
+            <label><input type="checkbox" value="5"> Sex</label>
+            <label><input type="checkbox" value="6"> Sáb</label>
+            <label><input type="checkbox" value="0"> Dom</label>
+          </div>
+        </div>
+
+        <button class="btn btn-primary mt-3" onclick="criarAgendamento()">
+          <i class="bi bi-calendar-plus"></i> Criar Agendamento
+        </button>
+
+        <div id="listaAgendamentos" class="border rounded bg-light mt-3"></div>
+      </div>
+    </div>
+
+    <!-- ENVIAR AGORA -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-send-check"></i> Enviar Agora</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Número</label>
+            <select id="enviarNumero" class="form-select" onchange="bloquearGrupoOuNumero('numero')"></select>
+            <label class="form-label mt-2">Ou selecionar Grupo</label>
+            <select id="enviarGrupo" class="form-select" onchange="bloquearGrupoOuNumero('grupo')">
+              <option value="">(Nenhum)</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Mensagem</label>
+            <select id="enviarMensagem" class="form-select"></select>
+          </div>
+        </div>
+        <button class="btn btn-success mt-3 w-100" onclick="enviarAgora()">
+          <i class="bi bi-send"></i> Enviar Mensagem
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // alterna entre número e grupo na seção de agendamento
+    function alternarDestinoAgendamento() {
+      const tipo = document.getElementById("agTipo").value;
+      const numeroSelect = document.getElementById("agNumero");
+      const grupoSelect = document.getElementById("agGrupo");
+      if (tipo === "grupo") {
+        numeroSelect.style.display = "none";
+        grupoSelect.style.display = "block";
+      } else {
+        numeroSelect.style.display = "block";
+        grupoSelect.style.display = "none";
+      }
+    }
+
+    // bloqueia número ou grupo na seção "Enviar Agora"
+    function bloquearGrupoOuNumero(tipo) {
+      const numero = document.getElementById("enviarNumero");
+      const grupo = document.getElementById("enviarGrupo");
+
+      if (tipo === "numero" && numero.value) {
+        grupo.value = "";
+        grupo.disabled = true;
+      } else if (tipo === "grupo" && grupo.value) {
+        numero.value = "";
+        numero.disabled = true;
+      }
+
+      // reativa se ambos estiverem vazios
+      if (!numero.value && !grupo.value) {
+        numero.disabled = false;
+        grupo.disabled = false;
+      }
+    }
+
+    // ---------- STATUS ----------
+    async function carregarStatus() {
+      const data = await fetch("/qr").then(r => r.json());
+      document.getElementById("status").innerHTML =
+        data.conectado ? "<span class='text-success fw-bold'>✅ Conectado</span>" : "<span class='text-warning fw-bold'>⏳ Aguardando QR</span>";
+      const qrContainer = document.getElementById("qrContainer");
+      qrContainer.innerHTML = (!data.conectado && data.qr) ? `<img src="${data.qr}" alt="QR Code" width="250" class="border p-2 rounded shadow-sm"/>` : "";
+    }
+
+    // ---------- CONTATOS ----------
+    async function salvarContato() {
+      const numero = document.getElementById("novoNumero").value.trim();
+      if (!numero) return alert("Digite um número válido!");
+      await fetch("/contato", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ numero }) });
+      document.getElementById("novoNumero").value = "";
+      await carregarContatos();
+      await carregarGrupos();
+    }
+
+    async function removerContato(id) {
+      if (!confirm("Remover este número?")) return;
+      await fetch(`/contato/${id}`, { method: "DELETE" });
+      await carregarContatos();
+      await carregarGrupos();
+    }
+
+    async function carregarContatos() {
+      const lista = await fetch("/contatos").then(r => r.json());
+      const html = lista.map(c => `
+        <div class='list-item'>
+          <span>${c.numero} <small class="text-muted">(#${c.id})</small></span>
+          <div>
+            <button class="btn btn-sm btn-outline-secondary me-2" onclick="abrirModalEditarContato(${c.id}, '${c.numero}')"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="removerContato(${c.id})"><i class="bi bi-trash"></i></button>
+          </div>
+        </div>
+      `).join("");
+      document.getElementById("listaContatos").innerHTML = html;
+      document.getElementById("agNumero").innerHTML = `<option value="">(Escolher número)</option>` + lista.map(c => `<option value="${c.numero}">${c.numero}</option>`).join("");
+      document.getElementById("enviarNumero").innerHTML = `<option value="">(Escolher número)</option>` + lista.map(c => `<option value="${c.numero}">${c.numero}</option>`).join("");
+    }
+
+    function abrirModalEditarContato(id, numero) {
+      const novo = prompt("Editar número:", numero);
+      if (!novo) return;
+      alert("Implementar rota de edição no backend se desejar salvar alteração.");
+    }
+
+    // ---------- GRUPOS ----------
+    async function criarGrupo() {
+      const nome = document.getElementById("novoGrupo").value.trim();
+      if (!nome) return alert("Digite um nome de grupo!");
+      await fetch("/grupo", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ nome }) });
+      document.getElementById("novoGrupo").value = "";
+      await carregarGrupos();
+    }
+
+    async function removerGrupo(id) {
+      if (!confirm("Remover este grupo?")) return;
+      await fetch(`/grupo/${id}`, { method: "DELETE" });
+      await carregarGrupos();
+    }
+
+    async function adicionarContatoAoGrupo(grupoId) {
+      const select = document.getElementById(`select-add-${grupoId}`);
+      const contatoId = select.value;
+      if (!contatoId) return alert("Selecione um contato para adicionar.");
+      await fetch(`/grupo/${grupoId}/adicionar`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ contato_id: parseInt(contatoId) })
+      });
+      await carregarGrupos();
+    }
+
+    async function removerContatoDoGrupo(grupoId, contatoId) {
+      if (!confirm("Remover esse contato do grupo?")) return;
+      await fetch(`/grupo/${grupoId}/remover/${contatoId}`, { method: "DELETE" });
+      await carregarGrupos();
+    }
+
+    async function carregarGrupos() {
+      const grupos = await fetch("/grupos").then(r => r.json());
+      const contatos = await fetch("/contatos").then(r => r.json());
+      const htmlPromises = grupos.map(async g => {
+        const contatosDoGrupo = await fetch(`/grupo/${g.id}/contatos`).then(r => r.json());
+        const contatosHtml = contatosDoGrupo.length
+          ? contatosDoGrupo.map(c => `<div class="d-flex justify-content-between align-items-center grupo-contatos"><small>${c.numero}</small><button class="btn btn-sm btn-outline-danger" onclick="removerContatoDoGrupo(${g.id}, ${c.id})"><i class="bi bi-x"></i></button></div>`).join("")
+          : `<small class="small-muted">Nenhum contato neste grupo.</small>`;
+
+        const idsNoGrupo = contatosDoGrupo.map(c => c.id);
+        const opcoesAdd = contatos.filter(c => !idsNoGrupo.includes(c.id)).map(c => `<option value="${c.id}">${c.numero}</option>`).join("");
+
+        return `
+          <div class="list-item flex-column mb-2">
+            <div class="w-100 d-flex justify-content-between align-items-center">
+              <strong>${g.nome}</strong>
+              <div><button class="btn btn-sm btn-danger" onclick="removerGrupo(${g.id})"><i class="bi bi-trash"></i></button></div>
+            </div>
+            <div class="w-100 mt-2">
+              ${contatosHtml}
+              <div class="d-flex gap-2 align-items-center mt-2">
+                <select id="select-add-${g.id}" class="form-select form-select-sm">
+                  <option value="">Adicionar contato...</option>
+                  ${opcoesAdd}
+                </select>
+                <button class="btn btn-sm btn-outline-success" onclick="adicionarContatoAoGrupo(${g.id})"><i class="bi bi-person-plus"></i></button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      const html = await Promise.all(htmlPromises);
+      document.getElementById("listaGrupos").innerHTML = html.join("");
+
+      const enviarGrupo = document.getElementById("enviarGrupo");
+      enviarGrupo.innerHTML = `<option value="">(Nenhum)</option>` + grupos.map(g => `<option value="${g.id}">${g.nome}</option>`).join("");
+
+      const agGrupo = document.getElementById("agGrupo");
+      agGrupo.innerHTML = `<option value="">(Escolher grupo)</option>` + grupos.map(g => `<option value="${g.id}">${g.nome}</option>`).join("");
+    }
+
+    // ---------- MENSAGENS ----------
+    async function salvarMensagem() {
+      const texto = document.getElementById("novaMensagem").value.trim();
+      if (!texto) return alert("Digite uma mensagem!");
+      await fetch("/mensagem", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ texto }) });
+      document.getElementById("novaMensagem").value = "";
+      carregarMensagens();
+    }
+
+    async function removerMensagem(id) {
+      if (!confirm("Tem certeza que deseja excluir esta mensagem?")) return;
+      const res = await fetch(`/mensagem/${id}`, { method: "DELETE" });
+      if (res.ok) {
+      carregarMensagens();
+      }
+    }
+
+    async function carregarMensagens() {
+      const lista = await fetch("/mensagens").then(r => r.json());
+      const html = lista.map(m => `<div class='list-item'><span>${m.texto}</span><button class="btn btn-sm btn-danger" onclick="removerMensagem(${m.id})"><i class="bi bi-trash"></i></button></div>`).join("");
+      document.getElementById("listaMensagens").innerHTML = html;
+      document.getElementById("agMensagem").innerHTML = `<option value="">(Selecione)</option>` + lista.map(m => `<option value="${m.id}">${m.texto}</option>`).join("");
+      document.getElementById("enviarMensagem").innerHTML = `<option value="">(Selecione)</option>` + lista.map(m => `<option value="${m.id}">${m.texto}</option>`).join("");
+    }
+
+    // ---------- AGENDAMENTOS ----------
+    async function criarAgendamento() {
+      const tipo = document.getElementById("agTipo").value;
+      const numero = document.getElementById("agNumero").value;
+      const grupo = document.getElementById("agGrupo").value;
+      const mensagemId = document.getElementById("agMensagem").value;
+        if (!mensagemId) return alert("Selecione uma mensagem!");
+      const mensagemTexto = document.querySelector(`#agMensagem option[value="${mensagemId}"]`).textContent;
+      const horario = document.getElementById("agHorario").value;
+      const diasSelecionados = [...document.querySelectorAll("input[type=checkbox]:checked")].map(cb => parseInt(cb.value));
+
+      if ((tipo === "numero" && !numero) || (tipo === "grupo" && !grupo) || !mensagemTexto || !horario || diasSelecionados.length === 0) {
+        return alert("Preencha todos os campos e selecione ao menos um dia!");
+      }
+
+      await fetch("/agendar", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          numero: tipo === "numero" ? numero : null,
+          grupo: tipo === "grupo" ? grupo : null,
+          mensagem: mensagemTexto,
+          horario,
+          dias: diasSelecionados
+        })
+      });
+      carregarAgendamentos();
+    }
+
+    async function carregarAgendamentos() {
+  const lista = await fetch("/agendamentos").then(r => r.json());
+  const grupos = await fetch("/grupos").then(r => r.json()); // pegar os grupos cadastrados
+  const nomesDias = {
+    0: "Dom",
+    1: "Seg",
+    2: "Ter",
+    3: "Qua",
+    4: "Qui",
+    5: "Sex",
+    6: "Sáb"
+  };
+
+  const html = lista.map(a => {
+    const diasTexto = a.dias.map(d => nomesDias[d] || d).join(", ");
+
+    // Se for grupo, buscar o nome correspondente
+    let destinoTexto = "";
+    if (a.grupo) {
+      const grupoEncontrado = grupos.find(g => g.id == a.grupo);
+      destinoTexto = grupoEncontrado
+        ? `Grupo ${grupoEncontrado.nome}`
+        : `Grupo ${a.grupo}`;
+    } else {
+      destinoTexto = a.numero;
+    }
+
+    return `
+      <div class='list-item'>
+        <div>
+          <b>${destinoTexto}</b> → ${a.mensagem}<br>
+          ⏰ ${a.horario} | 📅 ${diasTexto}
+        </div>
+        <button class="btn btn-sm btn-danger" onclick="removerAgendamento(${a.id})">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  document.getElementById("listaAgendamentos").innerHTML = html;
+}
+
+    async function removerAgendamento(id) {
+      if (!confirm("Remover este agendamento?")) return;
+      await fetch(`/agendamento/${id}`, { method: "DELETE" });
+      carregarAgendamentos();
+    }
+
+    // ---------- ENVIAR AGORA ----------
+    async function enviarAgora() {
+      const numero = document.getElementById("enviarNumero").value;
+      const grupo_id = document.getElementById("enviarGrupo").value;
+      const mensagemId = document.getElementById("enviarMensagem").value;
+        if (!mensagemId) return alert("Selecione uma mensagem!");
+      const mensagemTexto = document.querySelector(`#enviarMensagem option[value="${mensagemId}"]`).textContent;
+      if (!numero && !grupo_id) return alert("Selecione um número ou grupo!");
+
+      await fetch("/enviar-agora", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ numero: numero || null, grupo_id: grupo_id || null, mensagem: mensagemTexto })
+      });
+      alert("✅ Mensagem enviada!");
+    }
+
+    // ---------- Inicialização ----------
+    setInterval(carregarStatus, 2000);
+    async function iniciar() {
+      await carregarContatos();
+      await carregarMensagens();
+      await carregarGrupos();
+      await carregarAgendamentos();
+    }
+    iniciar();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

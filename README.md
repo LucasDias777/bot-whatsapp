@@ -1,34 +1,37 @@
-# 🤖 Bot WhatsApp – Agendador Automático de Mensagens
+# 🤖 Bot WhatsApp – Agendador Automático de Mensagens com Painel Web
 
-Este projeto é um bot para WhatsApp desenvolvido com **Node.js** utilizando a biblioteca [`whatsapp-web.js`](https://wwebjs.dev/).  
-Ele permite **agendar envios automáticos de mensagens** para contatos específicos através de um arquivo JSON.
+Este projeto é um **bot para WhatsApp** desenvolvido com **Node.js** e a biblioteca [`whatsapp-web.js`](https://wwebjs.dev/).  
+Agora com **painel web interativo**, ele permite **cadastrar contatos, mensagens e agendamentos personalizados**, com horários e dias específicos de envio.  
+O sistema utiliza **SQLite** como banco de dados local e pode enviar mensagens **tanto agendadas quanto imediatas**.
 
 ---
 
 ## 📑 Sumário
 
-1. [Funcionalidades](#-funcionalidades)
-2. [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-3. [Estrutura do Projeto](#-estrutura-do-projeto)
-4. [Instalação e Configuração](#-instalação-e-configuração)
-5. [Como Rodar o Projeto](#-como-rodar-o-projeto)
-6. [Gerenciando Agendamentos](#-gerenciando-agendamentos)
-7. [Evite subir dados sensíveis](#-evite-subir-dados-sensíveis)
-8. [Possíveis Erros e Soluções](#-possíveis-erros-e-soluções)
-9. [Licença](#-licença)
-10. [Melhorias Futuras](#-melhorias-futuras)
-11. [Suporte](#-suporte)
+1. [Funcionalidades](#-funcionalidades)  
+2. [Tecnologias Utilizadas](#-tecnologias-utilizadas)  
+3. [Estrutura do Projeto](#-estrutura-do-projeto)  
+4. [Instalação e Configuração](#-instalação-e-configuração)  
+5. [Como Rodar o Projeto](#-como-rodar-o-projeto)  
+6. [Uso do Painel Web](#-uso-do-painel-web)  
+7. [Banco de Dados](#-banco-de-dados)  
+8. [Evite subir dados sensíveis](#-evite-subir-dados-sensíveis)  
+9. [Possíveis Erros e Soluções](#-possíveis-erros-e-soluções)  
+10. [Melhorias Futuras](#-melhorias-futuras)  
+11. [Licença](#-licença)
 
 ---
 
 ## 🚀 Funcionalidades
 
 - ✅ Login persistente utilizando sessão local  
-- 📲 QR Code para login (somente na primeira inicialização)  
-- ⏰ Agendamento automático de mensagens usando `cron`  
-- 🔁 Atualiza agendamentos sem reiniciar o bot  
-- 🧠 Envia mensagem para contatos salvos ou números diretos  
-- 🛡️ Evita envio para o próprio número do bot  
+- 📲 QR Code para autenticação (somente na primeira inicialização)  
+- 💬 Cadastro de contatos e mensagens personalizadas  
+- ⏰ Agendamento de mensagens por hora e dias da semana  
+- ⚡ Envio imediato de mensagens diretamente pelo painel  
+- 💾 Armazenamento local em banco **SQLite**  
+- 🔁 Atualização dinâmica dos agendamentos sem reiniciar o bot  
+- 🧠 Envio para números diretos ou contatos salvos  
 
 ---
 
@@ -36,11 +39,12 @@ Ele permite **agendar envios automáticos de mensagens** para contatos específi
 
 | Tecnologia | Descrição |
 |------------|------------|
-| Node.js | Ambiente de execução |
-| whatsapp-web.js | Integração com o WhatsApp Web |
-| node-cron | Agendador de tarefas |
-| qrcode-terminal | Exibição do QR Code no terminal |
-| fs / path | Leitura e manipulação de arquivos |
+| **Node.js** | Ambiente de execução JavaScript |
+| **Express** | Framework para criação do servidor HTTP |
+| **whatsapp-web.js** | Integração com o WhatsApp Web |
+| **node-cron** | Agendador de tarefas |
+| **sqlite3** | Banco de dados local leve |
+| **QRCode** / **QRCode-terminal** | Geração e exibição do QR Code de login |
 
 ---
 
@@ -49,10 +53,24 @@ Ele permite **agendar envios automáticos de mensagens** para contatos específi
 ```
 bot-whatsapp/
 │
-├── agendamentos.json       # Configurações dos envios automáticos
-├── app.js                  # Código principal do bot
-├── package.json
-
+├── .wwebjs_auth/             # Sessão persistente de login
+├── .wwebjs_cache/            # Cache da sessão
+├── node_modules/             # Dependências do projeto
+│
+├── public/
+│   └── index.html            # Painel front-end (interface do bot)
+│
+├── app.js                    # Ponto de entrada do servidor Node
+├── painel.js                 # Controla as rotas e API do painel web
+├── envio.js                  # Responsável por envios imediatos de mensagens
+├── agenda.js                 # Controle e agendamento de mensagens
+├── database.js               # Conexão e manipulação do banco SQLite
+├── database.db               # Banco de dados local
+│
+├── package.json              # Dependências e scripts
+├── package-lock.json
+├── .gitignore
+└── README.md
 ```
 
 ---
@@ -72,54 +90,61 @@ cd bot-whatsapp
 npm install
 ```
 
-### 3️⃣ Crie o arquivo ou edite `agendamentos.json`
-
-Modelo inicial:
-
-```json
-[
-  {
-    "hora": "08:31",
-    "mensagem": "🚛 Olá! Mensagem automática de teste",
-    "destinatarios": [
-      { "nome": "NOME SALVO NOS CONTATOS", "numero": "NUMERO DO CONTATO EX: 5544997990099" }
-    ]
-  }
-]
-```
-
----
-
-## ▶️ Como Rodar o Projeto
+### 3️⃣ Executar o projeto
 
 ```bash
 node app.js
 ```
 
-Na primeira vez, será exibido um QR Code no terminal.  
-Escaneie via WhatsApp: **Aparelhos Conectados → Conectar Aparelho**.
-
-Após autenticado, o login será salvo e não precisará escanear novamente ✅
-
----
-
-## 📝 Gerenciando Agendamentos
-
-- Todas as tarefas são carregadas a partir do `agendamentos.json`
-- Ao editar este arquivo e salvar, o bot detecta a mudança e recarrega automaticamente
-
-📍 **Não é necessário reiniciar o projeto para aplicar alterações**
+Na **primeira inicialização**, será exibido um QR Code no terminal.  
+Escaneie via WhatsApp: **Aparelhos Conectados → Conectar Aparelho**.  
+Após isso, o login ficará salvo e não será necessário reconectar novamente ✅
 
 ---
 
-## 🛑 Evite vazar dados sensíveis
+## 💻 Uso do Painel Web
 
-A sessão do WhatsApp é salva localmente nas pastas:
+Após iniciar o projeto, acesse:
+
+```
+http://localhost:3000
+```
+
+O painel permite:
+
+- 📇 **Cadastrar contatos** (número e grupo opcional)  
+- 💬 **Cadastrar mensagens**  
+- 🗓️ **Agendar mensagens** para horários e dias específicos  
+- ⚡ **Enviar mensagens instantaneamente** a qualquer número cadastrado  
+
+---
+
+## 🗄️ Banco de Dados
+
+O projeto utiliza **SQLite** (`database.db`) como armazenamento local.  
+A estrutura é criada automaticamente ao rodar o projeto.
+
+Essas tabelas armazenam:
+- **Contatos**: números e grupos opcionais  
+- **Mensagens**: textos prontos para envio  
+- **Agendamentos**: mensagens programadas com horário e dias  
+- **Grupos**: categorias de contatos  
+- **Grupo_contatos**: relação entre grupos e contatos  
+
+---
+
+## 🛑 Evite subir dados sensíveis
+
+As sessões do WhatsApp são salvas localmente nas pastas:
 
 ```
 .wwebjs_auth/
 .wwebjs_cache/
 ```
+
+> ⚠️ **Nunca envie essas pastas para o GitHub.**  
+> Elas contêm informações da sua sessão autenticada.
+
 ---
 
 ## ❗ Possíveis Erros e Soluções
@@ -127,24 +152,25 @@ A sessão do WhatsApp é salva localmente nas pastas:
 | Erro | Causa | Solução |
 |------|--------|----------|
 | ❌ `auth_failure` | Sessão corrompida | Apague `.wwebjs_auth` e gere um novo QR Code |
-| 📂 `agendamentos.json inválido` | JSON mal formatado | Use um validador de JSON antes de salvar |
-| 🤳 QR Code não aparece | Sessão anterior ainda ativa | Remova a pasta `.wwebjs_auth` e reinicie |
-| 🛑 Bot parou sozinho em servidor grátis | Serviço suspendeu | Migrar para VPS ou serviço de uptime |
+| 🤳 QR Code não aparece | Sessão anterior ainda ativa | Exclua a pasta `.wwebjs_auth` e reinicie |
+| 📂 `SQLITE_BUSY` | Banco sendo acessado por outro processo | Feche processos paralelos e reinicie |
+| 🛑 Servidor cai após login | Instabilidade na sessão | Reinicie o projeto e aguarde reconexão |
 
 ---
 
 ## 📈 Melhorias Futuras
 
-- Envio de mídia (imagens, PDFs, áudios)
-- Painel Web para gerenciar agendamentos
-- Histórico de mensagens enviadas (log)
-- Agendamentos por data específica (e não apenas diário)
-- Sistema de respostas automáticas e chatbot com IA
+- Envio de mídias (imagens, PDFs, áudios, vídeos)  
+- Histórico completo de mensagens enviadas  
+- Controle de múltiplas contas de WhatsApp  
+- Dashboard com estatísticas de envios  
+- Exportação de logs e backups do banco  
 
 ---
 
 ## 📜 Licença
 
-Este projeto é de uso pessoal/privado do autor Lucas Dias.  
+Este projeto é de uso **pessoal e privado** do autor **Lucas Dias**.  
+Distribuição ou uso comercial não autorizado é proibido.
 
 ---

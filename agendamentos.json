@@ -1,9 +1,0 @@
-[
-  {
-    "hora": "08:31", 
-    "mensagem": "🚛 Olá! Mensagem automática de teste",
-    "destinatarios": [
-      { "nome": "NOME SALVO NOS CONTATOS", "numero": "NUMERO DO CONTATO EX: 5544997990099" }
-    ]
-  }
-]
