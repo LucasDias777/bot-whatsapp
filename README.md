@@ -96,9 +96,15 @@ npm install
 node app.js
 ```
 
-Na **primeira inicialização**, será exibido um QR Code no terminal.  
-Escaneie via WhatsApp: **Aparelhos Conectados → Conectar Aparelho**.  
-Após isso, o login ficará salvo e não será necessário reconectar novamente ✅
+Na **primeira inicialização**, o QR Code será exibido diretamente no painel web **(http://localhost:3000)**.
+
+Acesse o painel, escaneie o QR Code via WhatsApp:
+Aparelhos Conectados → Conectar Aparelho.
+
+Após escanear, a sessão ficará salva e o QR Code não será solicitado novamente ✅
+
+Se desejar encerrar a sessão futuramente, acesse o mesmo caminho de conexão no WhatsApp,
+selecione a sessão ativa e clique em Encerrar.
 
 ---
 
