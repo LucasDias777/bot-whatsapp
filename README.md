@@ -100,6 +100,7 @@ Arquivos SQLite + scripts de criação de tabelas.
 ## 💻 Requisitos
 
 * **Node.js (v18+) instalado — [INSTALAR NODE](https://nodejs.org/pt/download)**
+* **Python (v3.12+) instalado — [INSTALAR PYTHON](https://www.python.org/downloads/release/python-31210/)**
 * **Git (para clonar o projeto) — [INSTALAR GIT](https://git-scm.com/install/windows)**
 * Navegador moderno
 
