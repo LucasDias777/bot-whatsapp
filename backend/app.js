@@ -1,6 +1,6 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const QRCode = require("qrcode");
-const { app, setQR, setConectado } = require("./painel");
+const { app, setQR, setConectado } = require("./painel");  // <- CORRETO
 const { iniciarAgendamentos } = require("./agenda");
 const { sendMessageToNumber } = require("./envio");
 
@@ -14,14 +14,11 @@ global.client = client;
 client.on("qr", async qr => {
   console.log("📱 Escaneie o QR Code!");
   
-  // Gera QR Code em base64 (imagem)
   const qrCodeDataURL = await QRCode.toDataURL(qr);
 
-  // Envia imagem para painel
   setQR(qrCodeDataURL);
   setConectado(false);
 });
-
 
 // Quando conectar
 client.on("ready", () => {

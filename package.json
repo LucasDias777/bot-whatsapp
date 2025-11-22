@@ -1,20 +1,12 @@
 {
   "name": "bot-whatsapp",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "express": "^5.1.0",
-    "node-cron": "^4.2.1",
-    "qrcode": "^1.5.4",
-    "qrcode-terminal": "^0.12.0",
-    "sqlite3": "^5.1.7",
-    "whatsapp-web.js": "^1.34.2"
+  "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run backend\"",
+  "frontend": "npm run dev --prefix frontend",
+  "backend": "npm start --prefix backend"
+},
+  "devDependencies": {
+    "concurrently": "^8.2.0"
   }
 }

@@ -1,8 +1,12 @@
 const sqlite3 = require("sqlite3").verbose();
-const db = new sqlite3.Database("./database.db");
+const path = require("path");
+
+// Caminho ABSOLUTO final garantido
+const dbPath = path.resolve(__dirname, "database.db");
+
+const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
-  // === CONTATOS ===
   db.run(`
     CREATE TABLE IF NOT EXISTS contatos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -11,7 +15,6 @@ db.serialize(() => {
     );
   `);
 
-  // === MENSAGENS ===
   db.run(`
     CREATE TABLE IF NOT EXISTS mensagens (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,7 +22,6 @@ db.serialize(() => {
     );
   `);
 
-  // === AGENDAMENTOS ===
   db.run(`
     CREATE TABLE IF NOT EXISTS agendamentos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +33,6 @@ db.serialize(() => {
     );
   `);
 
-  // === GRUPOS ===
   db.run(`
     CREATE TABLE IF NOT EXISTS grupos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +40,6 @@ db.serialize(() => {
     );
   `);
 
-  // === RELAÇÃO GRUPO_CONTATOS ===
   db.run(`
     CREATE TABLE IF NOT EXISTS grupo_contatos (
       grupo_id INTEGER,

@@ -1,5 +1,5 @@
 const cron = require("node-cron");
-const db = require("./database");
+const db = require("./database/database.js");
 const { sendMessageToNumber } = require("./envio");
 
 function iniciarAgendamentos(client) {
@@ -14,7 +14,7 @@ function iniciarAgendamentos(client) {
         console.error("Erro ao buscar agendamentos:", err.message);
         return;
       }
-
+  
       rows.forEach(ag => {
         try {
           const dias = JSON.parse(ag.dias);

@@ -1,0 +1,301 @@
+/* Novo Dashboard.module.css totalmente isolado, sem resets globais, sem tags globais, sem poluição */
+
+/* =========================
+   ESCOPO PRINCIPAL
+   ========================= */
+.dashboardAppWrap {
+  display: grid;
+  grid-template-rows: 72px 1fr;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+.dashboardMainGrid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: calc(100vh - 72px);
+}
+
+/* =========================
+   HEADER
+   ========================= */
+.dashboardHeader {
+  grid-column: 1 / -1;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg, #0ea5ff 0%, #6366f1 100%);
+  color: white;
+  box-shadow: 0 8px 30px rgba(14,30,60,0.08);
+  padding: 0 20px;
+}
+
+.dashboardHeaderInner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboardBrand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dashboardBrandLogo {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+.dashboardBrandImg {
+  width: 36px;
+  object-fit: contain;
+}
+
+.dashboardBrandText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.dashboardBrandSmall {
+  font-size: 11px;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.dashboardBrandTitle {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* header right */
+.dashboardHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboardSearchWrap {
+  width: 360px;
+  max-width: 40vw;
+}
+
+.dashboardSearchInput {
+  width: 80%;
+  border-radius: 28px;
+  border: none;
+  padding: 10px 25px;
+  font-size: 14px;
+  outline: none;
+  box-shadow: 0 4px 18px rgba(11,22,40,0.06);
+}
+
+.dashboardHeaderIcons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboardIconBtn {
+  background: rgba(255,255,255,0.12);
+  border: none;
+  color: white;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.dashboardAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: white;
+  color: #0b1320;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* =========================
+   SIDEBAR
+   ========================= */
+.dashboardSidebar {
+  background: white;
+  border-right: 1px solid rgba(15,23,42,0.04);
+  padding: 28px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.dashboardLogoBox {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.dashboardLogo {
+  width: 110px;
+  object-fit: contain;
+}
+
+.dashboardMenu {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.dashboardMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  text-decoration: none;
+  color: #0b1320;
+  border-radius: 10px;
+  transition: 200ms;
+}
+
+.dashboardMenuItem:hover {
+  background: rgba(99,102,241,0.06);
+  transform: translateX(6px);
+}
+
+.dashboardMenuIcon {
+  width: 26px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.dashboardMenuLabel {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dashboardActive {
+  background: rgba(99,102,241,0.12);
+}
+
+.dashboardSidebarFooter {
+  margin-top: auto;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* =========================
+   CONTENT AREA
+   ========================= */
+.dashboardContent {
+  padding: 28px 32px;
+  min-height: calc(100vh - 72px);
+}
+
+.dashboardContainerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* =========================
+   METRICS HOME
+   ========================= */
+.dashboardMetricsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.dashboardMetricCard {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 8px 30px rgba(14,30,60,0.08);
+  border: 1px solid rgba(11,22,40,0.04);
+}
+
+.dashboardMetricTitle {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.dashboardMetricValue {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.dashboardMetricDelta {
+  font-size: 12px;
+  color: #2b9af3;
+  font-weight: 700;
+}
+
+.dashboardMuted {
+  color: #9ca3af;
+  margin-left: 8px;
+}
+
+/* =========================
+   BACK BUTTON
+   ========================= */
+.dashboardBackWrap {
+  margin-top: 16px;
+}
+
+.dashboardBackButton {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(11,22,40,0.06);
+  background: white;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.dashboardBackButton:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(11,22,40,0.06);
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (max-width: 1100px) {
+  .dashboardMetricsRow { grid-template-columns: repeat(2, 1fr); }
+  .dashboardSearchWrap { display: none; }
+}
+
+@media (max-width: 700px) {
+  .dashboardAppWrap {
+    grid-template-columns: 1fr;
+    grid-template-rows: 72px auto;
+  }
+  .dashboardSidebar {
+    flex-direction: row;
+    padding: 12px;
+    overflow-x: auto;
+    gap: 12px;
+  }
+  .dashboardMainGrid { grid-template-columns: 1fr; }
+  .dashboardContent { padding: 14px; }
+}

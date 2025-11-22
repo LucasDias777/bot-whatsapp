@@ -1,0 +1,13 @@
+:root{
+  --bg:#f7f8fb;
+  --card:#fff;
+  --text:#222;
+  --muted:#666;
+  --accent:#273786;
+  --gap:18px;
+}
+
+html,body,#root{height:100%;margin:0;font-family:Inter,system-ui,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+h1{margin:24px 0;text-align:center}
+button{cursor:pointer}
+small{color:var(--muted)}

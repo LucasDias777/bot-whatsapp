@@ -1,182 +1,174 @@
 # 🤖 Bot WhatsApp – Agendador Automático de Mensagens com Painel Web
 
-Este projeto é um **bot para WhatsApp** desenvolvido com **Node.js** e a biblioteca [`whatsapp-web.js`](https://wwebjs.dev/).  
-Agora com **painel web interativo**, ele permite **cadastrar contatos, mensagens e agendamentos personalizados**, com horários e dias específicos de envio.  
-O sistema utiliza **SQLite** como banco de dados local e pode enviar mensagens **tanto agendadas quanto imediatas**.
+Projeto completo para **envio automático e imediato de mensagens WhatsApp**, com **painel web** para gerenciamento de contatos, mensagens, grupos e agendamentos.
+
+Biblioteca principal utilizada: **whatsapp-web.js** — [https://wwebjs.dev/](https://wwebjs.dev/)
 
 ---
 
-## 📑 Sumário
+## 📌 Visão Geral
 
-1. [Funcionalidades](#-funcionalidades)  
-2. [Tecnologias Utilizadas](#-tecnologias-utilizadas)  
-3. [Estrutura do Projeto](#-estrutura-do-projeto)  
-4. [Instalação e Configuração](#-instalação-e-configuração)  
-5. [Como Rodar o Projeto](#-como-rodar-o-projeto)  
-6. [Uso do Painel Web](#-uso-do-painel-web)  
-7. [Banco de Dados](#-banco-de-dados)  
-8. [Evite subir dados sensíveis](#-evite-subir-dados-sensíveis)  
-9. [Possíveis Erros e Soluções](#-possíveis-erros-e-soluções)  
-10. [Melhorias Futuras](#-melhorias-futuras)  
-11. [Licença](#-licença)
+**Backend:** Express + Node + whatsapp-web.js + SQLite + node-cron
+**Frontend:** React + Vite + React Router
+**Raiz do Projeto:** Script unificado via `concurrently` para rodar Backend + Frontend
 
 ---
 
-## 🚀 Funcionalidades
+## 🔗 Repositório Oficial
 
-- ✅ Login persistente utilizando sessão local  
-- 📲 QR Code para autenticação (somente na primeira inicialização)  
-- 💬 Cadastro de contatos e mensagens personalizadas  
-- ⏰ Agendamento de mensagens por hora e dias da semana  
-- ⚡ Envio imediato de mensagens diretamente pelo painel  
-- 💾 Armazenamento local em banco **SQLite**  
-- 🔁 Atualização dinâmica dos agendamentos sem reiniciar o bot  
-- 🧠 Envio para números diretos ou contatos salvos  
+Clonar diretamente pelo GitHub:
+**[https://github.com/LucasDias777/bot-whatsapp](https://github.com/LucasDias777/bot-whatsapp)**
 
 ---
 
-## 🧰 Tecnologias Utilizadas
-
-| Tecnologia | Descrição |
-|------------|------------|
-| **Node.js** | Ambiente de execução JavaScript |
-| **Express** | Framework para criação do servidor HTTP |
-| **whatsapp-web.js** | Integração com o WhatsApp Web |
-| **node-cron** | Agendador de tarefas |
-| **sqlite3** | Banco de dados local leve |
-| **QRCode** / **QRCode-terminal** | Geração e exibição do QR Code de login |
-
----
-
-## 📂 Estrutura do Projeto
+## 🗂️ Estrutura do Projeto (Atualizada)
 
 ```
 bot-whatsapp/
 │
-├── .wwebjs_auth/             # Sessão persistente de login
-├── .wwebjs_cache/            # Cache da sessão
-├── node_modules/             # Dependências do projeto
+├── backend/
+│   ├── database/          # banco SQLite + scripts de criação de tabelas
+│   ├── .wwebjs_auth/      # sessão persistente do WhatsApp (NÃO subir ao Git)
+│   ├── .wwebjs_cache/     # cache do WhatsApp (NÃO subir ao Git)
+│   ├── agenda.js          # agendador usando node-cron
+│   ├── envio.js           # envio rápido + validações de números
+│   ├── painel.js          # rotas que atendem o frontend
+│   ├── app.js             # inicialização do Express + whatsapp-web.js
+│   └── package.json
 │
-├── public/
-│   └── index.html            # Painel front-end (interface do bot)
+├── frontend/
+│   ├── src/
+│   │   ├── assets/        # imagens do projeto
+│   │   ├── components/    # componentes reutilizáveis
+│   │   ├── context/       # contexts para atualizar listas/estados
+│   │   ├── hooks/         # hooks personalizados
+│   │   ├── pages/         # páginas do sistema
+│   │   ├── services/      # requisições GET/POST/DELETE
+│   │   ├── styles/        # CSS global
+│   │   ├── App.jsx        # rotas principais
+│   │   └── main.jsx       # inicialização do React
+│   └── package.json
 │
-├── app.js                    # Ponto de entrada do servidor Node
-├── painel.js                 # Controla as rotas e API do painel web
-├── envio.js                  # Responsável por envios imediatos de mensagens
-├── agenda.js                 # Controle e agendamento de mensagens
-├── database.js               # Conexão e manipulação do banco SQLite
-├── database.db               # Banco de dados local
-│
-├── package.json              # Dependências e scripts
-├── package-lock.json
-├── .gitignore
+├── package.json           # scripts que rodam backend + frontend juntos
 └── README.md
 ```
 
 ---
 
-## 🔧 Instalação e Configuração
+## 🧭 Descrição dos Principais Arquivos (Backend)
 
-### 1️⃣ Clonar o repositório
+**app.js** – Inicia Express, carrega middlewares e conecta com whatsapp-web.js.
+**painel.js** – API usada pelo frontend (QR Code, contatos, mensagens, agendamentos).
+**envio.js** – Envio rápido + validações antes do disparo.
+**agenda.js** – Agendador usando node-cron que verifica o banco constantemente.
+**database/** – Arquivo SQLite + scripts de criação de tabelas.
+
+---
+
+## 🧩 Tecnologias Utilizadas
+
+### **Backend**
+
+* Express
+* whatsapp-web.js
+* node-cron
+* sqlite3
+* qrcode / qrcode-terminal
+* CORS
+
+### **Frontend**
+
+* React 18
+* Vite
+* React Router DOM
+
+### **Raiz do Projeto**
+
+* concurrently (para rodar backend + frontend com um único comando)
+
+---
+
+## 💻 Requisitos
+
+* **Node.js (v18+) instalado — [https://nodejs.org/pt/download](https://nodejs.org/pt/download)**
+* Git (para clonar o projeto)
+* Navegador moderno
+
+---
+
+## 🛠️ Instalação Passo a Passo
+
+1️⃣ Clone o repositório:
 
 ```bash
 git clone https://github.com/LucasDias777/bot-whatsapp.git
 cd bot-whatsapp
 ```
 
-### 2️⃣ Instalar dependências
+2️⃣ Instale dependências do Backend:
 
 ```bash
+cd backend
 npm install
 ```
 
-### 3️⃣ Executar o projeto
+3️⃣ Instale dependências do Frontend:
 
 ```bash
-node app.js
+cd ../frontend
+npm install
 ```
 
-Na **primeira inicialização**, o QR Code será exibido diretamente no painel web **(http://localhost:3000)**.
+4️⃣ Volte para a raiz e execute tudo junto:
 
-Acesse o painel, escaneie o QR Code via WhatsApp:
-Aparelhos Conectados → Conectar Aparelho.
-
-Após escanear, a sessão ficará salva e o QR Code não será solicitado novamente ✅
-
-Se desejar encerrar a sessão futuramente, acesse o mesmo caminho de conexão no WhatsApp,
-selecione a sessão ativa e clique em Encerrar.
-
----
-
-## 💻 Uso do Painel Web
-
-Após iniciar o projeto, acesse:
-
-```
-http://localhost:3000
+```bash
+cd ..
+npm run dev
 ```
 
-O painel permite:
+### 🔥 Após iniciar:
 
-- 📇 **Cadastrar contatos** (número e grupo opcional)  
-- 💬 **Cadastrar mensagens**  
-- 🗓️ **Agendar mensagens** para horários e dias específicos  
-- ⚡ **Enviar mensagens instantaneamente** a qualquer número cadastrado  
+* Backend → **[http://localhost:3000](http://localhost:3000)**
+* Frontend → **[http://localhost:5173](http://localhost:5173)** (porta padrão do Vite)
 
 ---
 
-## 🗄️ Banco de Dados
+## 🚀 Uso do Painel Web
 
-O projeto utiliza **SQLite** (`database.db`) como armazenamento local.  
-A estrutura é criada automaticamente ao rodar o projeto.
+1. Acesse: **[http://localhost:5173](http://localhost:5173)**
+2. O painel se comunica automaticamente com o backend (porta 3000)
+3. Na primeira execução, será exibido o **QR Code no painel**
+4. Escaneie via WhatsApp: *Aparelhos Conectados → Conectar Aparelho*
+5. A sessão será salva e não pedirá QR Code novamente
 
-Essas tabelas armazenam:
-- **Contatos**: números e grupos opcionais  
-- **Mensagens**: textos prontos para envio  
-- **Agendamentos**: mensagens programadas com horário e dias  
-- **Grupos**: categorias de contatos  
-- **Grupo_contatos**: relação entre grupos e contatos  
+Para encerrar a sessão: vá em *Aparelhos Conectados* no WhatsApp e finalize manualmente.
 
 ---
 
-## 🛑 Evite subir dados sensíveis
+## 🔐 Segurança
 
-As sessões do WhatsApp são salvas localmente nas pastas:
+Não envie para o GitHub:
 
 ```
-.wwebjs_auth/
-.wwebjs_cache/
+backend/.wwebjs_auth/
+backend/.wwebjs_cache/
+backend/database/database.db
 ```
 
-> ⚠️ **Nunca envie essas pastas para o GitHub.**  
-> Elas contêm informações da sua sessão autenticada.
+Esses arquivos contêm **sessão do WhatsApp** + **dados reais**.
 
 ---
 
-## ❗ Possíveis Erros e Soluções
+## 🔮 Melhorias Futuras
 
-| Erro | Causa | Solução |
-|------|--------|----------|
-| ❌ `auth_failure` | Sessão corrompida | Apague `.wwebjs_auth` e gere um novo QR Code |
-| 🤳 QR Code não aparece | Sessão anterior ainda ativa | Exclua a pasta `.wwebjs_auth` e reinicie |
-| 📂 `SQLITE_BUSY` | Banco sendo acessado por outro processo | Feche processos paralelos e reinicie |
-| 🛑 Servidor cai após login | Instabilidade na sessão | Reinicie o projeto e aguarde reconexão |
-
----
-
-## 📈 Melhorias Futuras
-
-- Envio de mídias (imagens, PDFs, áudios, vídeos)  
-- Histórico completo de mensagens enviadas  
-- Controle de múltiplas contas de WhatsApp  
-- Dashboard com estatísticas de envios  
-- Exportação de logs e backups do banco  
+* Autenticação por usuário/senha no painel
+* Dashboard com métricas
+* Suporte a banco remoto (Postgres / MySQL)
+* Filas de envio em massa
+* WebSockets para atualizações em tempo real
 
 ---
 
-## 📜 Licença
+## 📝 Licença
 
-Este projeto é de uso **pessoal e privado** do autor **Lucas Dias**.  
-Distribuição ou uso comercial não autorizado é proibido.
-
----
+Projeto privado — desenvolvido por **Lucas Dias**.
