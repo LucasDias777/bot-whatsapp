@@ -2,7 +2,7 @@
 
 Projeto completo para **envio automático e imediato de mensagens WhatsApp**, com **painel web** para gerenciamento de contatos, mensagens, grupos e agendamentos.
 
-Biblioteca principal utilizada: **whatsapp-web.js** — [https://wwebjs.dev/](https://wwebjs.dev/)
+Biblioteca principal utilizada: **whatsapp-web.js** — [WWEBJS.DEV/](https://wwebjs.dev/)
 
 ---
 
@@ -17,7 +17,7 @@ Biblioteca principal utilizada: **whatsapp-web.js** — [https://wwebjs.dev/](ht
 ## 🔗 Repositório Oficial
 
 Clonar diretamente pelo GitHub:
-**[GITHUB LUCAS DO BOT WHATSAPP ](https://github.com/LucasDias777/bot-whatsapp)**
+**[GITHUB DO BOT WHATSAPP ](https://github.com/LucasDias777/bot-whatsapp)**
 
 ---
 
@@ -61,7 +61,7 @@ bot-whatsapp/
 Inicia Express, carrega middlewares e conecta com whatsapp-web.js.
 
 * **painel.js**
-API usada pelo frontend (QR Code, contatos, mensagens, agendamentos).
+API usada pelo frontend (QR Code, contatos, grupos, mensagens, agendamentos).
 
 * **envio.js**
 Envio rápido + validações antes do disparo.
