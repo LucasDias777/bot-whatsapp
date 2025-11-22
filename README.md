@@ -8,16 +8,16 @@ Biblioteca principal utilizada: **whatsapp-web.js** — [https://wwebjs.dev/](ht
 
 ## 📌 Visão Geral
 
-**Backend:** Express + Node + whatsapp-web.js + SQLite + node-cron
-**Frontend:** React + Vite + React Router
-**Raiz do Projeto:** Script unificado via `concurrently` para rodar Backend + Frontend
+* **Backend:** Express + Node + whatsapp-web.js + SQLite + node-cron
+* **Frontend:** React + Vite + React Router
+* **Raiz do Projeto:** Script unificado via `concurrently` para rodar Backend + Frontend
 
 ---
 
 ## 🔗 Repositório Oficial
 
 Clonar diretamente pelo GitHub:
-**[https://github.com/LucasDias777/bot-whatsapp](https://github.com/LucasDias777/bot-whatsapp)**
+**[GITHUB LUCAS DO BOT WHATSAPP ](https://github.com/LucasDias777/bot-whatsapp)**
 
 ---
 
@@ -57,11 +57,20 @@ bot-whatsapp/
 
 ## 🧭 Descrição dos Principais Arquivos (Backend)
 
-**app.js** – Inicia Express, carrega middlewares e conecta com whatsapp-web.js.
-**painel.js** – API usada pelo frontend (QR Code, contatos, mensagens, agendamentos).
-**envio.js** – Envio rápido + validações antes do disparo.
-**agenda.js** – Agendador usando node-cron que verifica o banco constantemente.
-**database/** – Arquivo SQLite + scripts de criação de tabelas.
+* **app.js**
+Inicia Express, carrega middlewares e conecta com whatsapp-web.js.
+
+* **painel.js**
+API usada pelo frontend (QR Code, contatos, mensagens, agendamentos).
+
+* **envio.js**
+Envio rápido + validações antes do disparo.
+
+* **agenda.js**
+Agendador usando node-cron que verifica o banco constantemente.
+
+* **database/**
+Arquivos SQLite + scripts de criação de tabelas.
 
 ---
 
@@ -90,8 +99,8 @@ bot-whatsapp/
 
 ## 💻 Requisitos
 
-* **Node.js (v18+) instalado — [https://nodejs.org/pt/download](https://nodejs.org/pt/download)**
-* Git (para clonar o projeto)
+* **Node.js (v18+) instalado — [INSTALAR NODE](https://nodejs.org/pt/download)**
+* **Git (para clonar o projeto) — [INSTALAR GIT](https://git-scm.com/install/windows)**
 * Navegador moderno
 
 ---
@@ -128,8 +137,8 @@ npm run dev
 
 ### 🔥 Após iniciar:
 
-* Backend → **[http://localhost:3000](http://localhost:3000)**
-* Frontend → **[http://localhost:5173](http://localhost:5173)** (porta padrão do Vite)
+* Backend → [http://localhost:3000](http://localhost:3000)
+* Frontend → [http://localhost:5173](http://localhost:5173) (porta padrão do Vite)
 
 ---
 
