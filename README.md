@@ -2,7 +2,7 @@
 
 Projeto completo para **envio automático e imediato de mensagens WhatsApp**, com **painel web** para gerenciamento de contatos, mensagens, grupos e agendamentos.
 
-Biblioteca principal utilizada: **whatsapp-web.js** — [WWEBJS.DEV/](https://wwebjs.dev/)
+Biblioteca principal utilizada: **whatsapp-web.js** — [WWEBJS.DEV](https://wwebjs.dev/)
 
 ---
 
