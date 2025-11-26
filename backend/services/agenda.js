@@ -1,6 +1,6 @@
 const cron = require("node-cron");
-const db = require("./database/database.js");
-const { sendMessageToNumber } = require("./envio");
+const db = require("../database/database.js");
+const { sendMessageToNumber } = require("./envio.js");
 
 function iniciarAgendamentos(client) {
   // roda a cada minuto

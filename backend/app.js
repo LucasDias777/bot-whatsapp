@@ -1,8 +1,7 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const QRCode = require("qrcode");
-const { app, setQR, setConectado } = require("./painel");  // <- CORRETO
-const { iniciarAgendamentos } = require("./agenda");
-const { sendMessageToNumber } = require("./envio");
+const { app, setQR, setConectado } = require("./painel");
+const { iniciarAgendamentos } = require("./services/agenda");
 
 const client = new Client({
   authStrategy: new LocalAuth({ clientId: "session-bot" }),
@@ -10,17 +9,15 @@ const client = new Client({
 
 global.client = client;
 
-// Recebe QR e envia para o painel
 client.on("qr", async qr => {
   console.log("📱 Escaneie o QR Code!");
-  
+
   const qrCodeDataURL = await QRCode.toDataURL(qr);
 
   setQR(qrCodeDataURL);
   setConectado(false);
 });
 
-// Quando conectar
 client.on("ready", () => {
   console.log("✅ Bot conectado!");
   setConectado(true);

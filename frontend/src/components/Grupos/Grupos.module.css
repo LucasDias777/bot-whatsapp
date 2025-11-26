@@ -1,0 +1,128 @@
+/* === CONTAINER PRINCIPAL === */
+.container {
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.3s ease;
+
+  width: 100%;
+  max-width: 900px;
+  margin: 5px auto;
+}
+
+/* === TÍTULO COM A MESMA BARRA DE OUTROS COMPONENTES === */
+.topBar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: #d3d3d3;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: black;
+}
+
+/* === LINHAS E FORM === */
+.row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.row input {
+  padding: 12px;
+  width: 320px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+/* === BOTÕES === */
+.btn,
+.backButton {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover,
+.backButton:hover {
+  background-color: #218838;
+}
+
+.addButton {
+  background-color: #007bff;
+  color: white;
+}
+
+.addButton:hover {
+  background-color: #0056b3;
+}
+
+/* === LISTA === */
+.listItem {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 15px;
+}
+
+.spaceBetween {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* === BOTÕES PEQUENOS === */
+.smallBtn {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
+}
+
+.editButton {
+  background-color: #007bff;
+  color: white;
+}
+.editButton:hover {
+  background-color: #0056b3;
+}
+
+.deleteButton {
+  background-color: #dc3545;
+  color: white;
+}
+.deleteButton:hover {
+  background-color: #c82333;
+}
+
+.memberRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}

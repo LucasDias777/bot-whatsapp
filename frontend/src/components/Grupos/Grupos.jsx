@@ -4,6 +4,8 @@ import * as contatosService from "../../services/contatosService";
 import styles from "./Grupos.module.css";
 import { useAtualizar } from "../../context/AtualizarContexto";
 
+import { FiPlus, FiTrash, FiX, FiEdit } from "react-icons/fi";
+
 export default function Grupos() {
   const [grupos, setGrupos] = useState([]);
   const [contatos, setContatos] = useState([]);
@@ -62,21 +64,26 @@ export default function Grupos() {
 
   return (
     <div className={`card ${styles.container}`}>
-      <h5>Grupos</h5>
+      <div className={styles.topBar}>
+        <h5 className={styles.titulo}>Grupos</h5>
+      </div>
 
-      <div className="row">
+      <div className={styles.row}>
         <input
           value={novoGrupo}
           onChange={e => setNovoGrupo(e.target.value)}
           placeholder="Nome do grupo"
         />
-        <button className="btn small-btn" onClick={criarGrupo}>Criar Grupo</button>
+        <button className={`${styles.btn} ${styles.addButton}`} onClick={criarGrupo}>
+          <FiPlus size={18} />
+          Criar Grupo
+        </button>
       </div>
 
       <div id="listaGrupos">
         {grupos.map(g => (
           <GroupCard
-            key={`${g.id}-${atualizarToken}-${contatos.length}`} // força remount quando contexto/contatos mudam
+            key={`${g.id}-${atualizarToken}-${contatos.length}`}
             grupo={g}
             contatos={contatos}
             onRemoveGroup={() => removerGrupo(g.id)}
@@ -95,7 +102,6 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
 
   async function carregarMembros() {
     try {
-      // cache-busting simples adicionando timestamp na URL (se o service aceitar query params)
       const data = await gruposService.listarContatosDoGrupo(grupo.id, { t: Date.now() });
       setMembros(data);
     } catch (err) {
@@ -111,12 +117,12 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
     carregarMembros();
   }, [atualizarToken]);
 
-  // Reconcilia membros com a lista atual de contatos (remove visualmente contatos apagados)
   useEffect(() => {
     setMembros(prev => prev.filter(m => contatos.some(c => c.id === m.id)));
-    // pequeno debounce para sincronizar com backend e evitar estado “meio termo”
+
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => carregarMembros(), 300);
+
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -124,7 +130,7 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
 
   async function adicionarContatoAoGrupo(contatoId) {
     if (!contatoId) return alert("Selecione um contato para adicionar.");
-    await gruposService.adicionarContatoAoGrupo(grupo.id, parseInt(contatoId, 10));
+    await gruposService.adicionarContatoAoGrupo(grupo.id, parseInt(contatoId));
     setSelectedToAdd("");
     await carregarMembros();
     atualizar();
@@ -141,28 +147,46 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
   const opcoesAdd = contatos.filter(c => !idsNoGrupo.includes(c.id));
 
   return (
-    <div className="list-item">
-      <div className="space-between">
+    <div className={styles.listItem}>
+      <div className={styles.spaceBetween}>
         <strong>{grupo.nome}</strong>
-        <button className="small-btn" onClick={onRemoveGroup}>Excluir</button>
+
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button className={`${styles.smallBtn} ${styles.editButton}`}>
+            <FiEdit size={16} />
+            Editar
+          </button>
+
+          <button
+            className={`${styles.smallBtn} ${styles.deleteButton}`}
+            onClick={onRemoveGroup}
+          >
+            <FiTrash size={16} />
+            Excluir
+          </button>
+        </div>
       </div>
 
-      <div style={{ marginTop: 8 }}>
+      <div style={{ marginTop: 12 }}>
         {membros.length ? membros.map(m => (
-          <div key={m.id} className="d-flex justify-content-between align-items-center" style={{ gap: 8 }}>
+          <div key={m.id} className={styles.memberRow}>
             <span>{m.numero}</span>
-            <button
-              onClick={() => removerContatoDoGrupo(m.id)}
-              className="small-btn"
-              title="Remover do grupo"
-            >
-              X
-            </button>
+
+            <div style={{ display: "flex", gap: "8px" }}>
+              {/* APENAS O BOTÃO DE REMOVER — removido o botão Editar */}
+              <button
+                onClick={() => removerContatoDoGrupo(m.id)}
+                className={`${styles.smallBtn} ${styles.deleteButton}`}
+              >
+                <FiX size={16} />
+                Remover
+              </button>
+            </div>
           </div>
         )) : <small>Nenhum contato neste grupo.</small>}
       </div>
 
-      <div className="row" style={{ marginTop: 8 }}>
+      <div className={styles.row} style={{ marginTop: 10 }}>
         <select
           value={selectedToAdd}
           onChange={e => setSelectedToAdd(e.target.value)}
@@ -172,10 +196,12 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
             <option key={o.id} value={o.id}>{o.numero}</option>
           ))}
         </select>
+
         <button
-          className="small-btn"
+          className={`${styles.smallBtn} ${styles.addButton}`}
           onClick={() => adicionarContatoAoGrupo(selectedToAdd)}
         >
+          <FiPlus size={16} />
           Adicionar
         </button>
       </div>

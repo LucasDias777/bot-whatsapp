@@ -2,7 +2,6 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./components/Dashboard/Dashboard";
 
-import StatusPage from "./pages/StatusPage";
 import ContatosPage from "./pages/ContatosPage";
 import GruposPage from "./pages/GruposPage";
 import MensagensPage from "./pages/MensagensPage";
@@ -16,7 +15,9 @@ export default function App() {
     <AtualizarProvider>
       <Routes>
         <Route path="/" element={<Dashboard />}>
-          <Route index element={<StatusPage />} />
+
+          {/* 🔥 Removido StatusPage para evitar duplicação */}
+          <Route index element={null} />
 
           <Route path="contatos" element={<ContatosPage />} />
           <Route path="grupos" element={<GruposPage />} />

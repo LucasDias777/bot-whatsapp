@@ -3,6 +3,9 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import styles from "./Dashboard.module.css";
 import logo from "../../assets/images/logo.png";
 
+// IMPORTAÇÃO NECESSÁRIA PARA A SOLUÇÃO 1
+import Status from "../Status/Status";
+
 export default function Dashboard() {
   const { pathname } = useLocation();
 
@@ -81,6 +84,11 @@ export default function Dashboard() {
           {/* HOME CARDS */}
           {pathname === "/" && (
             <div className={styles.cardsWrapper}>
+
+              <div className={styles.statusFull}>
+              <Status />
+              </div>
+
               <div className={styles.card}>
                 <span className={styles.cardTitle}>Usuários Ativos</span>
                 <h2 className={styles.cardValue}>350.897</h2>
@@ -95,6 +103,7 @@ export default function Dashboard() {
                 <span className={styles.cardTitle}>Performance</span>
                 <h2 className={styles.cardValue}>49.65%</h2>
               </div>
+
             </div>
           )}
         </div>

@@ -1,6 +1,6 @@
 import { apiGET, apiPOST, apiDELETE } from "./api";
 
-export const listGrupos = () => apiGET("/grupos");
+export const listGrupos = () => apiGET("/grupo");
 export const criarGrupo = (nome) => apiPOST("/grupo", { nome });
 export const removerGrupo = (id) => apiDELETE(`/grupo/${id}`);
 export const listarContatosDoGrupo = (id) => apiGET(`/grupo/${id}/contatos`);

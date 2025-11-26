@@ -1,0 +1,137 @@
+/* === CONTAINER PRINCIPAL === */
+.container {
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.3s ease;
+
+  width: 100%;
+  max-width: 900px;
+  margin: 5px auto;
+}
+
+/* === BARRA SUPERIOR === */
+.topBar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: #d3d3d3;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: black;
+}
+
+/* === BOTÕES === */
+.btn {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover {
+  background-color: #218838;
+}
+
+/* Botão azul */
+.addButton {
+  background-color: #007bff;
+}
+
+.addButton:hover {
+  background-color: #0056b3;
+}
+
+/* === FORMULÁRIO === */
+.row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.textarea {
+  padding: 12px;
+  width: 100%;
+  max-width: 700px;
+  height: 120px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+/* === LISTA === */
+.listaContatos {
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 12px;
+  padding: 12px;
+
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+/* === BOTÕES PEQUENOS === */
+.smallBtn {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  transition: 0.2s;
+}
+
+/* Editar */
+.editButton {
+  background-color: #007bff;
+  color: white;
+}
+.editButton:hover {
+  background-color: #0056b3;
+}
+
+/* Excluir */
+.deleteButton {
+  background-color: #dc3545;
+  color: white;
+}
+.deleteButton:hover {
+  background-color: #c82333;
+}
+
+/* === LAYOUT === */
+.spaceBetween {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import * as mensagensService from "../../services/mensagensService";
-import styles from "./Mensagens.module.css";
 
+import { FiPlus, FiEdit, FiTrash } from "react-icons/fi";
+
+import styles from "./Mensagens.module.css";
 
 export default function Mensagens() {
   const [lista, setLista] = useState([]);
@@ -12,7 +14,9 @@ export default function Mensagens() {
     setLista(r);
   }
 
-  useEffect(() => { carregar(); }, []);
+  useEffect(() => {
+    carregar();
+  }, []);
 
   async function salvarMensagem() {
     if (!texto.trim()) return alert("Digite uma mensagem!");
@@ -28,23 +32,61 @@ export default function Mensagens() {
   }
 
   return (
-    <div className={`card ${styles.container}`}>
-      <h5>Mensagens</h5>
-      <textarea value={texto} onChange={e => setTexto(e.target.value)} placeholder="Digite a mensagem..." />
-      <div className="row">
-        <button className="btn" onClick={salvarMensagem}>Salvar Mensagem</button>
+    <div className={styles.container}>
+
+      {/* Barra Superior */}
+      <div className={styles.topBar}>
+        <h2 className={styles.titulo}>Mensagens</h2>
       </div>
 
-      <div id="listaMensagens" style={{marginTop:10}}>
-        {lista.map(m => (
-          <div key={m.id} className="list-item">
-            <div className="space-between">
+      {/* Formulário */}
+      <div className={styles.row}>
+        <textarea
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          placeholder="Digite a mensagem..."
+          className={styles.textarea}
+        />
+
+        <button className={`${styles.btn} ${styles.addButton}`} onClick={salvarMensagem}>
+          <FiPlus size={18} />
+          Adicionar
+        </button>
+      </div>
+
+      {/* Lista */}
+      <div className={styles.listaContatos}>
+        {lista.map((m) => (
+          <div key={m.id} className={styles.listItem}>
+            <div className={styles.spaceBetween}>
               <span>{m.texto}</span>
-              <button className="small-btn" onClick={() => removerMensagem(m.id)}>Excluir</button>
+
+              <div style={{ display: "flex", gap: 8 }}>
+                
+                {/* Botão Editar */}
+                <button
+                  className={`${styles.smallBtn} ${styles.editButton}`}
+                  onClick={() => alert("Em breve: editar mensagem ID " + m.id)}
+                >
+                  <FiEdit size={16} />
+                  Editar
+                </button>
+
+                {/* Botão Excluir */}
+                <button
+                  className={`${styles.smallBtn} ${styles.deleteButton}`}
+                  onClick={() => removerMensagem(m.id)}
+                >
+                  <FiTrash size={16} />
+                  Excluir
+                </button>
+
+              </div>
             </div>
           </div>
         ))}
       </div>
+
     </div>
   );
 }

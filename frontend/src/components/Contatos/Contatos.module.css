@@ -1,117 +1,136 @@
-/* Contatos.module.css */
-/* Totalmente isolado por CSS Modules */
-
+/* === CONTAINER PRINCIPAL === */
 .container {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 32px 24px;
+  padding: 30px;
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.08);
   animation: fadeIn 0.3s ease;
+
+  /* NOVO: ocupar melhor o centro do dashboard */
+  width: 100%;
+  max-width: 900px;
+  margin: 5px auto;  /* centraliza e desce um pouco */
 }
 
-h5 {
+/* === BARRA SUPERIOR === */
+.topBar {
+  display: flex;
+  justify-content: center; /* centraliza o título */
+  align-items: center;
+
+  background-color: #d3d3d3;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+
+.titulo {
+  margin: 0;
   font-size: 1.6rem;
-  text-align: center;
   font-weight: 600;
-  margin-bottom: 24px;
-  color: #1c1c1c;
+  color: black;
 }
 
+/* === BOTÕES === */
+.btn, .backButton {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+ /* Alinhamento correto com ícone */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover, .btn:focus,
+.backButton:hover, .backButton:focus {
+  background-color: #218838;
+}
+
+/* Botão azul */
+.addButton {
+  background-color: #007bff;
+}
+
+.addButton:hover,
+.addButton:focus {
+  background-color: #0056b3;
+}
+
+/* === FORMULÁRIO === */
 .row {
   display: flex;
+  justify-content: center; /* centralizado */
+  align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 25px;
 }
 
 .row input {
-  flex: 1;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid #cccccc;
-  font-size: 1rem;
-  outline: none;
-  transition: 0.2s;
-}
-
-.row input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #007bff;
-  border: none;
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: 0.2s;
-}
-
-.btn:hover {
-  background: #0065d6;
-}
-
-.smallBtn {
-  padding: 6px 10px;
-  background: #f3f3f3;
+  padding: 12px;
+  width: 320px; /* maior */
+  border: 1px solid #ccc;
   border-radius: 8px;
-  border: 1px solid #d9d9d9;
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: 0.2s;
 }
 
-.smallBtn:hover {
-  background: #e8e8e8;
-}
-
+/* === LISTA === */
 .listaContatos {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 15px;
 }
 
 .listItem {
-  background: #fafafa;
-  border: 1px solid #ededed;
-  padding: 14px;
-  border-radius: 12px;
-  animation: fadeInUp 0.25s ease;
-}
-
-.spaceBetween {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  
+  margin-bottom: 12px;
+  padding: 12px;
+
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 10px;
 }
 
-.spaceBetween span {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #333;
+/* === BOTÕES PEQUENOS === */
+.smallBtn {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
 }
 
-.spaceBetween small {
-  color: #777;
-  font-size: 0.8rem;
+/* Editar */
+.editButton {
+  background-color: #007bff;
+  color: white;
+}
+.editButton:hover {
+  background-color: #0056b3;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Excluir */
+.deleteButton {
+  background-color: #dc3545;
+  color: white;
+}
+.deleteButton:hover {
+  background-color: #c82333;
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+/* === AJUSTES DE LAYOUT === */
+.spaceBetween {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 }

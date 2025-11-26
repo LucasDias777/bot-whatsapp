@@ -11,9 +11,7 @@ export default function Contatos() {
     try {
       const r = await contatosService.listContatos();
       setLista(r);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   }
 
   useEffect(() => {
@@ -34,9 +32,14 @@ export default function Contatos() {
   }
 
   return (
-    <div className={`card ${styles.container}`}>
-      <h5>Contatos</h5>
+    <div className={styles.container}>
 
+      {/* Barra Superior */}
+      <div className={styles.topBar}>
+        <h2 className={styles.titulo}>Contatos</h2>
+      </div>
+
+      {/* Formulário */}
       <div className={styles.row}>
         <input
           value={numero}
@@ -45,7 +48,7 @@ export default function Contatos() {
         />
 
         <button
-          className={`${styles.btn}`}
+          className={`${styles.btn} ${styles.addButton}`}
           onClick={salvarContato}
         >
           <FiPlus size={18} />
@@ -53,40 +56,60 @@ export default function Contatos() {
         </button>
       </div>
 
+      {/* Lista */}
       <div className={styles.listaContatos}>
         {lista.map((c) => (
           <div key={c.id} className={styles.listItem}>
             <div className={styles.spaceBetween}>
-              <span>
-                {c.numero}
-              </span>
+              <span>{c.numero}</span>
 
-              <div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {/* Botão Editar */}
                 <button
-                  className={styles.smallBtn}
-                  onClick={() => {
+                  className={`${styles.smallBtn} ${styles.editButton}`}
+                  onClick={async () => {
                     const novo = prompt("Editar número:", c.numero);
-                    if (!novo) return;
-                    alert("Implementar rota de edição no backend.");
+                    if (!novo || !novo.trim()) return;
+
+                    try {
+                      const res = await contatosService.editarContato(
+                        c.id,
+                        novo.trim()
+                      );
+
+                      if (!res || res.ok !== true) {
+                        alert("Falha ao editar.");
+                        return;
+                      }
+
+                      if (res.changes === 0)
+                        alert("Nenhuma linha atualizada — verifique o id.");
+
+                      await carregar();
+                    } catch (err) {
+                      alert("Erro ao editar.");
+                    }
                   }}
                 >
                   <FiEdit size={16} />
                   Editar
                 </button>
 
+                {/* Botão Excluir */}
                 <button
-                  className={styles.smallBtn}
+                  className={`${styles.smallBtn} ${styles.deleteButton}`}
                   onClick={() => removerContato(c.id)}
-                  style={{ marginLeft: 8 }}
                 >
                   <FiTrash size={16} />
                   Excluir
                 </button>
               </div>
+
             </div>
           </div>
         ))}
       </div>
+
     </div>
   );
 }

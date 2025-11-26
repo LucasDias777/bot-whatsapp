@@ -1,0 +1,40 @@
+/* Herdando o estilo .card do Dashboard */
+.dashboardCard {
+  composes: card from "../Dashboard/Dashboard.module.css";
+}
+
+/* === TÍTULO CENTRALIZADO === */
+.titulo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1d1d1d;
+}
+
+/* Status (Conectado / Aguardando QR) */
+.statusText {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Verde quando conectado */
+.statusOk {
+  color: #1aa44a;
+}
+
+/* Laranja quando aguardando */
+.statusWait {
+  color: #ff9800;
+}
+
+/* QR CENTRALIZADO */
+.qr {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 10px;
+}
