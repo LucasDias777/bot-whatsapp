@@ -2,8 +2,6 @@ import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import styles from "./Dashboard.module.css";
 import logo from "../../assets/images/logo.png";
-
-// IMPORTAÇÃO NECESSÁRIA PARA A SOLUÇÃO 1
 import Status from "../Status/Status";
 
 export default function Dashboard() {

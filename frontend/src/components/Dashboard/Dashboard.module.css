@@ -1,8 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-  --primary-start: #003a8c;
-  --primary-end: #001f54;
+  /* Palette ajustada: sidebar mais claro + accent para elementos de interação */
+  --primary-start: #5ea8ff; /* azul mais claro */
+  --primary-end: #2b76d6;   /* azul médio-escuro para profundidade */
+  --accent: #3b82f6;        /* usado em focos e sombras */
+  --accent-dark: #235bb5;   /* usado em gradientes do badge */
 }
 
 .dashboard {
@@ -23,8 +26,8 @@
   );
 
   backdrop-filter: blur(18px);
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 4px 0 18px rgba(0, 0, 0, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 4px 0 18px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
   padding: 2rem 1.2rem;
@@ -69,8 +72,9 @@
   border-radius: 12px;
 
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  /* leve translucidez para ver textura do gradiente mais claro do sidebar */
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 
   backdrop-filter: blur(12px);
   transition: 0.25s ease;
@@ -78,15 +82,17 @@
 
 .menuItem:hover {
   transform: translateX(4px);
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.35);
+  /* hover mais perceptível contra o azul mais claro */
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .active {
-  background: rgba(255, 255, 255, 0.35);
+  /* active com contraste maior mas mantendo harmonia com o novo azul */
+  background: rgba(255, 255, 255, 0.18);
   color: #fff;
   font-weight: 700;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 18px rgba(35, 91, 181, 0.18); /* usa tom derivado do accent */
 }
 
 .sidebarFooter {
@@ -94,7 +100,7 @@
   font-size: 0.78rem;
   margin-top: 2rem;
   color: #fff;
-  opacity: 0.75;
+  opacity: 0.85;
 }
 
 /* MAIN */
@@ -145,14 +151,18 @@
 
 .searchInput:focus {
   background: #fff;
-  border-color: #5573ff;
-  box-shadow: 0 0 0 2px rgba(85, 115, 255, 0.22);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18); /* usa var(--accent) em rgba */
 }
 
 .userBadge {
   width: 42px;
   height: 42px;
-  background: linear-gradient(135deg, #5573ff, #3c5ae0);
+  background: linear-gradient(
+    135deg,
+    var(--primary-start),
+    var(--primary-end)
+  );
   color: #fff;
   border-radius: 50%;
   font-weight: 600;
@@ -160,8 +170,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(85, 115, 255, 0.35);
+
+  /* shadow harmonizado com os azuis do sidebar */
+  box-shadow: 0 4px 12px rgba(46, 120, 214, 0.35);
+  /*   ↑ este valor é extraído do var(--primary-end) (#2b76d6) com transparência */
 }
+
 
 /* CONTENT */
 .content {
@@ -259,17 +273,17 @@
 }
 
 .content::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.04);
   border-radius: 4px;
 }
 
 .content::-webkit-scrollbar-thumb {
-  background: rgba(90, 110, 170, 0.45);
+  background: rgba(59, 130, 246, 0.45); /* usa tom do accent */
   border-radius: 6px;
 }
 
 .content::-webkit-scrollbar-thumb:hover {
-  background: rgba(85, 105, 170, 0.7);
+  background: rgba(59, 130, 246, 0.7);
 }
 
 /* EXTRA VISUAL */
