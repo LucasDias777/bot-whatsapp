@@ -21,35 +21,40 @@ Clonar diretamente pelo GitHub:
 
 ---
 
-## 🗂️ Estrutura do Projeto (Atualizada)
+## 🗂️ Estrutura do Projeto
 
 ```
 bot-whatsapp/
 │
 ├── backend/
-│   ├── database/          # banco SQLite + scripts de criação de tabelas
-│   ├── .wwebjs_auth/      # sessão persistente do WhatsApp (NÃO subir ao Git)
-│   ├── .wwebjs_cache/     # cache do WhatsApp (NÃO subir ao Git)
-│   ├── agenda.js          # agendador usando node-cron
-│   ├── envio.js           # envio rápido + validações de números
-│   ├── painel.js          # rotas que atendem o frontend
-│   ├── app.js             # inicialização do Express + whatsapp-web.js
-│   └── package.json
+│ ├── controllers/ # controladores do backend (regras das rotas)
+│ ├── routes/ # definição das rotas da API
+│ ├── services/ # regras de negócio e serviços
+│ │ ├── envio.js # envio imediato de mensagens
+│ │ └── agenda.js # agendador com node-cron
+│ │
+│ ├── database/ # banco SQLite + scripts de criação
+│ ├── .wwebjs_auth/ # sessão persistente do WhatsApp (NÃO subir ao Git)
+│ ├── .wwebjs_cache/ # cache do WhatsApp (NÃO subir ao Git)
+│ ├── app.js # inicialização do WhatsApp + integração com o painel
+│ ├── painel.js # servidor Express + rotas da API
+│ └── package.json
 │
 ├── frontend/
-│   ├── src/
-│   │   ├── assets/        # imagens do projeto
-│   │   ├── components/    # componentes reutilizáveis
-│   │   ├── context/       # contexts para atualizar listas/estados
-│   │   ├── hooks/         # hooks personalizados
-│   │   ├── pages/         # páginas do sistema
-│   │   ├── services/      # requisições GET/POST/DELETE
-│   │   ├── styles/        # CSS global
-│   │   ├── App.jsx        # rotas principais
-│   │   └── main.jsx       # inicialização do React
-│   └── package.json
+│ ├── src/
+│ │ ├── assets/ # imagens do projeto
+│ │ ├── components/ # componentes reutilizáveis
+│ │ ├── context/ # contexto para atualizar listas/estados
+│ │ ├── hooks/ # hooks personalizados
+│ │ ├── pages/ # páginas do painel
+│ │ ├── services/ # requisições GET / POST / PUT / DELETE
+│ │ ├── styles/ # CSS global
+│ │ ├── App.jsx # rotas principais
+│ │ └── main.jsx # inicialização do React
+│ ├── index.html
+│ └── package.json
 │
-├── package.json           # scripts que rodam backend + frontend juntos
+├── package.json # scripts para rodar backend + frontend
 └── README.md
 ```
 
@@ -57,11 +62,20 @@ bot-whatsapp/
 
 ## 🧭 Descrição dos Principais Arquivos (Backend)
 
-* **app.js**
-Inicia Express, carrega middlewares e conecta com whatsapp-web.js.
+### **app.js**
+Responsável por:
+* Inicializar o cliente **whatsapp-web.js**
+* Gerenciar eventos de **QR Code** e **conexão**
+* Compartilhar o estado de conexão com o painel
+* Iniciar os agendamentos ao conectar o WhatsApp
 
-* **painel.js**
-API usada pelo frontend (QR Code, contatos, grupos, mensagens, agendamentos).
+### **painel.js**
+Responsável por:
+* Criar o servidor **Express**
+* Registrar middlewares (CORS, JSON)
+* Centralizar e expor as **rotas da API**
+* Servir o **frontend buildado**
+* Compartilhar funções de estado (`setQR`, `setConectado`)
 
 * **envio.js**
 Envio rápido + validações antes do disparo.
