@@ -19,3 +19,14 @@ exports.removerMensagem = (req, res) => {
     res.json({ ok: !err });
   });
 };
+
+exports.editarMensagem = (req, res) => {
+  const id = req.params.id;
+  const { texto } = req.body;
+
+  db.run("UPDATE mensagens SET texto = ? WHERE id = ?", [texto, id], err => {
+    if (err) return res.status(500).json({ ok: false, error: err.message });
+    res.json({ ok: !err });
+  });
+};
+

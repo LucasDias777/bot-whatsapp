@@ -1,0 +1,110 @@
+:root {
+  --primary-start: #5ea8ff;
+  --primary-end: #2b76d6;
+  --accent: #3b82f6;
+  --accent-dark: #235bb5;
+
+  --bg: #ffffff;
+  --muted: #f7f8fb;
+  --border: #e2e8f0;
+  --text: #111827;
+  --radius: 10px;
+}
+
+/* === CONTAINER PRINCIPAL === */
+.container {
+  padding: 30px;
+  background: var(--bg);
+  border-radius: 16px;
+  box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.3s ease;
+
+  width: 100%;
+  max-width: 900px;
+  margin: 5px auto;
+}
+
+/* === BARRA SUPERIOR === */
+.topBar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* === FORM === */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+
+  /* CENTRALIZA APENAS QUANDO USADO NO BOTÃO */
+  justify-content: center;
+}
+
+.row label {
+  min-width: 120px;
+  font-size: 0.95rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select {
+  flex: 1 1 260px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* === BOTÃO === */
+.btn {
+  background-color: #28a745;
+  color: white;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  transition: 0.2s;
+}
+
+.btn:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+/* === ANIMAÇÃO === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -31,6 +31,21 @@ export default function Mensagens() {
     await carregar();
   }
 
+  // ➤ EDITAR VIA PROMPT
+  async function editarMensagem(m) {
+    const novoTexto = prompt("Editar mensagem:", m.texto);
+
+    if (novoTexto === null) return; // cancelou
+
+    if (!novoTexto.trim()) {
+      alert("O texto não pode estar vazio!");
+      return;
+    }
+
+    await mensagensService.editarMensagem(m.id, novoTexto.trim());
+    await carregar();
+  }
+
   return (
     <div className={styles.container}>
 
@@ -62,11 +77,11 @@ export default function Mensagens() {
               <span>{m.texto}</span>
 
               <div style={{ display: "flex", gap: 8 }}>
-                
+
                 {/* Botão Editar */}
                 <button
                   className={`${styles.smallBtn} ${styles.editButton}`}
-                  onClick={() => alert("Em breve: editar mensagem ID " + m.id)}
+                  onClick={() => editarMensagem(m)}
                 >
                   <FiEdit size={16} />
                   Editar

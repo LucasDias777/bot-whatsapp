@@ -6,6 +6,9 @@ import * as enviarService from "../../services/enviarAgoraService";
 import styles from "./EnviarAgora.module.css";
 import { useAtualizar } from "../../context/AtualizarContexto";
 
+// ÍCONES
+import { FaPaperPlane, FaUsers, FaUser, FaCommentDots } from "react-icons/fa";
+
 export default function EnviarAgora() {
   const [contatos, setContatos] = useState([]);
   const [grupos, setGrupos] = useState([]);
@@ -15,9 +18,7 @@ export default function EnviarAgora() {
   const [grupo, setGrupo] = useState("");
   const [mensagemId, setMensagemId] = useState("");
 
-  // Contexto de atualização global
   const { atualizarToken } = useAtualizar();
-
   const pollingRef = useRef(null);
 
   async function carregarDados() {
@@ -31,12 +32,10 @@ export default function EnviarAgora() {
     setMensagens(ms);
   }
 
-  // Carrega inicialmente e toda vez que houver atualização global
   useEffect(() => {
     carregarDados();
   }, [atualizarToken]);
 
-  // Atualiza ao recuperar foco (ex.: alternou para Mensagens, criou nova, voltou)
   useEffect(() => {
     function onVisibilityChange() {
       if (document.visibilityState === "visible") carregarDados();
@@ -45,30 +44,31 @@ export default function EnviarAgora() {
     return () => window.removeEventListener("visibilitychange", onVisibilityChange);
   }, []);
 
-  // Polling leve para garantir atualização mesmo sem disparar contexto (ex.: outro componente não chama atualizar())
   useEffect(() => {
-    // evita múltiplos intervalos
     if (pollingRef.current) clearInterval(pollingRef.current);
     pollingRef.current = setInterval(() => {
       carregarDados();
-    }, 1000); // a cada 3s
+    }, 1000);
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
   }, []);
 
   function bloquearGrupoOuNumero(tipo) {
-    if (tipo === "numero" && numero) {
-      setGrupo("");
-    } else if (tipo === "grupo" && grupo) {
-      setNumero("");
+    if (tipo === "numero") {
+      if (numero) setGrupo("");
+    } else if (tipo === "grupo") {
+      if (grupo) setNumero("");
     }
   }
 
   async function enviarAgora() {
-    if (!mensagemId) return alert("Selecione uma mensagem!");
-    const mensagemTexto = mensagens.find(m => m.id == mensagemId)?.texto;
+
+    // NOVA ORDEM DE VALIDAÇÃO
     if (!numero && !grupo) return alert("Selecione um número ou grupo!");
+    if (!mensagemId) return alert("Selecione uma mensagem!");
+
+    const mensagemTexto = mensagens.find(m => m.id == mensagemId)?.texto;
 
     await enviarService.enviarAgora({
       numero: numero || null,
@@ -78,22 +78,28 @@ export default function EnviarAgora() {
 
     alert("✅ Mensagem enviada!");
 
-    // Opcional: resetar seleção após enviar
     setNumero("");
     setGrupo("");
     setMensagemId("");
 
-    // Recarrega após envio (mantém tudo sincronizado)
     await carregarDados();
   }
 
   return (
-    <div className={`card ${styles.container}`}>
-      <h5>Enviar Agora</h5>
-      <div className="row">
-        <label>Número</label>
+    <div className={styles.container}>
+      <div className={styles.topBar}>
+        <h5 className={styles.titulo}>
+         Enviar Agora
+        </h5>
+      </div>
+
+      {/* === SELECIONAR NÚMERO OU GRUPO === */}
+      <div className={styles.row}>
+        <label><FaUser /> Número</label>
         <select
+          className={styles.select}
           value={numero}
+          disabled={grupo !== ""}   
           onChange={e => {
             setNumero(e.target.value);
             bloquearGrupoOuNumero("numero");
@@ -105,9 +111,11 @@ export default function EnviarAgora() {
           ))}
         </select>
 
-        <label>Ou selecionar Grupo</label>
+        <label><FaUsers /> Grupo</label>
         <select
+          className={styles.select}
           value={grupo}
+          disabled={numero !== ""}  
           onChange={e => {
             setGrupo(e.target.value);
             bloquearGrupoOuNumero("grupo");
@@ -120,9 +128,11 @@ export default function EnviarAgora() {
         </select>
       </div>
 
-      <div className="row">
-        <label>Mensagem</label>
+      {/* === SELECIONAR MENSAGEM === */}
+      <div className={styles.row}>
+        <label><FaCommentDots /> Mensagem</label>
         <select
+          className={styles.select}
           value={mensagemId}
           onChange={e => setMensagemId(e.target.value)}
         >
@@ -133,8 +143,11 @@ export default function EnviarAgora() {
         </select>
       </div>
 
-      <div>
-        <button className="btn" onClick={enviarAgora}>Enviar Mensagem</button>
+      {/* === BOTÃO === */}
+      <div className={styles.row}>
+        <button className={styles.btn} onClick={enviarAgora}>
+          <FaPaperPlane /> Enviar Mensagem
+        </button>
       </div>
     </div>
   );

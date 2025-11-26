@@ -146,13 +146,30 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
   const idsNoGrupo = membros.map(m => m.id);
   const opcoesAdd = contatos.filter(c => !idsNoGrupo.includes(c.id));
 
+  // ------------------------------------------------------------
+  // ✅ FUNÇÃO PARA EDITAR NOME DO GRUPO COM PROMPT (igual imagem)
+  // ------------------------------------------------------------
+  async function editarGrupoPrompt() {
+    const novoNome = prompt("Editar nome do grupo:", grupo.nome);
+
+    if (novoNome === null) return; // Cancelou
+    if (!novoNome.trim()) return alert("Digite um nome válido!");
+
+    await gruposService.editarGrupo(grupo.id, novoNome.trim());
+    atualizar();
+  }
+
   return (
     <div className={styles.listItem}>
       <div className={styles.spaceBetween}>
         <strong>{grupo.nome}</strong>
 
         <div style={{ display: "flex", gap: "10px" }}>
-          <button className={`${styles.smallBtn} ${styles.editButton}`}>
+          {/* Botão EDITAR usando o PROMPT igual a imagem */}
+          <button
+            className={`${styles.smallBtn} ${styles.editButton}`}
+            onClick={editarGrupoPrompt}
+          >
             <FiEdit size={16} />
             Editar
           </button>
@@ -173,7 +190,6 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
             <span>{m.numero}</span>
 
             <div style={{ display: "flex", gap: "8px" }}>
-              {/* APENAS O BOTÃO DE REMOVER — removido o botão Editar */}
               <button
                 onClick={() => removerContatoDoGrupo(m.id)}
                 className={`${styles.smallBtn} ${styles.deleteButton}`}

@@ -1,3 +1,11 @@
+:root {
+  /* Palette ajustada: sidebar mais claro + accent para elementos de interação */
+  --primary-start: #5ea8ff; /* azul mais claro */
+  --primary-end:   #2b76d6; /* azul médio-escuro */
+  --accent: #3b82f6;
+  --accent-dark: #235bb5;
+}
+
 /* === CONTAINER PRINCIPAL === */
 .container {
   padding: 30px;
@@ -6,19 +14,19 @@
   box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.08);
   animation: fadeIn 0.3s ease;
 
-  /* NOVO: ocupar melhor o centro do dashboard */
   width: 100%;
   max-width: 900px;
-  margin: 5px auto;  /* centraliza e desce um pouco */
+  margin: 5px auto;
 }
 
 /* === BARRA SUPERIOR === */
 .topBar {
   display: flex;
-  justify-content: center; /* centraliza o título */
+  justify-content: center;
   align-items: center;
 
-  background-color: #d3d3d3;
+  /* agora igual ao sidebar */
+  background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
   padding: 12px 20px;
   border-radius: 8px;
   margin-bottom: 25px;
@@ -28,7 +36,7 @@
   margin: 0;
   font-size: 1.6rem;
   font-weight: 600;
-  color: black;
+  color: white;
 }
 
 /* === BOTÕES === */
@@ -40,7 +48,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease;
- /* Alinhamento correto com ícone */
+
   display: flex;
   align-items: center;
   gap: 6px;
@@ -64,7 +72,7 @@
 /* === FORMULÁRIO === */
 .row {
   display: flex;
-  justify-content: center; /* centralizado */
+  justify-content: center;
   align-items: center;
   gap: 12px;
   margin-bottom: 25px;
@@ -72,7 +80,7 @@
 
 .row input {
   padding: 12px;
-  width: 320px; /* maior */
+  width: 320px;
   border: 1px solid #ccc;
   border-radius: 8px;
 }

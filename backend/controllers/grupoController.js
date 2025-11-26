@@ -15,6 +15,25 @@ exports.listarGrupos = (req, res) => {
   });
 };
 
+exports.editarGrupo = (req, res) => {
+  const id = req.params.id;
+  const { nome } = req.body;
+
+  if (!nome || !nome.trim()) {
+    return res.json({ ok: false, err: "Nome inválido" });
+  }
+
+  db.run(
+    "UPDATE grupos SET nome = ? WHERE id = ?",
+    [nome.trim(), id],
+    function (err) {
+      if (err) return res.json({ ok: false, err: err.message });
+      res.json({ ok: true });
+    }
+  );
+};
+
+
 exports.deletarGrupo = (req, res) => {
   const id = req.params.id;
 

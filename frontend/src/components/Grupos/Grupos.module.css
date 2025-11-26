@@ -1,3 +1,11 @@
+:root {
+  /* Palette ajustada: sidebar mais claro + accent para elementos de interação */
+  --primary-start: #5ea8ff; /* azul mais claro */
+  --primary-end:   #2b76d6; /* azul médio-escuro */
+  --accent: #3b82f6;
+  --accent-dark: #235bb5;
+}
+
 /* === CONTAINER PRINCIPAL === */
 .container {
   padding: 30px;
@@ -11,13 +19,14 @@
   margin: 5px auto;
 }
 
-/* === TÍTULO COM A MESMA BARRA DE OUTROS COMPONENTES === */
+/* === BARRA SUPERIOR === */
 .topBar {
   display: flex;
   justify-content: center;
   align-items: center;
 
-  background-color: #d3d3d3;
+  /* agora igual ao sidebar */
+  background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
   padding: 12px 20px;
   border-radius: 8px;
   margin-bottom: 25px;
@@ -27,7 +36,7 @@
   margin: 0;
   font-size: 1.6rem;
   font-weight: 600;
-  color: black;
+  color: white;
 }
 
 /* === LINHAS E FORM === */

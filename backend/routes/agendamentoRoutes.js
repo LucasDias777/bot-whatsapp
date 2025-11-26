@@ -1,9 +1,5 @@
 const router = require("express").Router();
-const {
-  adicionarAgendamento,
-  listarAgendamentos,
-  removerAgendamento
-} = require("../controllers/agendamentoController");
+const { adicionarAgendamento, listarAgendamentos, removerAgendamento } = require("../controllers/agendamentoController");
 
 router.post("/", adicionarAgendamento);
 router.get("/", listarAgendamentos);
