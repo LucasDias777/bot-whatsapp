@@ -63,28 +63,26 @@ bot-whatsapp/
 ## 🧭 Descrição dos Principais Arquivos (Backend)
 
 ### **app.js**
-Responsável por:
 * Inicializar o cliente **whatsapp-web.js**
 * Gerenciar eventos de **QR Code** e **conexão**
 * Compartilhar o estado de conexão com o painel
 * Iniciar os agendamentos ao conectar o WhatsApp
 
 ### **painel.js**
-Responsável por:
 * Criar o servidor **Express**
 * Registrar middlewares (CORS, JSON)
 * Centralizar e expor as **rotas da API**
 * Servir o **frontend buildado**
 * Compartilhar funções de estado (`setQR`, `setConectado`)
 
-* **envio.js**
-Envio rápido + validações antes do disparo.
+### **envio.js**
+* Envio rápido + validações antes do disparo.
 
-* **agenda.js**
-Agendador usando node-cron que verifica o banco constantemente.
+### **agenda.js**
+* Agendador usando node-cron que verifica o banco constantemente.
 
-* **database/**
-Arquivos SQLite + scripts de criação de tabelas.
+### **database/**
+* Arquivos SQLite + scripts de criação de tabelas.
 
 ---
 
