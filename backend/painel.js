@@ -15,6 +15,8 @@ app.use("/mensagem", require("./routes/mensagemRoutes"));
 app.use("/agendamento", require("./routes/agendamentoRoutes"));
 app.use("/grupo", require("./routes/grupoRoutes"));
 app.use("/enviar-agora", require("./routes/envioRoutes"));
+app.use("/dashboard", require("./routes/dashboardRoutes"));
+
 
 // FRONTEND
 app.use(express.static(path.join(__dirname, "../frontend")));

@@ -87,6 +87,7 @@ export default function Grupos() {
             grupo={g}
             contatos={contatos}
             onRemoveGroup={() => removerGrupo(g.id)}
+            onUpdated={() => { carregar(); atualizar(); }}
           />
         ))}
       </div>
@@ -94,11 +95,14 @@ export default function Grupos() {
   );
 }
 
-function GroupCard({ grupo, contatos, onRemoveGroup }) {
+function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated }) {
   const [membros, setMembros] = useState([]);
   const [selectedToAdd, setSelectedToAdd] = useState("");
   const { atualizar, atualizarToken } = useAtualizar();
   const debounceRef = useRef(null);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editGroupName, setEditGroupName] = useState("");
 
   async function carregarMembros() {
     try {
@@ -134,6 +138,7 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
     setSelectedToAdd("");
     await carregarMembros();
     atualizar();
+    if (onUpdated) onUpdated();
   }
 
   async function removerContatoDoGrupo(contatoId) {
@@ -141,22 +146,35 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
     await gruposService.removerContatoDoGrupo(grupo.id, contatoId);
     await carregarMembros();
     atualizar();
+    if (onUpdated) onUpdated();
   }
 
   const idsNoGrupo = membros.map(m => m.id);
   const opcoesAdd = contatos.filter(c => !idsNoGrupo.includes(c.id));
 
-  // ------------------------------------------------------------
-  // ✅ FUNÇÃO PARA EDITAR NOME DO GRUPO COM PROMPT (igual imagem)
-  // ------------------------------------------------------------
-  async function editarGrupoPrompt() {
-    const novoNome = prompt("Editar nome do grupo:", grupo.nome);
+  function abrirModalEditarGrupo() {
+    setEditGroupName(grupo.nome || "");
+    setIsEditModalOpen(true);
+  }
 
-    if (novoNome === null) return; // Cancelou
-    if (!novoNome.trim()) return alert("Digite um nome válido!");
+  function fecharModalEditarGrupo() {
+    setIsEditModalOpen(false);
+    setEditGroupName("");
+  }
 
-    await gruposService.editarGrupo(grupo.id, novoNome.trim());
-    atualizar();
+  async function salvarEdicaoGrupo() {
+    const novo = (editGroupName || "").trim();
+    if (!novo) return alert("Digite um nome válido!");
+
+    try {
+      await gruposService.editarGrupo(grupo.id, novo);
+
+      fecharModalEditarGrupo();
+      atualizar();
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      console.error("Erro real ao editar grupo →", err);
+    }
   }
 
   return (
@@ -165,10 +183,9 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
         <strong>{grupo.nome}</strong>
 
         <div style={{ display: "flex", gap: "10px" }}>
-          {/* Botão EDITAR usando o PROMPT igual a imagem */}
           <button
             className={`${styles.smallBtn} ${styles.editButton}`}
-            onClick={editarGrupoPrompt}
+            onClick={abrirModalEditarGrupo}
           >
             <FiEdit size={16} />
             Editar
@@ -187,7 +204,10 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
       <div style={{ marginTop: 12 }}>
         {membros.length ? membros.map(m => (
           <div key={m.id} className={styles.memberRow}>
-            <span>{m.numero}</span>
+            <span>
+              {m.nome ? m.nome : "Sem nome"}
+              {m.numero ? ` — ${m.numero}` : ""}
+            </span>
 
             <div style={{ display: "flex", gap: "8px" }}>
               <button
@@ -209,7 +229,9 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
         >
           <option value="">Adicionar contato...</option>
           {opcoesAdd.map(o => (
-            <option key={o.id} value={o.id}>{o.numero}</option>
+            <option key={o.id} value={o.id}>
+              {o.nome ? o.nome : "Sem nome"} — {o.numero}
+            </option>
           ))}
         </select>
 
@@ -221,6 +243,35 @@ function GroupCard({ grupo, contatos, onRemoveGroup }) {
           Adicionar
         </button>
       </div>
+
+      {isEditModalOpen && (
+        <div className={styles.modalOverlay} onMouseDown={fecharModalEditarGrupo}>
+          <div
+            className={styles.modal}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <h3 className={styles.modalTitle}>Editar Grupo</h3>
+
+            <label className={styles.inputLabel}>Nome do Grupo:</label>
+            <input
+              className={styles.modalInput}
+              value={editGroupName}
+              onChange={(e) => setEditGroupName(e.target.value)}
+              placeholder="Nome do grupo"
+              autoFocus
+            />
+
+            <div className={styles.modalActions}>
+              <button className={`${styles.btn} ${styles.addButton}`} onClick={salvarEdicaoGrupo}>
+                Salvar
+              </button>
+              <button className={`${styles.btn} ${styles.secondaryBtn}`} onClick={fecharModalEditarGrupo}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

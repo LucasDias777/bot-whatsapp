@@ -1,10 +1,15 @@
 const db = require("../database/database");
 
 exports.adicionarContato = (req, res) => {
-  const { numero } = req.body;
-  db.run("INSERT INTO contatos (numero) VALUES (?)", [numero], err => {
-    res.json({ ok: !err });
-  });
+  const { numero, nome } = req.body;
+
+  db.run(
+    "INSERT INTO contatos (numero, nome) VALUES (?, ?)",
+    [numero, nome],
+    err => {
+      res.json({ ok: !err });
+    }
+  );
 };
 
 exports.listarContatos = (req, res) => {
@@ -16,6 +21,7 @@ exports.listarContatos = (req, res) => {
 
 exports.removerContato = (req, res) => {
   const id = req.params.id;
+
   db.run("DELETE FROM contatos WHERE id = ?", [id], err => {
     db.run("DELETE FROM grupo_contatos WHERE contato_id = ?", [id], () => {
       res.json({ ok: !err });
@@ -25,11 +31,11 @@ exports.removerContato = (req, res) => {
 
 exports.editarContato = (req, res) => {
   const id = req.params.id;
-  const { numero } = req.body;
+  const { numero, nome } = req.body;
 
   db.run(
-    "UPDATE contatos SET numero = ? WHERE id = ?",
-    [numero, id],
+    "UPDATE contatos SET numero = ?, nome = ? WHERE id = ?",
+    [numero, nome, id],
     function (err) {
       if (err) {
         return res.status(500).json({ ok: false, err: err.message });

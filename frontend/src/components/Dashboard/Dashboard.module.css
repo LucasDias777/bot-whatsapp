@@ -24,7 +24,6 @@
     var(--primary-start),
     var(--primary-end)
   );
-
   backdrop-filter: blur(18px);
   border-right: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow: 4px 0 18px rgba(0, 0, 0, 0.12);
@@ -72,7 +71,6 @@
   border-radius: 12px;
 
   color: #ffffff;
-  /* leve translucidez para ver textura do gradiente mais claro do sidebar */
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
 
@@ -82,17 +80,15 @@
 
 .menuItem:hover {
   transform: translateX(4px);
-  /* hover mais perceptível contra o azul mais claro */
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.22);
 }
 
 .active {
-  /* active com contraste maior mas mantendo harmonia com o novo azul */
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
   font-weight: 700;
-  box-shadow: 0 6px 18px rgba(35, 91, 181, 0.18); /* usa tom derivado do accent */
+  box-shadow: 0 6px 18px rgba(35, 91, 181, 0.18);
 }
 
 .sidebarFooter {
@@ -152,7 +148,7 @@
 .searchInput:focus {
   background: #fff;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18); /* usa var(--accent) em rgba */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
 }
 
 .userBadge {
@@ -171,11 +167,8 @@
   align-items: center;
   justify-content: center;
 
-  /* shadow harmonizado com os azuis do sidebar */
   box-shadow: 0 4px 12px rgba(46, 120, 214, 0.35);
-  /*   ↑ este valor é extraído do var(--primary-end) (#2b76d6) com transparência */
 }
-
 
 /* CONTENT */
 .content {
@@ -189,22 +182,19 @@
 .cardsWrapper {
   display: grid;
 
-  /* O STATUS ocupa TODA a linha */
   grid-template-columns: repeat(3, 1fr);
 
   gap: 1.3rem;
   margin-top: 0.5rem;
 }
 
-/* O card de STATUS agora expande */
 .statusFull {
   grid-column: span 3 !important;
 }
 
-/* Cards menores embaixo */
 .card {
   background: rgba(255, 255, 255, 0.65);
-  padding: 1.2rem 1.2rem; /* levemente menor */
+  padding: 1.2rem 1.2rem;
   border-radius: 16px;
   backdrop-filter: blur(14px);
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -221,7 +211,7 @@
 }
 
 .cardTitle {
-  font-size: 0.86rem; /* levemente menor */
+  font-size: 0.86rem;
   font-weight: 500;
   color: #677081;
 }
@@ -229,11 +219,10 @@
 .cardValue {
   margin-top: 0.4rem;
   font-weight: 700;
-  font-size: 1.7rem; /* menor */
+  font-size: 1.7rem;
   color: #232a3b;
 }
 
-/* Highlight usando cor do Sidebar */
 .highlight {
   background: linear-gradient(
     to bottom,
@@ -249,6 +238,76 @@
 
 .highlight .cardValue {
   color: #fff;
+}
+
+/* GRÁFICOS */
+.chartsRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.3rem;
+  margin-top: 1.6rem;
+  align-items: stretch;
+
+  /* AJUSTE NOVO */
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.chartCard {
+  background: rgba(255, 255, 255, 0.75);
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 8px 22px rgba(13, 30, 51, 0.06);
+  display: flex;
+  flex-direction: column;
+
+  /* AJUSTE NOVO */
+  min-height: 190px !important;
+}
+
+.chartTitle {
+  font-weight: 700;
+  color: #253244;
+  margin-bottom: 0.6rem;
+}
+
+.chartArea {
+  flex: 1;
+  position: relative;
+
+  /* AJUSTE NOVO */
+  height: 150px !important;
+
+  margin-bottom: 0.6rem;
+}
+
+.chartLegend {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: #55606f;
+}
+
+.legendSwatch {
+  width: 18px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legendNote {
+  color: #7b8794;
+  font-size: 0.82rem;
 }
 
 /* ANIMATIONS */
@@ -278,7 +337,7 @@
 }
 
 .content::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.45); /* usa tom do accent */
+  background: rgba(59, 130, 246, 0.45);
   border-radius: 6px;
 }
 
@@ -293,4 +352,9 @@
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* ⛔ AJUSTE PARA REMOVER SCROLL LATERAL */
+.main, .content, body, html {
+  overflow-x: hidden !important;
 }

@@ -33,7 +33,6 @@ exports.editarGrupo = (req, res) => {
   );
 };
 
-
 exports.deletarGrupo = (req, res) => {
   const id = req.params.id;
 
@@ -52,7 +51,10 @@ exports.listarContatosDoGrupo = (req, res) => {
   const grupo_id = req.params.id;
 
   db.all(
-    `SELECT c.id, c.numero
+    `SELECT 
+        c.id, 
+        c.numero, 
+        c.nome
      FROM grupo_contatos gc
      JOIN contatos c ON gc.contato_id = c.id
      WHERE gc.grupo_id = ?`,

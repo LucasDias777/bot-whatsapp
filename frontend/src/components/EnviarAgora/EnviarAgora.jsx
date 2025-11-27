@@ -107,7 +107,7 @@ export default function EnviarAgora() {
         >
           <option value="">(Escolher número)</option>
           {contatos.map(c => (
-            <option key={c.id} value={c.numero}>{c.numero}</option>
+            <option key={c.id} value={c.numero}>{c.nome ? `${c.nome} – ${c.numero}` : c.numero}</option>
           ))}
         </select>
 

@@ -1,7 +1,6 @@
 :root {
-  /* Palette ajustada: sidebar mais claro + accent para elementos de interação */
-  --primary-start: #5ea8ff; /* azul mais claro */
-  --primary-end:   #2b76d6; /* azul médio-escuro */
+  --primary-start: #5ea8ff;
+  --primary-end: #2b76d6;
   --accent: #3b82f6;
   --accent-dark: #235bb5;
 }
@@ -24,8 +23,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-
-  /* agora igual ao sidebar */
   background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
   padding: 12px 20px;
   border-radius: 8px;
@@ -47,26 +44,29 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-
+  transition: 0.3s ease;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.btn:hover, .btn:focus,
-.backButton:hover, .backButton:focus {
+.btn:hover {
   background-color: #218838;
 }
 
-/* Botão azul */
 .addButton {
   background-color: #007bff;
 }
-
-.addButton:hover,
-.addButton:focus {
+.addButton:hover {
   background-color: #0056b3;
+}
+
+/* Botão secundário neutro (usado no modal cancelar) */
+.secondaryBtn {
+  background-color: #6c757d;
+}
+.secondaryBtn:hover {
+  background-color: #5a6268;
 }
 
 /* === FORMULÁRIO === */
@@ -75,50 +75,102 @@
   justify-content: center;
   align-items: center;
   gap: 12px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .row input {
   padding: 12px;
-  width: 320px;
+  width: 280px;
   border: 1px solid #ccc;
   border-radius: 8px;
 }
 
-/* === LISTA === */
-.listaContatos {
-  background-color: #ffffff;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 15px;
-}
-
-.listItem {
+/* === BLOCO DE FILTROS (CENTRALIZADO) === */
+.filtersBlock {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  
-  margin-bottom: 12px;
-  padding: 12px;
-
-  background: #fafafa;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  justify-content: center; /* centraliza o bloco horizontalmente */
+  gap: 16px;
+  margin-bottom: 22px;
 }
 
-/* === BOTÕES PEQUENOS === */
+/* etiqueta "Filtros:" */
+.filtersLabel {
+  font-weight: 600;
+  color: #333;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+/* inputs em linha ao lado da label */
+.filtersRow {
+  display: flex;
+  gap: 12px;
+}
+
+/* input dos filtros */
+.filtersRow input {
+  padding: 10px;
+  width: 260px;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+}
+
+/* === TABELA === */
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  min-width: 600px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.03) inset;
+}
+
+.table th {
+  background: #f7f7f7;
+  padding: 12px;
+  text-align: left;
+  font-weight: 700;
+  border-bottom: 2px solid #e6e6e6;
+  color: #222;
+}
+
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+}
+
+/* mensagem de vazio */
+.emptyRow {
+  text-align: center;
+  padding: 18px;
+  color: #777;
+}
+
+/* === BOTÕES DE AÇÃO === */
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .smallBtn {
-  padding: 7px 12px;
+  padding: 7px 10px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: 0.2s;
+  justify-content: center;
+  transition: 0.15s;
+  height: 36px;
+  width: 36px;
 }
 
-/* Editar */
 .editButton {
   background-color: #007bff;
   color: white;
@@ -127,7 +179,6 @@
   background-color: #0056b3;
 }
 
-/* Excluir */
 .deleteButton {
   background-color: #dc3545;
   color: white;
@@ -136,9 +187,66 @@
   background-color: #c82333;
 }
 
-/* === AJUSTES DE LAYOUT === */
-.spaceBetween {
+/* === MODAL === */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 18, 30, 0.45);
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal {
+  background: white;
   width: 100%;
+  max-width: 520px;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 14px 40px rgba(18, 35, 60, 0.25);
+  animation: modalIn 0.18s ease;
+}
+
+@keyframes modalIn {
+  from { transform: translateY(-8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modalTitle {
+  margin: 0 0 12px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.inputLabel {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.modalInput {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* ações do modal */
+.modalActions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* keyframe de entrada */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

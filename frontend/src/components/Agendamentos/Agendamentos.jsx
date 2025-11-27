@@ -42,14 +42,14 @@ export default function Agendamentos() {
       msgsService.listMensagens(),
       contatosService.listContatos(),
     ]);
-    setGrupos(gs);
-    setMensagens(ms);
-    setContatos(cs);
+    setGrupos(gs || []);
+    setMensagens(ms || []);
+    setContatos(cs || []);
   }
 
   async function carregarAgendamentos() {
     const lista = await agService.listarAgendamentos();
-    setAgendamentos(lista.map((a) => ({ ...a, dias: normalizeDias(a.dias) })));
+    setAgendamentos((lista || []).map((a) => ({ ...a, dias: normalizeDias(a.dias) })));
   }
 
   async function refreshAll() {
@@ -138,6 +138,19 @@ export default function Agendamentos() {
     6: "Sáb",
   };
 
+  // helper: busca contato pelo número (string). Retorna objeto contato ou undefined.
+  function contatoPorNumero(num) {
+    if (!num) return undefined;
+    return contatos.find(c => String(c.numero) === String(num) || String(c.id) === String(num));
+  }
+
+  // helper: busca nome do grupo pelo id
+  function nomeDoGrupoPorId(id) {
+    if (!id) return undefined;
+    const g = grupos.find(x => String(x.id) === String(id));
+    return g ? g.nome : undefined;
+  }
+
   return (
     <div className={styles.container}>
       {/* ==== TOP BAR ==== */}
@@ -158,7 +171,7 @@ export default function Agendamentos() {
             <option value="">(Escolher número)</option>
             {contatos.map((c) => (
               <option key={c.id} value={c.numero}>
-                {c.numero}
+                {c.nome ? c.nome : "Sem nome"} — {c.numero}
               </option>
             ))}
           </select>
@@ -228,10 +241,19 @@ export default function Agendamentos() {
       {/* ==== LISTA ==== */}
       <div className={styles.listaContatos} style={{ marginTop: 10 }}>
         {agendamentos.map((a) => {
-          const diasTexto = (a.dias || [])
-            .map((d) => nomesDias[d])
-            .join(", ");
-          const destinoTexto = a.grupo ? `Grupo ${a.grupo}` : a.numero;
+          const diasTexto = (a.dias || []).map((d) => nomesDias[d]).join(", ");
+
+          // destino: se grupo => mostrar nome do grupo; se numero => mostrar nome + numero do contato (se encontrado)
+          let destinoTexto = "";
+          if (a.grupo) {
+            const nomeGrupo = nomeDoGrupoPorId(a.grupo);
+            destinoTexto = nomeGrupo ? `Grupo ${nomeGrupo}` : `Grupo ${a.grupo}`;
+          } else if (a.numero) {
+            const contato = contatoPorNumero(a.numero);
+            destinoTexto = contato
+              ? `${contato.nome ? contato.nome : "Sem nome"} — ${contato.numero}`
+              : a.numero;
+          }
 
           return (
             <div key={a.id} className={styles.listItem}>

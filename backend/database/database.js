@@ -11,6 +11,7 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS contatos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       numero TEXT NOT NULL,
+      nome TEXT,              -- 🔥 nova coluna adicionada
       grupo TEXT
     );
   `);

@@ -25,7 +25,6 @@
   justify-content: center;
   align-items: center;
 
-  /* agora igual ao sidebar */
   background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
   padding: 12px 20px;
   border-radius: 8px;
@@ -67,6 +66,14 @@
   background-color: #0056b3;
 }
 
+/* Botão secundário (cancel) */
+.secondaryBtn {
+  background-color: #6c757d;
+}
+.secondaryBtn:hover {
+  background-color: #5a6268;
+}
+
 /* === FORMULÁRIO === */
 .row {
   display: flex;
@@ -83,6 +90,7 @@
   height: 120px;
   border: 1px solid #ccc;
   border-radius: 8px;
+  resize: vertical;
 }
 
 /* === LISTA === */
@@ -104,6 +112,13 @@
   background: #fafafa;
   border: 1px solid #ddd;
   border-radius: 10px;
+}
+
+/* mensagem texto */
+.messageText {
+  white-space: pre-wrap;
+  max-width: 70%;
+  color: #222;
 }
 
 /* === BOTÕES PEQUENOS === */
@@ -143,4 +158,73 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
+}
+
+/* =========================
+   MODAL (visual similar ao exemplo)
+   ========================= */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 18, 30, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal {
+  background: white;
+  width: 100%;
+  max-width: 620px;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 18px 40px rgba(18, 35, 60, 0.25);
+  animation: modalIn 0.18s ease;
+}
+
+@keyframes modalIn {
+  from { transform: translateY(-8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modalTitle {
+  margin: 0 0 12px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.inputLabel {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+/* textarea dentro do modal */
+.modalTextarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  height: 96px;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+/* ações do modal */
+.modalActions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* keyframe de entrada */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

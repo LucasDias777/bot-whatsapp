@@ -9,9 +9,14 @@ export default function Mensagens() {
   const [lista, setLista] = useState([]);
   const [texto, setTexto] = useState("");
 
+  // Modal de edição
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [editTexto, setEditTexto] = useState("");
+
   async function carregar() {
     const r = await mensagensService.listMensagens();
-    setLista(r);
+    setLista(r || []);
   }
 
   useEffect(() => {
@@ -31,19 +36,29 @@ export default function Mensagens() {
     await carregar();
   }
 
-  // ➤ EDITAR VIA PROMPT
-  async function editarMensagem(m) {
-    const novoTexto = prompt("Editar mensagem:", m.texto);
+  // Abre modal preenchendo campos
+  function abrirModalEditar(m) {
+    setEditId(m.id);
+    setEditTexto(m.texto || "");
+    setIsEditModalOpen(true);
+  }
 
-    if (novoTexto === null) return; // cancelou
+  function fecharModalEditar() {
+    setIsEditModalOpen(false);
+    setEditId(null);
+    setEditTexto("");
+  }
 
-    if (!novoTexto.trim()) {
-      alert("O texto não pode estar vazio!");
-      return;
+  async function salvarEdicao() {
+    if (!editTexto.trim()) return alert("O texto não pode estar vazio!");
+    try {
+      await mensagensService.editarMensagem(editId, editTexto.trim());
+      await carregar();
+      fecharModalEditar();
+    } catch (err) {
+      console.error("Erro ao editar mensagem:", err);
+      alert("Erro ao editar mensagem.");
     }
-
-    await mensagensService.editarMensagem(m.id, novoTexto.trim());
-    await carregar();
   }
 
   return (
@@ -74,14 +89,14 @@ export default function Mensagens() {
         {lista.map((m) => (
           <div key={m.id} className={styles.listItem}>
             <div className={styles.spaceBetween}>
-              <span>{m.texto}</span>
+              <span className={styles.messageText}>{m.texto}</span>
 
               <div style={{ display: "flex", gap: 8 }}>
 
-                {/* Botão Editar */}
+                {/* Botão Editar (abre modal) */}
                 <button
                   className={`${styles.smallBtn} ${styles.editButton}`}
-                  onClick={() => editarMensagem(m)}
+                  onClick={() => abrirModalEditar(m)}
                 >
                   <FiEdit size={16} />
                   Editar
@@ -101,6 +116,35 @@ export default function Mensagens() {
           </div>
         ))}
       </div>
+
+      {/* MODAL DE EDIÇÃO */}
+      {isEditModalOpen && (
+        <div className={styles.modalOverlay} onMouseDown={fecharModalEditar}>
+          <div
+            className={styles.modal}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <h3 className={styles.modalTitle}>Editar Mensagem</h3>
+
+            <label className={styles.inputLabel}>Mensagem:</label>
+            <textarea
+              className={styles.modalTextarea}
+              value={editTexto}
+              onChange={(e) => setEditTexto(e.target.value)}
+              placeholder="Texto da mensagem"
+            />
+
+            <div className={styles.modalActions}>
+              <button className={`${styles.btn} ${styles.addButton}`} onClick={salvarEdicao}>
+                Salvar
+              </button>
+               <button className={`${styles.btn} ${styles.secondaryBtn}`} onClick={fecharModalEditar}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
