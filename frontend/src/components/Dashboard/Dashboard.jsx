@@ -3,19 +3,10 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import styles from "./Dashboard.module.css";
 import logo from "../../assets/images/logo.png";
 import Status from "../Status/Status";
-
 import { getDashboardData } from "../../services/dashboardService";
 
 import { Doughnut, Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-} from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js";
 
 ChartJS.register(
   ArcElement,
@@ -42,8 +33,6 @@ export default function Dashboard() {
     // opcional: performance pode vir do backend mais tarde
     performance: 0,
   });
-
-  
 
   // Map das rotas para títulos do header
   const pageTitles = {
