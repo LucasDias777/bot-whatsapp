@@ -1,66 +1,113 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import styles from "./Dashboard.module.css";
 import logo from "../../assets/images/logo.png";
 import Status from "../Status/Status";
 import { getDashboardData } from "../../services/dashboardService";
+import { useAtualizar } from "../../context/AtualizarContexto";
 
 import { Doughnut, Bar } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from "chart.js";
 
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement
-);
+// Registrar gráficos
+ChartJS.register( ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale );
 
 export default function Dashboard() {
   const { pathname } = useLocation();
-  const mountedRef = useRef(true);
+  const { atualizarToken } = useAtualizar();  
 
-  // ===============================
-  // STATE DO DASHBOARD
-  // ===============================
+  /* ======================================================
+        STATE (AJUSTADO PARA NOVAS MÉTRICAS)
+     ====================================================== */
   const [dados, setDados] = useState({
-    usuariosAtivos: 0,
-    mensagensHoje: 0,
-    grafico: {
-      totalNumeros: 0,
-    },
-    // opcional: performance pode vir do backend mais tarde
-    performance: 0,
+    grafico: { totalNumeros: 0 },
+    metricas: {
+      chatsAtivos: 0,
+      chatsIndividuais: 0,
+      chatsGrupos: 0
+    }
   });
 
-  // Map das rotas para títulos do header
+  /* ======================================================
+      BUSCAR DADOS DO BACKEND (COM POLLING)
+   ====================================================== */
+useEffect(() => {
+  let mounted = true;
+
+  async function carregar() {
+    try {
+      const res = await getDashboardData();
+      console.log("RES DASHBOARD:", res);
+
+      if (!mounted) return;
+
+      setDados({
+        grafico: {
+          totalNumeros: res?.grafico?.totalNumeros || 0
+        },
+        metricas: {
+          chatsAtivos: res?.metricas?.chatsAtivos || 0,
+          chatsIndividuais: res?.metricas?.chatsIndividuais || 0,
+          chatsGrupos: res?.metricas?.chatsGrupos || 0
+        }
+      });
+    } catch (error) {
+      console.error("Erro ao carregar dashboard:", error);
+    }
+  }
+
+  // ✅ carrega imediatamente ao abrir
+  carregar();
+
+  // ✅ continua atualizando a cada 3 segundos
+  const interval = setInterval(carregar, 3000);
+
+  return () => {
+    mounted = false;
+    clearInterval(interval);
+  };
+  }, []);
+
   const pageTitles = {
     "/": "Dashboard",
     "/contatos": "Cadastrar Contatos",
     "/grupos": "Cadastrar Grupos",
     "/mensagens": "Cadastrar Mensagens",
     "/agendamentos": "Cadastrar Agendamentos",
-    "/enviar-agora": "Enviar Mensagem Agora",
+    "/enviar-agora": "Enviar Mensagem Agora"
   };
 
   const title = pageTitles[pathname] || "BOT WhatsApp";
 
-  /* ✅ CONFIGURAÇÃO DO GRÁFICO - DOUGHNUT (NÚMEROS CADASTRADOS) */
+  /* ======================================================
+      GRÁFICO DOUGHNUT
+   ====================================================== */
   const totalNumeros = Number(dados.grafico?.totalNumeros || 0);
-  // Para visual agradável, contra-valor (restante) mínimo 1 para manter o donut visível
-  const restante = Math.max(1, Math.round(totalNumeros * 0.02));
-  const doughnutData = {
-    labels: ["Números Cadastrados", " "],
-    datasets: [
-      {
-        data: [totalNumeros, restante],
-        backgroundColor: ["#3b82f6", "rgba(59,130,246,0.12)"],
-        hoverOffset: 8,
-        borderWidth: 0,
-      },
-    ],
-  };
+
+  const doughnutData =
+    totalNumeros > 0
+      ? {
+          labels: ["Números Cadastrados"],
+          datasets: [
+            {
+              data: [totalNumeros],
+              backgroundColor: ["#3b82f6"],
+              hoverOffset: 8,
+              borderWidth: 0
+            }
+          ]
+        }
+      : {
+          labels: ["Nenhum"],
+          datasets: [
+            {
+              data: [1],
+              backgroundColor: ["rgba(0,0,0,0.06)"],
+              hoverOffset: 0,
+              borderWidth: 0
+            }
+          ]
+        };
 
   const doughnutOptions = {
     responsive: true,
@@ -71,66 +118,41 @@ export default function Dashboard() {
         position: "bottom",
         labels: {
           usePointStyle: true,
-          padding: 12,
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => {
-            const label = context.label || "";
-            const value = context.raw || 0;
-            if (label.trim() === "") return `${value}`;
-            return `${label}: ${value.toLocaleString("pt-BR")}`;
-          },
-        },
-      },
-    },
+          padding: 12
+        }
+      }
+    }
   };
 
-  /* ✅ CONFIGURAÇÃO DO GRÁFICO 2 - BAR (Usuários Ativos vs Mensagens Hoje) */
+  /* ======================================================
+        GRÁFICO HORIZONTAL — NOVAS MÉTRICAS
+     ====================================================== */
   const barData = {
-    labels: ["Usuários Ativos", "Mensagens Hoje"],
+    labels: ["Chats Individuais", "Chats em Grupo"],
     datasets: [
       {
         label: "Quantidade",
-        data: [Number(dados.usuariosAtivos || 0), Number(dados.mensagensHoje || 0)],
-        // usa tons do tema
-        backgroundColor: ["#60a5fa", "#3b82f6"],
-        borderRadius: 8,
-        barThickness: 28,
-      },
-    ],
+        data: [
+          dados.metricas.chatsIndividuais,
+          dados.metricas.chatsGrupos
+        ],
+        backgroundColor: ["#3b82f6", "#10b981"],
+        borderWidth: 1
+      }
+    ]
   };
 
   const barOptions = {
-    indexAxis: "y",
     responsive: true,
-    maintainAspectRatio: false,
+    indexAxis: "y",
     plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => {
-            return ctx.raw.toLocaleString("pt-BR");
-          },
-        },
-      },
+      legend: { display: false }
     },
     scales: {
       x: {
-        ticks: {
-          callback: (value) => {
-            // formata números grandes
-            if (value >= 1000) return (value / 1000) + "k";
-            return value;
-          },
-        },
-        grid: { display: false },
-      },
-      y: {
-        grid: { display: false },
-      },
-    },
+        beginAtZero: true
+      }
+    }
   };
 
   return (
@@ -145,48 +167,62 @@ export default function Dashboard() {
         <nav className={styles.menu}>
           <Link
             to="/"
-            className={`${styles.menuItem} ${pathname === "/" && styles.active}`}
+            className={`${styles.menuItem} ${
+              pathname === "/" && styles.active
+            }`}
           >
             <span>🏠</span> Dashboard
           </Link>
 
           <Link
             to="/contatos"
-            className={`${styles.menuItem} ${pathname === "/contatos" && styles.active}`}
+            className={`${styles.menuItem} ${
+              pathname === "/contatos" && styles.active
+            }`}
           >
             👥 Contatos
           </Link>
 
           <Link
             to="/grupos"
-            className={`${styles.menuItem} ${pathname === "/grupos" && styles.active}`}
+            className={`${styles.menuItem} ${
+              pathname === "/grupos" && styles.active
+            }`}
           >
             💬 Grupos
           </Link>
 
           <Link
             to="/mensagens"
-            className={`${styles.menuItem} ${pathname === "/mensagens" && styles.active}`}
+            className={`${styles.menuItem} ${
+              pathname === "/mensagens" && styles.active
+            }`}
           >
             ✉️ Mensagens
           </Link>
 
           <Link
             to="/agendamentos"
-            className={`${styles.menuItem} ${pathname === "/agendamentos" && styles.active}`}
+            className={`${styles.menuItem} ${
+              pathname === "/agendamentos" && styles.active
+            }`}
           >
             ⏰ Agendamentos
           </Link>
 
           <Link
             to="/enviar-agora"
-            className={`${styles.menuItem} ${pathname === "/enviar-agora" && styles.active}`}
+            className={`${styles.menuItem} ${
+              pathname === "/enviar-agora" && styles.active
+            }`}
           >
             🚀 Enviar Agora
           </Link>
         </nav>
 
-        <footer className={styles.sidebarFooter}>v1.0 • BOT-WHATSAPP</footer>
+        <footer className={styles.sidebarFooter}>
+          v1.0 • BOT-WHATSAPP
+        </footer>
       </aside>
 
       {/* MAIN */}
@@ -209,7 +245,6 @@ export default function Dashboard() {
         <div className={styles.content}>
           <Outlet />
 
-          {/* HOME */}
           {pathname === "/" && (
             <>
               {/* CARDS */}
@@ -219,45 +254,87 @@ export default function Dashboard() {
                 </div>
 
                 <div className={styles.card}>
-                  <span className={styles.cardTitle}>Usuários Ativos</span>
-                  <h2 className={styles.cardValue}>{dados.usuariosAtivos}</h2>
+                  <span className={styles.cardTitle}>Chats Ativos</span>
+                  <h2 className={styles.cardValue}>
+                    {dados.metricas.chatsAtivos}
+                  </h2>
                 </div>
+
                 <div className={styles.card}>
                   <span className={styles.cardTitle}>Mensagens Hoje</span>
-                  <h2 className={styles.cardValue}>
-                    {Number(dados.mensagensHoje || 0).toLocaleString("pt-BR")}
-                  </h2>
+                  <h2 className={styles.cardValue}>0</h2>
                 </div>
+
                 <div className={`${styles.card} ${styles.highlight}`}>
                   <span className={styles.cardTitle}>Performance</span>
-                  <h2 className={styles.cardValue}>
-                    {dados.performance ? `${dados.performance}%` : "49.65%"}
-                  </h2>
+                  <h2 className={styles.cardValue}>49.65%</h2>
                 </div>
               </div>
 
-              {/* ESPAÇO ENTRE CARDS E GRÁFICOS */}
+              {/* GRÁFICOS */}
               <div className={styles.chartsRow}>
+                {/* GRÁFICO DOUGHNUT — NÃO REMOVIDO */}
                 <div className={styles.chartCard}>
                   <div className={styles.chartTitle}>Números Cadastrados</div>
+
                   <div className={styles.chartArea}>
-                    <Doughnut data={doughnutData} options={doughnutOptions} />
+                    {totalNumeros > 0 ? (
+                      <Doughnut data={doughnutData} options={doughnutOptions} />
+                    ) : (
+                      <p style={{ textAlign: "center", opacity: 0.6 }}>
+                        Nenhum número cadastrado.
+                      </p>
+                    )}
                   </div>
+
                   <div className={styles.chartLegend}>
                     <div className={styles.legendItem}>
-                      <span className={styles.legendSwatch} style={{ background: "#3b82f6" }} />
-                      <span>Números: {totalNumeros.toLocaleString("pt-BR")}</span>
+                      <span
+                        className={styles.legendSwatch}
+                        style={{ background: "#3b82f6" }}
+                      />
+                      <span>
+                        Números: {totalNumeros.toLocaleString("pt-BR")}
+                      </span>
                     </div>
                   </div>
                 </div>
 
+                {/* GRÁFICO HORIZONTAL */}
                 <div className={styles.chartCard}>
-                  <div className={styles.chartTitle}>Atividade</div>
+                  <div className={styles.chartTitle}>
+                    Chats Individuais x Grupos
+                  </div>
+
                   <div className={styles.chartArea}>
                     <Bar data={barData} options={barOptions} />
                   </div>
+
+                  {/* ✅ CONTADORES EMBAIXO */}
                   <div className={styles.chartLegend}>
-                    <small className={styles.legendNote}>Última atualização automática</small>
+                    <div className={styles.legendItem}>
+                      <span
+                        className={styles.legendSwatch}
+                        style={{ background: "#3b82f6" }}
+                      />
+                      <span>
+                        Individuais:{" "}
+                        {dados.metricas.chatsIndividuais.toLocaleString(
+                          "pt-BR"
+                        )}
+                      </span>
+                    </div>
+
+                    <div className={styles.legendItem}>
+                      <span
+                        className={styles.legendSwatch}
+                        style={{ background: "#10b981" }}
+                      />
+                      <span>
+                        Grupos:{" "}
+                        {dados.metricas.chatsGrupos.toLocaleString("pt-BR")}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

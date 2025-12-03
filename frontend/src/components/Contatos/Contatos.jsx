@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import * as contatosService from "../../services/contatosService";
 import { FiPlus, FiEdit, FiTrash } from "react-icons/fi";
 import styles from "./Contatos.module.css";
+import { useAtualizar } from "../../context/AtualizarContexto";
 
 export default function Contatos() {
   const [lista, setLista] = useState([]);
@@ -13,6 +14,7 @@ export default function Contatos() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
+  const { atualizar } = useAtualizar();
   const [editNome, setEditNome] = useState("");
   const [editRawNumero, setEditRawNumero] = useState("");
 
@@ -29,7 +31,6 @@ export default function Contatos() {
     carregar();
   }, []);
 
-  // FORMATAÇÃO PASSIVA (permite apagar hífen sem travar)
   function formatarNumeroBRParaInput(digits) {
     if (!digits) return "";
     let v = String(digits).replace(/\D/g, "");
@@ -55,7 +56,6 @@ export default function Contatos() {
   function limparNumeroParaEnviarDeRaw(valorRaw) {
     let v = String(valorRaw || "").replace(/\D/g, "");
 
-    // só removemos 55 AUTOMATICAMENTE se ultrapassar 11 dígitos
     if (v.length > 11 && v.startsWith("55")) {
       v = v.slice(2);
     }
@@ -86,6 +86,8 @@ export default function Contatos() {
       setNome("");
       setRawNumero("");
       await carregar();
+
+      atualizar(); // 🔥 Dashboard atualiza
     } catch (e) {
       console.error(e);
       alert("Número não encontrado no WhatsApp.");
@@ -94,8 +96,11 @@ export default function Contatos() {
 
   async function removerContato(id) {
     if (!confirm("Remover este contato?")) return;
+
     await contatosService.removerContato(id);
     await carregar();
+
+    atualizar(); // 🔥 Dashboard atualiza
   }
 
   function abrirModalEditar(contato) {
@@ -145,6 +150,8 @@ export default function Contatos() {
 
       await carregar();
       fecharModal();
+
+      atualizar(); // 🔥 Dashboard atualiza
     } catch (err) {
       console.error(err);
       alert("Número não encontrado no WhatsApp.");
@@ -160,12 +167,10 @@ export default function Contatos() {
     );
   });
 
-  // ✔ NÃO REMOVE MAIS O 55 ENQUANTO VOCÊ DIGITA O DDD
   function handleNumeroChange(e) {
     const v = String(e.target.value).replace(/\D/g, "");
-
-    // não interferir no "55" enquanto DIGITA
     let raw = v;
+
     if (raw.length > 11 && raw.startsWith("55")) raw = raw.slice(2);
 
     setRawNumero(raw.slice(0, 11));
