@@ -5,10 +5,29 @@ import logo from "../../assets/images/logo.png";
 import Status from "../Status/Status";
 import { getDashboardData } from "../../services/dashboardService";
 import { useAtualizar } from "../../context/AtualizarContexto";
-import { Chart, ArcElement, DoughnutController, Tooltip, Legend, BarElement, BarController, CategoryScale, LinearScale } from "chart.js";
+import {
+  Chart,
+  ArcElement,
+  DoughnutController,
+  Tooltip,
+  Legend,
+  BarElement,
+  BarController,
+  CategoryScale,
+  LinearScale,
+} from "chart.js";
 import { useCountAnimation } from "../../hooks/DispararAnimation";
 
-Chart.register( DoughnutController, ArcElement, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend );
+Chart.register(
+  DoughnutController,
+  ArcElement,
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+);
 
 export default function Dashboard() {
   const { pathname } = useLocation();
@@ -25,8 +44,10 @@ export default function Dashboard() {
     metricas: {
       chatsAtivos: 0,
       chatsIndividuais: 0,
-      chatsGrupos: 0
-    }
+      chatsGrupos: 0,
+      mensagensHoje: 0,
+      contatosOnline: 0,
+    },
   });
 
   const [dadosCarregados, setDadosCarregados] = useState(false);
@@ -58,8 +79,10 @@ export default function Dashboard() {
           metricas: {
             chatsAtivos: res?.metricas?.chatsAtivos || 0,
             chatsIndividuais: res?.metricas?.chatsIndividuais || 0,
-            chatsGrupos: res?.metricas?.chatsGrupos || 0
-          }
+            chatsGrupos: res?.metricas?.chatsGrupos || 0,
+            mensagensHoje: res?.metricas?.mensagensHoje || 0,
+            contatosOnline: res?.metricas?.contatosOnline || 0,
+          },
         });
 
         if (!dadosCarregados) setDadosCarregados(true);
@@ -83,7 +106,7 @@ export default function Dashboard() {
   const chatsAtivosAnim = useCountAnimation(
     dados.metricas.chatsAtivos,
     2000,
-    triggerAnim
+    triggerAnim,
   );
 
   /* ============================================
@@ -121,9 +144,9 @@ export default function Dashboard() {
               data: [0], // começa vazio
               backgroundColor: ["#3b82f6"],
               hoverOffset: 8,
-              borderWidth: 0
-            }
-          ]
+              borderWidth: 0,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -132,15 +155,15 @@ export default function Dashboard() {
           animation: {
             duration: 2000,
             animateRotate: true,
-            easing: "easeOutCubic"
+            easing: "easeOutCubic",
           },
           plugins: {
             legend: {
               position: "bottom",
-              labels: { usePointStyle: true, padding: 12 }
-            }
-          }
-        }
+              labels: { usePointStyle: true, padding: 12 },
+            },
+          },
+        },
       });
     }
 
@@ -158,27 +181,27 @@ export default function Dashboard() {
               label: "Quantidade",
               data: [0, 0], // começa vazio
               backgroundColor: ["#3b82f6", "#10b981"],
-              borderWidth: 1
-            }
-          ]
+              borderWidth: 1,
+            },
+          ],
         },
         options: {
           indexAxis: "y",
           responsive: true,
           animation: { duration: 2000, easing: "easeOutQuart" },
           plugins: {
-            legend: { display: false }
+            legend: { display: false },
           },
           scales: {
-            x: { beginAtZero: true }
-          }
-        }
+            x: { beginAtZero: true },
+          },
+        },
       });
     }
 
     barInstance.current.data.datasets[0].data = [
       dados.metricas.chatsIndividuais,
-      dados.metricas.chatsGrupos
+      dados.metricas.chatsGrupos,
     ];
     barInstance.current.update();
   }, [dadosCarregados, dados]);
@@ -192,7 +215,7 @@ export default function Dashboard() {
     "/grupos": "Cadastrar Grupos",
     "/mensagens": "Cadastrar Mensagens",
     "/agendamentos": "Cadastrar Agendamentos",
-    "/enviar-agora": "Enviar Mensagem Agora"
+    "/enviar-agora": "Enviar Mensagem Agora",
   };
 
   const title = pageTitles[pathname] || "BOT WhatsApp";
@@ -208,22 +231,40 @@ export default function Dashboard() {
         </div>
 
         <nav className={styles.menu}>
-          <Link to="/" className={`${styles.menuItem} ${pathname === "/" && styles.active}`}>
+          <Link
+            to="/"
+            className={`${styles.menuItem} ${pathname === "/" && styles.active}`}
+          >
             🏠 Dashboard
           </Link>
-          <Link to="/contatos" className={`${styles.menuItem} ${pathname === "/contatos" && styles.active}`}>
+          <Link
+            to="/contatos"
+            className={`${styles.menuItem} ${pathname === "/contatos" && styles.active}`}
+          >
             👥 Contatos
           </Link>
-          <Link to="/grupos" className={`${styles.menuItem} ${pathname === "/grupos" && styles.active}`}>
+          <Link
+            to="/grupos"
+            className={`${styles.menuItem} ${pathname === "/grupos" && styles.active}`}
+          >
             💬 Grupos
           </Link>
-          <Link to="/mensagens" className={`${styles.menuItem} ${pathname === "/mensagens" && styles.active}`}>
+          <Link
+            to="/mensagens"
+            className={`${styles.menuItem} ${pathname === "/mensagens" && styles.active}`}
+          >
             ✉️ Mensagens
           </Link>
-          <Link to="/agendamentos" className={`${styles.menuItem} ${pathname === "/agendamentos" && styles.active}`}>
+          <Link
+            to="/agendamentos"
+            className={`${styles.menuItem} ${pathname === "/agendamentos" && styles.active}`}
+          >
             ⏰ Agendamentos
           </Link>
-          <Link to="/enviar-agora" className={`${styles.menuItem} ${pathname === "/enviar-agora" && styles.active}`}>
+          <Link
+            to="/enviar-agora"
+            className={`${styles.menuItem} ${pathname === "/enviar-agora" && styles.active}`}
+          >
             🚀 Enviar Agora
           </Link>
         </nav>
@@ -237,7 +278,11 @@ export default function Dashboard() {
           <h3 className={styles.pageTitle}>{title}</h3>
 
           <div className={styles.headerActions}>
-            <input type="text" placeholder="Pesquisar..." className={styles.searchInput} />
+            <input
+              type="text"
+              placeholder="Pesquisar..."
+              className={styles.searchInput}
+            />
             <div className={styles.userBadge}>GD</div>
           </div>
         </header>
@@ -260,12 +305,16 @@ export default function Dashboard() {
 
                 <div className={styles.card}>
                   <span className={styles.cardTitle}>Mensagens Hoje</span>
-                  <h2 className={styles.cardValue}>0</h2>
+                  <h2 className={styles.cardValue}>
+                    {dados.metricas.mensagensHoje}
+                  </h2>
                 </div>
 
                 <div className={`${styles.card} ${styles.highlight}`}>
-                  <span className={styles.cardTitle}>Performance</span>
-                  <h2 className={styles.cardValue}>49.65%</h2>
+                  <span className={styles.cardTitle}>Contatos Online</span>
+                  <h2 className={styles.cardValue}>
+                    {dados.metricas.contatosOnline}
+                  </h2>
                 </div>
               </div>
 
@@ -276,7 +325,9 @@ export default function Dashboard() {
 
                   <div className={styles.chartArea}>
                     {!dadosCarregados ? (
-                      <p style={{ textAlign: "center", opacity: 0.6 }}>Carregando gráfico...</p>
+                      <p style={{ textAlign: "center", opacity: 0.6 }}>
+                        Carregando gráfico...
+                      </p>
                     ) : (
                       <canvas ref={doughnutRef}></canvas>
                     )}
@@ -284,14 +335,21 @@ export default function Dashboard() {
 
                   <div className={styles.chartLegend}>
                     <div className={styles.legendItem}>
-                      <span className={styles.legendSwatch} style={{ background: "#3b82f6" }}></span>
-                      <span>Números: {totalNumeros.toLocaleString("pt-BR")}</span>
+                      <span
+                        className={styles.legendSwatch}
+                        style={{ background: "#3b82f6" }}
+                      ></span>
+                      <span>
+                        Números: {totalNumeros.toLocaleString("pt-BR")}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <div className={styles.chartCard}>
-                  <div className={styles.chartTitle}>Chats Individuais x Grupos</div>
+                  <div className={styles.chartTitle}>
+                    Chats Individuais x Grupos
+                  </div>
 
                   <div className={styles.chartArea}>
                     <canvas ref={barRef}></canvas>
@@ -299,13 +357,27 @@ export default function Dashboard() {
 
                   <div className={styles.chartLegend}>
                     <div className={styles.legendItem}>
-                      <span className={styles.legendSwatch} style={{ background: "#3b82f6" }}></span>
-                      <span>Individuais: {dados.metricas.chatsIndividuais.toLocaleString("pt-BR")}</span>
+                      <span
+                        className={styles.legendSwatch}
+                        style={{ background: "#3b82f6" }}
+                      ></span>
+                      <span>
+                        Individuais:{" "}
+                        {dados.metricas.chatsIndividuais.toLocaleString(
+                          "pt-BR",
+                        )}
+                      </span>
                     </div>
 
                     <div className={styles.legendItem}>
-                      <span className={styles.legendSwatch} style={{ background: "#10b981" }}></span>
-                      <span>Grupos: {dados.metricas.chatsGrupos.toLocaleString("pt-BR")}</span>
+                      <span
+                        className={styles.legendSwatch}
+                        style={{ background: "#10b981" }}
+                      ></span>
+                      <span>
+                        Grupos:{" "}
+                        {dados.metricas.chatsGrupos.toLocaleString("pt-BR")}
+                      </span>
                     </div>
                   </div>
                 </div>

@@ -1,9 +1,5 @@
 const db = require("../database/database");
 
-/**
- * Coleta chats visíveis no WhatsApp Web
- * Fonte correta: window.Store.Chat
- */
 async function getAllChats(client) {
   try {
     return await client.pupPage.evaluate(() => {
@@ -28,9 +24,7 @@ async function getAllChats(client) {
   }
 }
 
-/**
- * Controller do Dashboard
- */
+// Controller do Dashboard
 async function getDashboard(req, res) {
   try {
     const totalNumeros = await new Promise((resolve, reject) => {
@@ -45,6 +39,8 @@ async function getDashboard(req, res) {
     let chatsAtivos = 0;
     let chatsIndividuais = 0;
     let chatsGrupos = 0;
+    let mensagensHoje = 0;
+    let contatosOnline = 0;
 
     if (client?.info?.wid) {
       const chats = await getAllChats(client);
@@ -52,6 +48,42 @@ async function getDashboard(req, res) {
       chatsAtivos = chats.length;
       chatsGrupos = chats.filter(c => c.isGroup).length;
       chatsIndividuais = chats.filter(c => !c.isGroup).length;
+
+      /* ================================
+         📌 MENSAGENS ENVIADAS HOJE
+      ================================= */
+      try {
+        mensagensHoje = await client.pupPage.evaluate(() => {
+          const msgs = window.Store?.Msg?.getModelsArray?.() || [];
+          const inicioDoDia = new Date();
+          inicioDoDia.setHours(0, 0, 0, 0);
+          const inicioTimestamp = Math.floor(inicioDoDia.getTime() / 1000); // WhatsApp usa segundos
+
+          return msgs.filter(msg =>
+            msg?.id?.fromMe &&
+            Number(msg?.t) >= inicioTimestamp
+          ).length;
+        });
+      } catch (err) {
+        console.error("Erro ao recuperar mensagensHoje:", err);
+        mensagensHoje = 0;
+      }
+
+      /* ================================
+         📌 CONTATOS ONLINE AGORA
+      ================================= */
+      try {
+        contatosOnline = await client.pupPage.evaluate(() => {
+          const chats = window.Store?.Chat?.getModelsArray?.() || [];
+
+          return chats.filter(chat =>
+            chat?.presence?.isOnline === true
+          ).length;
+        });
+      } catch (err) {
+        console.error("Erro ao recuperar contatosOnline:", err);
+        contatosOnline = 0;
+      }
     }
 
     res.json({
@@ -59,7 +91,9 @@ async function getDashboard(req, res) {
       metricas: {
         chatsAtivos,
         chatsIndividuais,
-        chatsGrupos
+        chatsGrupos,
+        mensagensHoje,
+        contatosOnline
       }
     });
 
