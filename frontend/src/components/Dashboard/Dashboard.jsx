@@ -82,7 +82,7 @@ export default function Dashboard() {
   ============================================ */
   const chatsAtivosAnim = useCountAnimation(
     dados.metricas.chatsAtivos,
-    1200,
+    2000,
     triggerAnim
   );
 
@@ -130,7 +130,7 @@ export default function Dashboard() {
           maintainAspectRatio: false,
           cutout: "68%",
           animation: {
-            duration: 1200,
+            duration: 2000,
             animateRotate: true,
             easing: "easeOutCubic"
           },
@@ -165,7 +165,7 @@ export default function Dashboard() {
         options: {
           indexAxis: "y",
           responsive: true,
-          animation: { duration: 1200, easing: "easeOutQuart" },
+          animation: { duration: 2000, easing: "easeOutQuart" },
           plugins: {
             legend: { display: false }
           },
