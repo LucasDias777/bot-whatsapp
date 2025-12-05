@@ -109,6 +109,12 @@ export default function Dashboard() {
     triggerAnim,
   );
 
+  const mensagensHojeAnim = useCountAnimation(
+    dados.metricas.mensagensHoje,
+    2000,
+    triggerAnim,
+  );
+
   /* ============================================
       DESTRUIR GRÁFICOS AO VOLTAR AO DASHBOARD
   ============================================ */
@@ -305,9 +311,7 @@ export default function Dashboard() {
 
                 <div className={styles.card}>
                   <span className={styles.cardTitle}>Mensagens Hoje</span>
-                  <h2 className={styles.cardValue}>
-                    {dados.metricas.mensagensHoje}
-                  </h2>
+                  <h2 className={styles.cardValue}>{mensagensHojeAnim}</h2>
                 </div>
 
                 <div className={`${styles.card} ${styles.highlight}`}>

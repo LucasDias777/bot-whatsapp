@@ -11,7 +11,7 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS contatos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       numero TEXT NOT NULL,
-      nome TEXT,              -- 🔥 nova coluna adicionada
+      nome TEXT,
       grupo TEXT
     );
   `);
@@ -48,6 +48,14 @@ db.serialize(() => {
       PRIMARY KEY (grupo_id, contato_id),
       FOREIGN KEY (grupo_id) REFERENCES grupos(id),
       FOREIGN KEY (contato_id) REFERENCES contatos(id)
+    );
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS mensagens_diarias (
+      id INTEGER PRIMARY KEY,
+      dia TEXT,
+      contador INTEGER
     );
   `);
 });

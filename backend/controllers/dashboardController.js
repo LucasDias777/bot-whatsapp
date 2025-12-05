@@ -1,21 +1,29 @@
 const db = require("../database/database");
+const { getContadorHoje } = require("../services/contadorDiario");
 
+/**
+ * Retorna lista de chats (id, isGroup, name opcional) usando window.Store.
+ */
 async function getAllChats(client) {
   try {
     return await client.pupPage.evaluate(() => {
-      if (!window.Store || !window.Store.Chat) return [];
+      if (!window.Store || !window.Store.Chat || !window.Store.Chat.getModelsArray) return [];
 
       return window.Store.Chat.getModelsArray()
         .filter(chat => {
-          if (!chat?.id?._serialized) return false;
-          if (chat.isBroadcast) return false;
-          if (chat.isNewsletter) return false;
-          return true;
+          try {
+            if (!chat?.id?._serialized) return false;
+            if (chat.isBroadcast) return false;
+            if (chat.isNewsletter) return false;
+            return true;
+          } catch (e) {
+            return false;
+          }
         })
         .map(chat => ({
           id: chat.id._serialized,
-          // ✅ REGRA CORRETA
-          isGroup: chat.id._serialized.endsWith("@g.us")
+          isGroup: chat.id._serialized.endsWith("@g.us"),
+          formattedName: (chat.__x_formattedTitle || chat.name || (chat.contact && chat.contact.formattedName) || null)
         }));
     });
   } catch (err) {
@@ -24,9 +32,12 @@ async function getAllChats(client) {
   }
 }
 
-// Controller do Dashboard
+/**
+ * Controller do Dashboard
+ */
 async function getDashboard(req, res) {
   try {
+    // total de números no banco
     const totalNumeros = await new Promise((resolve, reject) => {
       db.get(`SELECT COUNT(*) AS total FROM contatos`, (err, row) => {
         if (err) reject(err);
@@ -42,43 +53,47 @@ async function getDashboard(req, res) {
     let mensagensHoje = 0;
     let contatosOnline = 0;
 
-    if (client?.info?.wid) {
+    if (client?.info?.wid && client.pupPage) {
+      // Pegar chats
       const chats = await getAllChats(client);
 
       chatsAtivos = chats.length;
       chatsGrupos = chats.filter(c => c.isGroup).length;
       chatsIndividuais = chats.filter(c => !c.isGroup).length;
 
-      /* ================================
-         📌 MENSAGENS ENVIADAS HOJE
-      ================================= */
-      try {
-        mensagensHoje = await client.pupPage.evaluate(() => {
-          const msgs = window.Store?.Msg?.getModelsArray?.() || [];
-          const inicioDoDia = new Date();
-          inicioDoDia.setHours(0, 0, 0, 0);
-          const inicioTimestamp = Math.floor(inicioDoDia.getTime() / 1000); // WhatsApp usa segundos
+      /**
+       * 📌 **NOVO** — Mensagens do dia usando o contador otimizado
+       */
+      mensagensHoje = await getContadorHoje();
 
-          return msgs.filter(msg =>
-            msg?.id?.fromMe &&
-            Number(msg?.t) >= inicioTimestamp
-          ).length;
-        });
-      } catch (err) {
-        console.error("Erro ao recuperar mensagensHoje:", err);
-        mensagensHoje = 0;
-      }
-
-      /* ================================
-         📌 CONTATOS ONLINE AGORA
-      ================================= */
+      /**
+       * 📌 CONTATOS ONLINE — mantido igual
+       */
       try {
         contatosOnline = await client.pupPage.evaluate(() => {
           const chats = window.Store?.Chat?.getModelsArray?.() || [];
 
-          return chats.filter(chat =>
-            chat?.presence?.isOnline === true
-          ).length;
+          const onlineCount = chats.reduce((acc, chat) => {
+            try {
+              const isGroup = chat.id?._serialized?.endsWith("@g.us");
+              if (isGroup) return acc;
+
+              if (chat?.presence?.isOnline) return acc + 1;
+
+              if (chat?.presences && typeof chat.presences === "object") {
+                const values = Object.values(chat.presences);
+                if (values.some(p => p?.isOnline === true)) return acc + 1;
+              }
+
+              if (chat?.isOnline === true) return acc + 1;
+
+              return acc;
+            } catch (e) {
+              return acc;
+            }
+          }, 0);
+
+          return onlineCount;
         });
       } catch (err) {
         console.error("Erro ao recuperar contatosOnline:", err);
@@ -86,6 +101,7 @@ async function getDashboard(req, res) {
       }
     }
 
+    // Resposta para o frontend
     res.json({
       grafico: { totalNumeros },
       metricas: {
