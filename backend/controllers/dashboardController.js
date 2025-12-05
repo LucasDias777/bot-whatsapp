@@ -1,13 +1,14 @@
 const db = require("../database/database");
 const { getContadorHoje } = require("../services/contadorDiario");
 
-/**
- * Retorna lista de chats (id, isGroup, name opcional) usando window.Store.
- */
+// -----------------------------
+// Função para retornar todos os chats
+// -----------------------------
 async function getAllChats(client) {
   try {
     return await client.pupPage.evaluate(() => {
-      if (!window.Store || !window.Store.Chat || !window.Store.Chat.getModelsArray) return [];
+      if (!window.Store || !window.Store.Chat || !window.Store.Chat.getModelsArray)
+        return [];
 
       return window.Store.Chat.getModelsArray()
         .filter(chat => {
@@ -23,7 +24,11 @@ async function getAllChats(client) {
         .map(chat => ({
           id: chat.id._serialized,
           isGroup: chat.id._serialized.endsWith("@g.us"),
-          formattedName: (chat.__x_formattedTitle || chat.name || (chat.contact && chat.contact.formattedName) || null)
+          formattedName:
+            chat.__x_formattedTitle ||
+            chat.name ||
+            (chat.contact && chat.contact.formattedName) ||
+            null
         }));
     });
   } catch (err) {
@@ -32,9 +37,9 @@ async function getAllChats(client) {
   }
 }
 
-/**
- * Controller do Dashboard
- */
+// -----------------------------
+// CONTROLLER DO DASHBOARD
+// -----------------------------
 async function getDashboard(req, res) {
   try {
     // total de números no banco
@@ -51,57 +56,38 @@ async function getDashboard(req, res) {
     let chatsIndividuais = 0;
     let chatsGrupos = 0;
     let mensagensHoje = 0;
-    let contatosOnline = 0;
 
     if (client?.info?.wid && client.pupPage) {
-      // Pegar chats
+
+      // 🟦 PEGAR LISTA DE CHATS
       const chats = await getAllChats(client);
 
       chatsAtivos = chats.length;
       chatsGrupos = chats.filter(c => c.isGroup).length;
       chatsIndividuais = chats.filter(c => !c.isGroup).length;
 
-      /**
-       * 📌 **NOVO** — Mensagens do dia usando o contador otimizado
-       */
+      // 🟩 MENSAGENS DO DIA
       mensagensHoje = await getContadorHoje();
-
-      /**
-       * 📌 CONTATOS ONLINE — mantido igual
-       */
-      try {
-        contatosOnline = await client.pupPage.evaluate(() => {
-          const chats = window.Store?.Chat?.getModelsArray?.() || [];
-
-          const onlineCount = chats.reduce((acc, chat) => {
-            try {
-              const isGroup = chat.id?._serialized?.endsWith("@g.us");
-              if (isGroup) return acc;
-
-              if (chat?.presence?.isOnline) return acc + 1;
-
-              if (chat?.presences && typeof chat.presences === "object") {
-                const values = Object.values(chat.presences);
-                if (values.some(p => p?.isOnline === true)) return acc + 1;
-              }
-
-              if (chat?.isOnline === true) return acc + 1;
-
-              return acc;
-            } catch (e) {
-              return acc;
-            }
-          }, 0);
-
-          return onlineCount;
-        });
-      } catch (err) {
-        console.error("Erro ao recuperar contatosOnline:", err);
-        contatosOnline = 0;
-      }
     }
 
-    // Resposta para o frontend
+    // -----------------------------
+    // NOVAS MÉTRICAS
+    // -----------------------------
+    const cpuUso = global.cpuUsage ?? 0;
+
+    const tempoConexao = global.whatsappStartTime
+      ? Date.now() - global.whatsappStartTime
+      : 0;
+
+    const tempoUltimoQR = global.lastQRCodeTime
+      ? Date.now() - global.lastQRCodeTime
+      : 0;
+
+    const reconexoes = global.reconnectCount ?? 0;
+
+    // -----------------------------
+    // JSON FINAL ENVIADO AO DASHBOARD
+    // -----------------------------
     res.json({
       grafico: { totalNumeros },
       metricas: {
@@ -109,7 +95,10 @@ async function getDashboard(req, res) {
         chatsIndividuais,
         chatsGrupos,
         mensagensHoje,
-        contatosOnline
+        cpuUso,
+        tempoConexao,
+        tempoUltimoQR,
+        reconexoes
       }
     });
 

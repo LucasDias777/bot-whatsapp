@@ -5,29 +5,21 @@ import logo from "../../assets/images/logo.png";
 import Status from "../Status/Status";
 import { getDashboardData } from "../../services/dashboardService";
 import { useAtualizar } from "../../context/AtualizarContexto";
-import {
-  Chart,
-  ArcElement,
-  DoughnutController,
-  Tooltip,
-  Legend,
-  BarElement,
-  BarController,
-  CategoryScale,
-  LinearScale,
-} from "chart.js";
+import { Chart, ArcElement, DoughnutController, Tooltip, Legend, BarElement, BarController, CategoryScale, LinearScale } from "chart.js";
 import { useCountAnimation } from "../../hooks/DispararAnimation";
 
-Chart.register(
-  DoughnutController,
-  ArcElement,
-  BarController,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-);
+function formatarTempo(ms) {
+  if (!ms || ms < 1000) return "0s";
+
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const ss = s % 60;
+
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+}
+
+Chart.register( DoughnutController, ArcElement, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend );
 
 export default function Dashboard() {
   const { pathname } = useLocation();
@@ -46,7 +38,10 @@ export default function Dashboard() {
       chatsIndividuais: 0,
       chatsGrupos: 0,
       mensagensHoje: 0,
-      contatosOnline: 0,
+      cpuUso: 0,
+      tempoConexao: 0,
+      tempoUltimoQR: 0,
+      reconexoes: 0,
     },
   });
 
@@ -81,7 +76,10 @@ export default function Dashboard() {
             chatsIndividuais: res?.metricas?.chatsIndividuais || 0,
             chatsGrupos: res?.metricas?.chatsGrupos || 0,
             mensagensHoje: res?.metricas?.mensagensHoje || 0,
-            contatosOnline: res?.metricas?.contatosOnline || 0,
+            cpuUso: res?.metricas?.cpuUso || 0,
+            tempoConexao: res?.metricas?.tempoConexao || 0,
+            tempoUltimoQR: res?.metricas?.tempoUltimoQR || 0,
+            reconexoes: res?.metricas?.reconexoes || 0,
           },
         });
 
@@ -96,6 +94,39 @@ export default function Dashboard() {
 
     return () => {
       mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  /* ============================================
+        ATUALIZAR CPU + TEMPOS A CADA 1 SEGUNDO
+  ============================================ */
+  useEffect(() => {
+    let active = true;
+
+    async function atualizarRapido() {
+      try {
+        const res = await getDashboardData();
+        if (!active) return;
+
+        setDados((prev) => ({
+          ...prev,
+          metricas: {
+            ...prev.metricas,
+            cpuUso: res?.metricas?.cpuUso || 0,
+            tempoConexao: res?.metricas?.tempoConexao || 0,
+            tempoUltimoQR: res?.metricas?.tempoUltimoQR || 0,
+          },
+        }));
+      } catch (err) {
+        console.error("Erro atualização rápida:", err);
+      }
+    }
+
+    const interval = setInterval(atualizarRapido, 1000);
+
+    return () => {
+      active = false;
       clearInterval(interval);
     };
   }, []);
@@ -305,6 +336,27 @@ export default function Dashboard() {
                 </div>
 
                 <div className={styles.card}>
+                  <span className={styles.cardTitle}>Tempo de Conexão</span>
+                  <h2 className={styles.cardValue}>
+                    {formatarTempo(dados.metricas.tempoConexao)}
+                  </h2>
+                </div>
+
+                <div className={styles.card}>
+                  <span className={styles.cardTitle}>Ultimo Qr Code</span>
+                  <h2 className={styles.cardValue}>
+                    {formatarTempo(dados.metricas.tempoUltimoQR)}
+                  </h2>
+                </div>
+
+                <div className={`${styles.card} ${styles.highlight}`}>
+                  <span className={styles.cardTitle}>Reconexões</span>
+                  <h2 className={styles.cardValue}>
+                    {dados.metricas.reconexoes}
+                  </h2>
+                </div>
+
+                <div className={styles.card}>
                   <span className={styles.cardTitle}>Chats Ativos</span>
                   <h2 className={styles.cardValue}>{chatsAtivosAnim}</h2>
                 </div>
@@ -315,10 +367,8 @@ export default function Dashboard() {
                 </div>
 
                 <div className={`${styles.card} ${styles.highlight}`}>
-                  <span className={styles.cardTitle}>Contatos Online</span>
-                  <h2 className={styles.cardValue}>
-                    {dados.metricas.contatosOnline}
-                  </h2>
+                  <span className={styles.cardTitle}>Performance</span>
+                  <h2 className={styles.cardValue}>{dados.metricas.cpuUso}%</h2>
                 </div>
               </div>
 
