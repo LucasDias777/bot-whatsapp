@@ -321,14 +321,16 @@
 
 .cardsWrapper > div:nth-child(5),
 .cardsWrapper > div:nth-child(6) {
-  /* garantir que tenham mesmo comportamento */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 /* ===================== */
-/* GRÁFICOS
+/* GRÁFICOS (AJUSTADOS PARA FORÇAR RESPONSIVIDADE DO CANVAS)
+   - garante que o <canvas> ocupe 100% do .chartArea
+   - .chartArea usa altura fluida com min/max para manter legibilidade
+   - media queries aumentam/ diminuem altura conforme viewport
 /* ===================== */
 
 .chartsRow {
@@ -338,30 +340,51 @@
   margin-top: 1.1rem;
 }
 
+/* manutenção do estilo do card do gráfico (mantido/compatível) */
 .chartCard {
-  background: rgba(255,255,255,0.9);
-  padding: 0.9rem 1rem;
-  border-radius: 14px;
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 8px 20px rgba(13,30,51,0.04);
-  display: flex;
-  flex-direction: column;
-  min-height: 180px; /* reduzido de 220 para 180 */
-  box-sizing: border-box;
+  display:flex;
+  flex-direction:column;
+  min-height:180px;
+  box-sizing:border-box;
+  background:rgb(255 255 255 / .9);
+  padding:.9rem 1rem;
+  border-radius:14px;
+  border:1px solid rgb(0 0 0 / .06);
+  box-shadow:0 8px 20px rgb(13 30 51 / .04);
 }
 
-.chartTitle {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: #1f2937;
+/* Área que contém o canvas — usar altura fluida, sem valores px rígidos que quebrem a responsividade */
+.chartArea{
+  width:100%;
+  flex:1 1 auto;
+  min-height:180px;    
+  max-height:420px;   
+  position:relative;
+  margin-bottom:.6rem;
+  box-sizing:border-box;
 }
 
-.chartArea {
-  flex: 1;
-  height: 140px;
-  position: relative;
-  margin-bottom: 0.6rem;
+/* Força o canvas a ocupar 100% do container da chartArea */
+.chartArea canvas{
+  width:100% !important;
+  height:100% !important;
+  display:block;
+}
+
+/* Em telas pequenas, dá mais altura pro gráfico */
+@media (max-width:1200px){
+  .chartsRow{
+    grid-template-columns:1fr;
+  }
+  .chartArea{
+    min-height:220px;
+  }
+}
+
+@media (min-width:1600px){
+  .chartArea{
+    max-height:520px;
+  }
 }
 
 /* ===================== */
@@ -369,6 +392,13 @@
    - bloco leve com ícones de swatch, texto alinhado, espaçamento consistente
    - legível em telas pequenas também
 /* ===================== */
+
+.chartTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
 
 .chartLegend {
   display: flex;
@@ -412,7 +442,6 @@
 /* ===================== */
 
 @media (max-width: 1200px) {
-  /* em telas menores voltamos para 1 coluna (mobile friendly) */
   .cardsWrapper {
     grid-template-columns: 1fr;
     grid-template-areas:
