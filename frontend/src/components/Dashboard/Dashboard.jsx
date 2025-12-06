@@ -5,7 +5,17 @@ import logo from "../../assets/images/logo.png";
 import Status from "../Status/Status";
 import { getDashboardData } from "../../services/dashboardService";
 import { useAtualizar } from "../../context/AtualizarContexto";
-import { Chart, ArcElement, DoughnutController, Tooltip, Legend, BarElement, BarController, CategoryScale, LinearScale } from "chart.js";
+import {
+  Chart,
+  ArcElement,
+  DoughnutController,
+  Tooltip,
+  Legend,
+  BarElement,
+  BarController,
+  CategoryScale,
+  LinearScale,
+} from "chart.js";
 import { useCountAnimation } from "../../hooks/DispararAnimation";
 
 function formatarTempo(ms) {
@@ -17,7 +27,16 @@ function formatarTempo(ms) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
 }
 
-Chart.register(DoughnutController, ArcElement, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+Chart.register(
+  DoughnutController,
+  ArcElement,
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+);
 
 export default function Dashboard() {
   const { pathname } = useLocation();
@@ -88,7 +107,10 @@ export default function Dashboard() {
 
     carregar();
     const interval = setInterval(carregar, 3000);
-    return () => { mounted = false; clearInterval(interval); };
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []); // mantém 3s para dados pesados
 
   /* ============================================
@@ -118,7 +140,10 @@ export default function Dashboard() {
     }
 
     const interval = setInterval(atualizarRapido, 1000);
-    return () => { active = false; clearInterval(interval); };
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, []);
 
   /* ============================================
@@ -184,12 +209,14 @@ export default function Dashboard() {
         type: "doughnut",
         data: {
           labels: ["Números Cadastrados"],
-          datasets: [{
-            data: [0],
-            backgroundColor: ["#3b82f6"],
-            hoverOffset: 8,
-            borderWidth: 0,
-          }],
+          datasets: [
+            {
+              data: [0],
+              backgroundColor: ["#3b82f6"],
+              hoverOffset: 8,
+              borderWidth: 0,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -219,12 +246,14 @@ export default function Dashboard() {
         type: "bar",
         data: {
           labels: ["Chats Individuais", "Chats em Grupo"],
-          datasets: [{
-            label: "Quantidade",
-            data: [0, 0],
-            backgroundColor: ["#3b82f6", "#10b981"],
-            borderWidth: 1,
-          }],
+          datasets: [
+            {
+              label: "Quantidade",
+              data: [0, 0],
+              backgroundColor: ["#3b82f6", "#10b981"],
+              borderWidth: 1,
+            },
+          ],
         },
         options: {
           indexAxis: "y",
@@ -252,8 +281,16 @@ export default function Dashboard() {
   /* ============================================
       ANIMAÇÃO DOS CONTADORES
   ============================================ */
-  const chatsAtivosAnim = useCountAnimation(dados.metricas.chatsAtivos, 2000, triggerAnim);
-  const mensagensHojeAnim = useCountAnimation(dados.metricas.mensagensHoje, 2000, triggerAnim);
+  const chatsAtivosAnim = useCountAnimation(
+    dados.metricas.chatsAtivos,
+    2000,
+    triggerAnim,
+  );
+  const mensagensHojeAnim = useCountAnimation(
+    dados.metricas.mensagensHoje,
+    2000,
+    triggerAnim,
+  );
 
   /* ============================================
       RENDER
@@ -279,12 +316,42 @@ export default function Dashboard() {
         </div>
 
         <nav className={styles.menu}>
-          <Link to="/" className={`${styles.menuItem} ${pathname === "/" && styles.active}`}>🏠 Dashboard</Link>
-          <Link to="/contatos" className={`${styles.menuItem} ${pathname === "/contatos" && styles.active}`}>👥 Contatos</Link>
-          <Link to="/grupos" className={`${styles.menuItem} ${pathname === "/grupos" && styles.active}`}>💬 Grupos</Link>
-          <Link to="/mensagens" className={`${styles.menuItem} ${pathname === "/mensagens" && styles.active}`}>✉️ Mensagens</Link>
-          <Link to="/agendamentos" className={`${styles.menuItem} ${pathname === "/agendamentos" && styles.active}`}>⏰ Agendamentos</Link>
-          <Link to="/enviar-agora" className={`${styles.menuItem} ${pathname === "/enviar-agora" && styles.active}`}>🚀 Enviar Agora</Link>
+          <Link
+            to="/"
+            className={`${styles.menuItem} ${pathname === "/" && styles.active}`}
+          >
+            🏠 Dashboard
+          </Link>
+          <Link
+            to="/contatos"
+            className={`${styles.menuItem} ${pathname === "/contatos" && styles.active}`}
+          >
+            👥 Contatos
+          </Link>
+          <Link
+            to="/grupos"
+            className={`${styles.menuItem} ${pathname === "/grupos" && styles.active}`}
+          >
+            💬 Grupos
+          </Link>
+          <Link
+            to="/mensagens"
+            className={`${styles.menuItem} ${pathname === "/mensagens" && styles.active}`}
+          >
+            ✉️ Mensagens
+          </Link>
+          <Link
+            to="/agendamentos"
+            className={`${styles.menuItem} ${pathname === "/agendamentos" && styles.active}`}
+          >
+            ⏰ Agendamentos
+          </Link>
+          <Link
+            to="/enviar-agora"
+            className={`${styles.menuItem} ${pathname === "/enviar-agora" && styles.active}`}
+          >
+            🚀 Enviar Agora
+          </Link>
         </nav>
 
         <footer className={styles.sidebarFooter}>v1.0 • BOT-WHATSAPP</footer>
@@ -295,7 +362,11 @@ export default function Dashboard() {
         <header className={styles.header}>
           <h3 className={styles.pageTitle}>{title}</h3>
           <div className={styles.headerActions}>
-            <input type="text" placeholder="Pesquisar..." className={styles.searchInput} />
+            <input
+              type="text"
+              placeholder="Pesquisar..."
+              className={styles.searchInput}
+            />
             <div className={styles.userBadge}>GD</div>
           </div>
         </header>
@@ -306,36 +377,82 @@ export default function Dashboard() {
             <>
               {/* CARDS */}
               <div className={styles.cardsWrapper}>
-                <div className={styles.statusFull}><Status /></div>
-
-                <div className={styles.card}>
-                  <span className={styles.cardTitle}>Tempo de Conexão</span>
-                  <h2 className={styles.cardValue}>{formatarTempo(dados.metricas.tempoConexao)}</h2>
+                <div className={styles.statusFull}>
+                  <Status />
                 </div>
 
+                {/* Tempo de Conexão */}
                 <div className={styles.card}>
-                  <span className={styles.cardTitle}>Último QR Code</span>
-                  <h2 className={styles.cardValue}>{formatarTempo(dados.metricas.tempoUltimoQR)}</h2>
+                  <div className={styles.cardIcon} aria-hidden="true">
+                    ⏱️
+                  </div>
+                  <div className={styles.cardContent}>
+                    <span className={styles.cardTitle}>Tempo de Conexão</span>
+                    <h2 className={styles.cardValue}>
+                      {formatarTempo(dados.metricas.tempoConexao)}
+                    </h2>
+                  </div>
                 </div>
 
+                {/* Último QR Code */}
+                <div className={styles.card}>
+                  <div className={styles.cardIcon} aria-hidden="true">
+                    🔳
+                  </div>
+                  <div className={styles.cardContent}>
+                    <span className={styles.cardTitle}>Último QR Code</span>
+                    <h2 className={styles.cardValue}>
+                      {formatarTempo(dados.metricas.tempoUltimoQR)}
+                    </h2>
+                  </div>
+                </div>
+
+                {/* Reconexões (destaque) */}
                 <div className={`${styles.card} ${styles.highlight}`}>
-                  <span className={styles.cardTitle}>Reconexões</span>
-                  <h2 className={styles.cardValue}>{dados.metricas.reconexoes}</h2>
+                  <div className={styles.cardIcon} aria-hidden="true">
+                    🔁
+                  </div>
+                  <div className={styles.cardContent}>
+                    <span className={styles.cardTitle}>Reconexões</span>
+                    <h2 className={styles.cardValue}>
+                      {dados.metricas.reconexoes}
+                    </h2>
+                  </div>
                 </div>
 
+                {/* Chats Ativos */}
                 <div className={styles.card}>
-                  <span className={styles.cardTitle}>Chats Ativos</span>
-                  <h2 className={styles.cardValue}>{chatsAtivosAnim}</h2>
+                  <div className={styles.cardIcon} aria-hidden="true">
+                    💬
+                  </div>
+                  <div className={styles.cardContent}>
+                    <span className={styles.cardTitle}>Chats Ativos</span>
+                    <h2 className={styles.cardValue}>{chatsAtivosAnim}</h2>
+                  </div>
                 </div>
 
+                {/* Mensagens Hoje */}
                 <div className={styles.card}>
-                  <span className={styles.cardTitle}>Mensagens Hoje</span>
-                  <h2 className={styles.cardValue}>{mensagensHojeAnim}</h2>
+                  <div className={styles.cardIcon} aria-hidden="true">
+                    ✉️
+                  </div>
+                  <div className={styles.cardContent}>
+                    <span className={styles.cardTitle}>Mensagens Hoje</span>
+                    <h2 className={styles.cardValue}>{mensagensHojeAnim}</h2>
+                  </div>
                 </div>
 
+                {/* Performance (destaque) */}
                 <div className={`${styles.card} ${styles.highlight}`}>
-                  <span className={styles.cardTitle}>Performance</span>
-                  <h2 className={styles.cardValue}>{dados.metricas.cpuUso}%</h2>
+                  <div className={styles.cardIcon} aria-hidden="true">
+                    📈
+                  </div>
+                  <div className={styles.cardContent}>
+                    <span className={styles.cardTitle}>Performance</span>
+                    <h2 className={styles.cardValue}>
+                      {dados.metricas.cpuUso}%
+                    </h2>
+                  </div>
                 </div>
               </div>
 
@@ -344,27 +461,56 @@ export default function Dashboard() {
                 <div className={styles.chartCard}>
                   <div className={styles.chartTitle}>Números Cadastrados</div>
                   <div className={styles.chartArea}>
-                    {!dadosCarregados ? <p style={{ textAlign: "center", opacity: 0.6 }}>Carregando gráfico...</p> : <canvas ref={doughnutRef}></canvas>}
+                    {!dadosCarregados ? (
+                      <p style={{ textAlign: "center", opacity: 0.6 }}>
+                        Carregando gráfico...
+                      </p>
+                    ) : (
+                      <canvas ref={doughnutRef}></canvas>
+                    )}
                   </div>
                   <div className={styles.chartLegend}>
                     <div className={styles.legendItem}>
-                      <span className={styles.legendSwatch} style={{ background: "#3b82f6" }}></span>
-                      <span>Números: {totalNumeros.toLocaleString("pt-BR")}</span>
+                      <span
+                        className={styles.legendSwatch}
+                        style={{ background: "#3b82f6" }}
+                      ></span>
+                      <span>
+                        Números: {totalNumeros.toLocaleString("pt-BR")}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <div className={styles.chartCard}>
-                  <div className={styles.chartTitle}>Chats Individuais x Grupos</div>
-                  <div className={styles.chartArea}><canvas ref={barRef}></canvas></div>
+                  <div className={styles.chartTitle}>
+                    Chats Individuais x Grupos
+                  </div>
+                  <div className={styles.chartArea}>
+                    <canvas ref={barRef}></canvas>
+                  </div>
                   <div className={styles.chartLegend}>
                     <div className={styles.legendItem}>
-                      <span className={styles.legendSwatch} style={{ background: "#3b82f6" }}></span>
-                      <span>Individuais: {dados.metricas.chatsIndividuais.toLocaleString("pt-BR")}</span>
+                      <span
+                        className={styles.legendSwatch}
+                        style={{ background: "#3b82f6" }}
+                      ></span>
+                      <span>
+                        Individuais:{" "}
+                        {dados.metricas.chatsIndividuais.toLocaleString(
+                          "pt-BR",
+                        )}
+                      </span>
                     </div>
                     <div className={styles.legendItem}>
-                      <span className={styles.legendSwatch} style={{ background: "#10b981" }}></span>
-                      <span>Grupos: {dados.metricas.chatsGrupos.toLocaleString("pt-BR")}</span>
+                      <span
+                        className={styles.legendSwatch}
+                        style={{ background: "#10b981" }}
+                      ></span>
+                      <span>
+                        Grupos:{" "}
+                        {dados.metricas.chatsGrupos.toLocaleString("pt-BR")}
+                      </span>
                     </div>
                   </div>
                 </div>

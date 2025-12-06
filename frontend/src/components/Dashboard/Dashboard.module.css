@@ -180,7 +180,7 @@
 
 .cardsWrapper {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 colunas reais */
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   grid-template-rows: auto auto auto;
   grid-template-areas:
     "tempo   status status reconexoes"
@@ -197,7 +197,6 @@
   display: flex;
   align-items: stretch;
   justify-content: center;
-  /* força ocupar todo o espaço vertical da área do grid */
   align-self: stretch;
 }
 
@@ -221,49 +220,80 @@
 /* CARD BASE */
 /* ===================== */
 
-.card {
-  background: var(--card-bg);
-  padding: 1.2rem;
-  border-radius: 16px;
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--card-border);
-  box-shadow: 0 6px 22px rgba(0,0,0,0.08);
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  text-align: center;
-  min-height: 110px;
-  transition: 0.25s ease;
+.card{
+  display:flex;
+  flex-direction:row;           
+  align-items:center;
+  gap:1rem;
+  padding:1rem;
+  border-radius:16px;
+  backdrop-filter:blur(14px);
+  border:1px solid var(--card-border);
+  box-shadow:0 6px 22px rgb(0 0 0 / .08);
+  background:var(--card-bg);
+  min-height:84px;
+  transition:0.25s ease;
+  text-align:left;
+  box-sizing:border-box;
+}
+.card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 10px 28px rgb(0 0 0 / .12);
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+/* bloco do ícone à esquerda */
+.cardIcon{
+  flex:0 0 64px;
+  width:64px;
+  height:64px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.6rem;         
+  background:rgba(255,255,255,0.12);
+  box-shadow:0 6px 18px rgb(11 31 63 / .06);
+  color:var(--text);
 }
 
-.cardTitle {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--muted);
+/* caso precise de um ícone menor dentro do bloco (opcional) */
+.cardIconInner{
+  font-size:1.4rem;
 }
 
-.cardValue {
-  margin-top: 0.4rem;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--text);
+/* conteúdo textual do card (título + valor) */
+.cardContent{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+}
+
+/* ajuste sutil nos textos para alinhamento esquerdo */
+.cardTitle{
+  font-size:.85rem;
+  font-weight:500;
+  color:var(--muted);
+  margin:0;
+}
+.cardValue{
+  margin-top:.35rem;
+  font-size:1.6rem;
+  font-weight:700;
+  color:var(--text);
 }
 
 /* Destaques */
-.highlight {
-  background: linear-gradient(to bottom, var(--primary-start), var(--primary-end));
+.highlight{
+  background:linear-gradient(to bottom,var(--primary-start),var(--primary-end));
+  color:#fff;
+}
+.highlight .cardTitle{ color: rgba(255,255,255,0.92); }
+.highlight .cardValue{ color: #fff; }
+.highlight .cardIcon{
+  background: rgba(255,255,255,0.16);
   color: #fff;
 }
-.highlight .cardTitle { color: rgba(255,255,255,0.9); }
-.highlight .cardValue { color: #fff; }
 
 /* ===================== */
 /* AJUSTES ESPECÍFICOS DO STATUS
@@ -278,13 +308,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* garante que o conteúdo interno fique centralizado como você comentou */
   flex-direction: column;
   padding: 1.2rem;
   box-sizing: border-box;
 }
 
-/* Caso o Status tenha bordas arredondadas e sombra herdadas do .card, mantemos */
 /* ===================== */
 /* CARDS CHATS / MENSAGENS: força 50%/50% (mesma largura)
    - chats em coluna 1, mensagens em coluna 2 (coluna 3 fica vazia)
@@ -301,8 +329,6 @@
 
 /* ===================== */
 /* GRÁFICOS
-   - reduzir um pouco a área para liberar espaço para novos gráficos
-   - legendas: voltar com aspecto "bonito" (swatch + texto, leve sombra, fundo sutil)
 /* ===================== */
 
 .chartsRow {
@@ -331,10 +357,9 @@
   color: #1f2937;
 }
 
-/* área do canvas menor */
 .chartArea {
   flex: 1;
-  height: 140px; /* reduzido de 165/150 */
+  height: 140px;
   position: relative;
   margin-bottom: 0.6rem;
 }
@@ -405,7 +430,7 @@
   }
 
   .chartArea {
-    height: 200px; /* dá mais altura no mobile se necessário */
+    height: 200px;
   }
 }
 
