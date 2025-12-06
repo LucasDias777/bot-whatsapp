@@ -1,12 +1,20 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap);
 
 :root {
-  /* Palette ajustada: sidebar mais claro + accent para elementos de interação */
-  --primary-start: #5ea8ff; /* azul mais claro */
-  --primary-end: #2b76d6;   /* azul médio-escuro para profundidade */
-  --accent: #3b82f6;        /* usado em focos e sombras */
-  --accent-dark: #235bb5;   /* usado em gradientes do badge */
+  --primary-start: #5ea8ff;
+  --primary-end: #2b76d6;
+  --accent: #3b82f6;
+  --accent-dark: #235bb5;
+
+  --card-bg: rgba(255,255,255,0.72);
+  --card-border: rgba(0,0,0,0.07);
+  --muted: #6b7280;
+  --text: #1f2937;
 }
+
+/* ===================== */
+/* LAYOUT BASE */
+/* ===================== */
 
 .dashboard {
   display: flex;
@@ -16,17 +24,12 @@
   backdrop-filter: blur(8px);
 }
 
-/* SIDEBAR */
 .sidebar {
   width: 270px;
-  background: linear-gradient(
-    to bottom,
-    var(--primary-start),
-    var(--primary-end)
-  );
+  background: linear-gradient(to bottom, var(--primary-start), var(--primary-end));
   backdrop-filter: blur(18px);
-  border-right: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 4px 0 18px rgba(0, 0, 0, 0.12);
+  border-right: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 4px 0 18px rgba(0,0,0,0.12);
   display: flex;
   flex-direction: column;
   padding: 2rem 1.2rem;
@@ -34,14 +37,13 @@
 
 .sidebarLogoBox {
   text-align: center;
-  margin-bottom: rem;
   opacity: 0;
   animation: fadeIn 0.6s ease forwards;
 }
 
 .logo {
   width: 180px;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.18));
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.18));
 }
 
 .logoText {
@@ -69,26 +71,23 @@
   font-weight: 600;
   text-decoration: none;
   border-radius: 12px;
-
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-
+  color: #fff;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
   backdrop-filter: blur(12px);
   transition: 0.25s ease;
 }
 
 .menuItem:hover {
   transform: translateX(4px);
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.22);
 }
 
 .active {
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
+  background: rgba(255,255,255,0.18);
   font-weight: 700;
-  box-shadow: 0 6px 18px rgba(35, 91, 181, 0.18);
+  box-shadow: 0 6px 18px rgba(35,91,181,0.18);
 }
 
 .sidebarFooter {
@@ -99,26 +98,23 @@
   opacity: 0.85;
 }
 
-/* MAIN */
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  position: relative;
   background: #eef1f8;
   overflow: hidden;
 }
 
-/* HEADER */
 .header {
   height: 78px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 2rem;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255,255,255,0.55);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
   animation: fadeDown 0.45s ease;
 }
 
@@ -136,8 +132,8 @@
 }
 
 .searchInput {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(0,0,0,0.1);
   border-radius: 10px;
   padding: 0.6rem 1rem;
   width: 220px;
@@ -148,29 +144,27 @@
 .searchInput:focus {
   background: #fff;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
 }
 
 .userBadge {
   width: 42px;
   height: 42px;
-  background: linear-gradient(
-    135deg,
-    var(--primary-start),
-    var(--primary-end)
-  );
+  background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
   color: #fff;
   border-radius: 50%;
   font-weight: 600;
-  font-size: 0.92rem;
+  font-size: .92rem;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  box-shadow: 0 4px 12px rgba(46, 120, 214, 0.35);
+  box-shadow: 0 4px 12px rgba(46,120,214,0.35);
 }
 
-/* CONTENT */
+/* ===================== */
+/* CONTEÚDO */
+/* ===================== */
+
 .content {
   flex: 1;
   padding: 2rem 2.2rem;
@@ -178,183 +172,285 @@
   animation: fadeIn 0.6s ease;
 }
 
-/* CARDS –– AJUSTE DO LAYOUT PARA O STATUS 1x3 */
+/* ===================== */
+/* GRID PRINCIPAL DE CARDS
+   - ajuste: equalizei colunas para facilitar 50/50
+   - status central foi estendido para ocupar duas colunas (visual maior)
+/* ===================== */
+
 .cardsWrapper {
   display: grid;
-
-  grid-template-columns: repeat(3, 1fr);
-
+  grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 colunas reais */
+  grid-template-rows: auto auto auto;
+  grid-template-areas:
+    "tempo   status status reconexoes"
+    "qr      status status performance"
+    "chats   chats  mensagens mensagens";
   gap: 1.3rem;
-  margin-top: 0.5rem;
+  margin-top: 0.8rem;
+  align-items: stretch;
 }
 
+/* Status central ocupa as duas colunas do meio/direita */
 .statusFull {
-  grid-column: span 3 !important;
+  grid-area: status;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  /* força ocupar todo o espaço vertical da área do grid */
+  align-self: stretch;
 }
+
+/* Mapeamento por ordem (JSX tem um padrão de inserção):
+   1 -> statusFull (colocado primeiro no JSX)
+   2 -> Tempo de Conexão
+   3 -> Último QR Code
+   4 -> Reconexões
+   5 -> Chats Ativos
+   6 -> Mensagens Hoje
+   7 -> Performance
+*/
+.cardsWrapper > div:nth-child(2) { grid-area: tempo; }
+.cardsWrapper > div:nth-child(3) { grid-area: qr; }
+.cardsWrapper > div:nth-child(4) { grid-area: reconexoes; }
+.cardsWrapper > div:nth-child(5) { grid-area: chats; }
+.cardsWrapper > div:nth-child(6) { grid-area: mensagens; }
+.cardsWrapper > div:nth-child(7) { grid-area: performance; }
+
+/* ===================== */
+/* CARD BASE */
+/* ===================== */
 
 .card {
-  background: rgba(255, 255, 255, 0.65);
-  padding: 1.2rem 1.2rem;
+  background: var(--card-bg);
+  padding: 1.2rem;
   border-radius: 16px;
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 6px 22px rgba(0,0,0,0.08);
+
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+  min-height: 110px;
   transition: 0.25s ease;
-  animation: fadeUp 0.5s ease;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.12);
 }
 
 .cardTitle {
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: #677081;
+  color: var(--muted);
 }
 
 .cardValue {
   margin-top: 0.4rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  font-size: 1.7rem;
-  color: #232a3b;
+  color: var(--text);
 }
 
+/* Destaques */
 .highlight {
-  background: linear-gradient(
-    to bottom,
-    var(--primary-start),
-    var(--primary-end)
-  );
+  background: linear-gradient(to bottom, var(--primary-start), var(--primary-end));
   color: #fff;
 }
+.highlight .cardTitle { color: rgba(255,255,255,0.9); }
+.highlight .cardValue { color: #fff; }
 
-.highlight .cardTitle {
-  color: rgba(255, 255, 255, 0.85);
+/* ===================== */
+/* AJUSTES ESPECÍFICOS DO STATUS
+   - força o card do Status a preencher a área inteira
+   - se o componente Status (dashboardCard) compõe card, aplicamos height:100%
+/* ===================== */
+
+.statusFull > .dashboardCard,
+.statusFull > div {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* garante que o conteúdo interno fique centralizado como você comentou */
+  flex-direction: column;
+  padding: 1.2rem;
+  box-sizing: border-box;
 }
 
-.highlight .cardValue {
-  color: #fff;
+/* Caso o Status tenha bordas arredondadas e sombra herdadas do .card, mantemos */
+/* ===================== */
+/* CARDS CHATS / MENSAGENS: força 50%/50% (mesma largura)
+   - chats em coluna 1, mensagens em coluna 2 (coluna 3 fica vazia)
+   - como as colunas são iguais (repeat(3,1fr)), chats e mensagens terão larguras iguais
+/* ===================== */
+
+.cardsWrapper > div:nth-child(5),
+.cardsWrapper > div:nth-child(6) {
+  /* garantir que tenham mesmo comportamento */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* GRÁFICOS */
+/* ===================== */
+/* GRÁFICOS
+   - reduzir um pouco a área para liberar espaço para novos gráficos
+   - legendas: voltar com aspecto "bonito" (swatch + texto, leve sombra, fundo sutil)
+/* ===================== */
+
 .chartsRow {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 1.3rem;
-  margin-top: 1.6rem;
-  align-items: stretch;
-
-  /* AJUSTE NOVO */
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
+  margin-top: 1.1rem;
 }
 
 .chartCard {
-  background: rgba(255, 255, 255, 0.75);
-  padding: 1rem;
+  background: rgba(255,255,255,0.9);
+  padding: 0.9rem 1rem;
   border-radius: 14px;
   border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 8px 22px rgba(13, 30, 51, 0.06);
+  box-shadow: 0 8px 20px rgba(13,30,51,0.04);
   display: flex;
   flex-direction: column;
-
-  /* AJUSTE NOVO */
-  min-height: 190px !important;
+  min-height: 180px; /* reduzido de 220 para 180 */
+  box-sizing: border-box;
 }
 
 .chartTitle {
+  font-size: 1rem;
   font-weight: 700;
-  color: #253244;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
 }
 
+/* área do canvas menor */
 .chartArea {
   flex: 1;
+  height: 140px; /* reduzido de 165/150 */
   position: relative;
-
-  /* AJUSTE NOVO */
-  height: 150px !important;
-
   margin-bottom: 0.6rem;
 }
+
+/* ===================== */
+/* LEGEND (estética restaurada)
+   - bloco leve com ícones de swatch, texto alinhado, espaçamento consistente
+   - legível em telas pequenas também
+/* ===================== */
 
 .chartLegend {
   display: flex;
-  justify-content: flex-start;
+  gap: 1rem;
   align-items: center;
-  gap: 2rem;
+  flex-wrap: wrap;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.6);
+  box-shadow: 0 6px 12px rgba(11,31,63,0.04);
+  border: 1px solid rgba(0,0,0,0.03);
 }
 
+/* item da legenda */
 .legendItem {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.9rem;
-  color: #55606f;
+  font-size: 0.92rem;
+  color: #374151;
 }
 
+/* swatch maior e com contorno sutil */
 .legendSwatch {
-  width: 18px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   border-radius: 3px;
   display: inline-block;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.04);
 }
 
+/* nota menor */
 .legendNote {
-  color: #7b8794;
+  color: #6b7280;
   font-size: 0.82rem;
 }
 
-/* ANIMATIONS */
+/* ===================== */
+/* RESPONSIVO */
+/* ===================== */
+
+@media (max-width: 1200px) {
+  /* em telas menores voltamos para 1 coluna (mobile friendly) */
+  .cardsWrapper {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "status"
+      "tempo"
+      "qr"
+      "reconexoes"
+      "performance"
+      "chats"
+      "mensagens";
+  }
+
+  .chartsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .chartArea {
+    height: 200px; /* dá mais altura no mobile se necessário */
+  }
+}
+
+/* ===================== */
+/* ANIMAÇÕES E SCROLLBAR */
+/* ===================== */
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeDown {
   from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* SCROLL */
 .content::-webkit-scrollbar {
   width: 8px;
 }
-
 .content::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0,0,0,0.04);
   border-radius: 4px;
 }
-
 .content::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.45);
+  background: rgba(59,130,246,0.45);
   border-radius: 6px;
 }
-
 .content::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.7);
+  background: rgba(59,130,246,0.7);
 }
 
-/* EXTRA VISUAL */
 .glassSmooth {
-  background: rgba(255, 255, 255, 0.42);
+  background: rgba(255,255,255,0.42);
   border-radius: 18px;
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.12);
 }
 
-/* ⛔ AJUSTE PARA REMOVER SCROLL LATERAL */
 .main, .content, body, html {
   overflow-x: hidden !important;
 }

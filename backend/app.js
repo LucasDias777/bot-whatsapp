@@ -4,127 +4,142 @@ const { app, setQR, setConectado } = require("./painel");
 const { iniciarAgendamentos } = require("./services/agenda");
 const { inicializarContadorDiario, incrementarContador } = require("./services/contadorDiario");
 
-// Lista global de clientes ativos
-if (!global.whatsappClients) global.whatsappClients = [];
-
-// =========================================
-// MÉTRICAS DO SISTEMA WHATSAPP WEB
-// =========================================
-
-// horário do último ready (para uptime)
+// ========================================================
+// VARIÁVEIS GLOBAIS
+// ========================================================
+global.whatsappClients = [];
 global.whatsappStartTime = null;
-
-// horário do último qr code
 global.lastQRCodeTime = null;
-
-// contador de reconexões automáticas
 global.reconnectCount = 0;
 
-// uso de CPU calculado periodicamente
+// CPU REAL DA ABA WHATSAPP (DevTools)
 global.cpuUsage = 0;
+global.__lastPerfMetrics = null;
 
-// controle interno para cálculo de CPU
-global.__cpuLastCheck = Date.now();
-global.__cpuLastUsage = process.cpuUsage();
-
-// =========================================
-// CRIA O CLIENTE WHATSAPP
-// =========================================
+// ========================================================
+// CRIA CLIENTE WPPWEB
+// ========================================================
 const client = new Client({
-  authStrategy: new LocalAuth({ clientId: "session-bot" }),
+  authStrategy: new LocalAuth({ clientId: "session-bot" })
 });
 
 global.client = client;
 
-// =========================================
-// EVENTO — QR CODE GERADO
-// =========================================
+// ========================================================
+// EVENTO: QR GERADO
+// ========================================================
 client.on("qr", async (qr) => {
   console.log("📱 Escaneie o QR Code!");
 
-  global.lastQRCodeTime = Date.now(); // 🔥 registra horário do QR
+  global.lastQRCodeTime = Date.now();
 
   const qrCodeDataURL = await QRCode.toDataURL(qr);
-
   setQR(qrCodeDataURL);
   setConectado(false);
 
   global.atualizar?.();
 });
 
-// =========================================
-// EVENTO — PRONTO / CONECTADO
-// =========================================
+// ========================================================
+// EVENTO: CLIENTE CONECTADO
+// ========================================================
 client.on("ready", () => {
   console.log("✅ Bot conectado!");
 
-  global.whatsappStartTime = Date.now(); // 🔥 início do uptime
+  global.whatsappStartTime = Date.now();
+  global.whatsappClients.push(client);
   setConectado(true);
 
-  // Armazena cliente ativo
-  global.whatsappClients.push(client);
   global.atualizar?.();
 
   inicializarContadorDiario();
   iniciarAgendamentos(client);
 });
 
-// =========================================
-// EVENTO — RECONEXÕES
-// =========================================
+// ========================================================
+// EVENTO: RECONEXÃO
+// ========================================================
 client.on("change_state", (state) => {
   if (state === "CONNECTING") {
-    global.reconnectCount++; // 🔥 soma reconexão automática
+    global.reconnectCount++;
   }
 });
 
-// =========================================
-// EVENTO — CONTAR MENSAGENS RECEBIDAS
-// =========================================
+// ========================================================
+// EVENTO: MENSAGEM RECEBIDA
+// ========================================================
 client.on("message", (msg) => {
-  if (msg.fromMe) return;
-  incrementarContador();
+  if (!msg.fromMe) incrementarContador();
 });
 
-// =========================================
-// EVENTO — DESCONECTADO
-// =========================================
+// ========================================================
+// EVENTO: DESCONEXÃO
+// ========================================================
 client.on("disconnected", () => {
-  console.log("❌ Cliente desconectado, removido da lista");
-
-  global.whatsappClients = global.whatsappClients.filter((c) => c !== client);
-
+  global.whatsappClients = global.whatsappClients.filter(c => c !== client);
   setConectado(false);
   global.atualizar?.();
 });
 
-// =========================================
+// ========================================================
 // INICIALIZA CLIENTE
-// =========================================
+// ========================================================
 client.initialize();
 
 // ====================================================================
-// MONITORAR USO DE CPU DO WHATSAPP-WEB via Puppeteer
+// 🔥 MONITORAR CPU REAL DA ABA VIA DEVTOOLS PROTOCOL (CDP)
 // ====================================================================
-setInterval(async () => {
-  try {
-    if (!client.pupPage) return;
-
-    const metrics = await client.pupPage.metrics();
-
-    // TaskDuration é em segundos — multiplicamos para simular % CPU
-    global.cpuUsage = Math.min(
-      100,
-      Number((metrics.TaskDuration * 10).toFixed(1))
-    );
-  } catch (e) {
-    // silencioso
+async function iniciarMonitorCPU() {
+  while (!client.pupPage) {
+    await new Promise(r => setTimeout(r, 500));
   }
-}, 2000);
 
-// =========================================
-// SERVIDOR EXPRESS
-// =========================================
+  console.log("🖥️ Iniciando monitoramento de CPU");
+
+  const session = await client.pupPage.target().createCDPSession();
+  await session.send("Performance.enable");
+
+  setInterval(async () => {
+    try {
+      const perf = await session.send("Performance.getMetrics");
+
+      const map = {};
+      for (const m of perf.metrics) map[m.name] = m.value;
+
+      // Chrome 121+ => métrica REAL já calculada
+      if (map.RecategorizedCPUUsage) {
+        global.cpuUsage = Number(map.RecategorizedCPUUsage.toFixed(1));
+        return;
+      }
+
+      // Fallback: cálculo manual do delta
+      if (global.__lastPerfMetrics) {
+        const last = global.__lastPerfMetrics;
+
+        const scriptDiff = map.ScriptDuration - last.ScriptDuration;
+        const layoutDiff = map.LayoutDuration - last.LayoutDuration;
+        const taskDiff = map.TaskDuration - last.TaskDuration;
+
+        const total = scriptDiff + layoutDiff + taskDiff;
+
+        const percent = Math.min(100, Number((total * 100).toFixed(1)));
+        global.cpuUsage = percent;
+      }
+
+      // Salvar para o próximo cálculo
+      global.__lastPerfMetrics = map;
+
+    } catch (e) {
+      console.error("Erro ao medir CPU via CDP:", e);
+    }
+  }, 1000);
+}
+
+iniciarMonitorCPU();
+
+// ========================================================
+// INICIA SERVIDOR EXPRESS
+// ========================================================
 app.listen(3000, () => {
   console.log("🌐 Backend rodando em http://localhost:3000");
 });
