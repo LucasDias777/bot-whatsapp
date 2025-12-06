@@ -1,235 +1,223 @@
 @import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap);
 
-:root {
-  --primary-start: #5ea8ff;
-  --primary-end: #2b76d6;
-  --accent: #3b82f6;
-  --accent-dark: #235bb5;
-
-  --card-bg: rgba(255,255,255,0.72);
-  --card-border: rgba(0,0,0,0.07);
-  --muted: #6b7280;
-  --text: #1f2937;
+:root{
+  --primary-start:#5ea8ff;
+  --primary-end:#2b76d6;
+  --accent:#3b82f6;
+  --accent-dark:#235bb5;
+  --card-bg:rgba(255, 255, 255, 0.72);
+  --card-border:rgba(0, 0, 0, 0.07);
+  --muted:#6b7280;
+  --text:#1f2937;
 }
 
 /* ===================== */
 /* LAYOUT BASE */
 /* ===================== */
 
-.dashboard {
-  display: flex;
-  height: 100vh;
-  font-family: "Inter", sans-serif;
-  background: #eef1f8;
-  backdrop-filter: blur(8px);
+.dashboard{
+  display:flex;
+  height:100vh;
+  font-family:"Inter",sans-serif;
+  background:#eef1f8;
+  backdrop-filter:blur(8px);
 }
 
-.sidebar {
-  width: 270px;
-  background: linear-gradient(to bottom, var(--primary-start), var(--primary-end));
-  backdrop-filter: blur(18px);
-  border-right: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 4px 0 18px rgba(0,0,0,0.12);
-  display: flex;
-  flex-direction: column;
-  padding: 2rem 1.2rem;
+.sidebar{
+  width:270px;
+  background:linear-gradient(to bottom,var(--primary-start),var(--primary-end));
+  backdrop-filter:blur(18px);
+  border-right:1px solid rgba(255,255,255,0.1);
+  box-shadow:4px 0 18px rgba(0,0,0,0.12);
+  display:flex;
+  flex-direction:column;
+  padding:2rem 1.2rem;
 }
 
-.sidebarLogoBox {
-  text-align: center;
-  opacity: 0;
-  animation: fadeIn 0.6s ease forwards;
+.sidebarLogoBox{
+  text-align:center;
+  opacity:0;
+  animation:fadeIn 0.6s ease forwards;
 }
 
-.logo {
-  width: 180px;
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.18));
+.logo{
+  width:180px;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,0.18));
 }
 
-.logoText {
-  display: block;
-  font-size: 1.12rem;
-  color: #fff;
-  font-weight: 700;
-  margin-top: 0.4rem;
+.logoText{
+  display:block;
+  font-size:1.12rem;
+  color:#fff;
+  font-weight:700;
+  margin-top:0.4rem;
 }
 
-.menu {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  margin-top: 1rem;
-  flex: 1;
+.menu{
+  display:flex;
+  flex-direction:column;
+  gap:0.45rem;
+  margin-top:1rem;
+  flex:1;
 }
 
-.menuItem {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  padding: 0.85rem 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: 12px;
-  color: #fff;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  backdrop-filter: blur(12px);
-  transition: 0.25s ease;
+.menuItem{
+  display:flex;
+  align-items:center;
+  gap:0.8rem;
+  padding:0.85rem 1rem;
+  font-size:1rem;
+  font-weight:600;
+  text-decoration:none;
+  border-radius:12px;
+  color:#fff;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  backdrop-filter:blur(12px);
+  transition:0.25s ease;
 }
 
-.menuItem:hover {
-  transform: translateX(4px);
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.22);
+.menuItem:hover{
+  transform:translateX(4px);
+  background:rgba(255,255,255,0.12);
+  border-color:rgba(255,255,255,0.22);
 }
 
-.active {
-  background: rgba(255,255,255,0.18);
-  font-weight: 700;
-  box-shadow: 0 6px 18px rgba(35,91,181,0.18);
+.active{
+  background:rgba(255,255,255,0.18);
+  font-weight:700;
+  box-shadow:0 6px 18px rgba(35,91,181,0.18);
 }
 
-.sidebarFooter {
-  text-align: center;
-  font-size: 0.78rem;
-  margin-top: 2rem;
-  color: #fff;
-  opacity: 0.85;
+.sidebarFooter{
+  text-align:center;
+  font-size:0.78rem;
+  margin-top:2rem;
+  color:#fff;
+  opacity:0.85;
 }
 
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: #eef1f8;
-  overflow: hidden;
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  background:#eef1f8;
+  overflow:hidden;
 }
 
-.header {
-  height: 78px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 2rem;
-  background: rgba(255,255,255,0.55);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0,0,0,0.08);
-  animation: fadeDown 0.45s ease;
+.header{
+  height:78px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 2rem;
+  background:rgba(255,255,255,0.55);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(0,0,0,0.08);
+  animation:fadeDown 0.45s ease;
 }
 
-.pageTitle {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1d2635;
-  letter-spacing: -0.5px;
+.pageTitle{
+  font-size:1.5rem;
+  font-weight:700;
+  color:#1d2635;
+  letter-spacing:-0.5px;
 }
 
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
+.headerActions{
+  display:flex;
+  align-items:center;
+  gap:1.2rem;
 }
 
-.searchInput {
-  background: rgba(255,255,255,0.85);
-  border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 10px;
-  padding: 0.6rem 1rem;
-  width: 220px;
-  outline: none;
-  transition: 0.25s ease;
+.searchInput{
+  background:rgba(255,255,255,0.85);
+  border:1px solid rgba(0,0,0,0.1);
+  border-radius:10px;
+  padding:0.6rem 1rem;
+  width:220px;
+  outline:none;
+  transition:0.25s ease;
 }
 
-.searchInput:focus {
-  background: #fff;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+.searchInput:focus{
+  background:#fff;
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(59,130,246,0.12);
 }
 
-.userBadge {
-  width: 42px;
-  height: 42px;
-  background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
-  color: #fff;
-  border-radius: 50%;
-  font-weight: 600;
-  font-size: .92rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(46,120,214,0.35);
+.userBadge{
+  width:42px;
+  height:42px;
+  background:linear-gradient(135deg,var(--primary-start),var(--primary-end));
+  color:#fff;
+  border-radius:50%;
+  font-weight:600;
+  font-size:.92rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 12px rgba(46,120,214,0.35);
 }
 
 /* ===================== */
 /* CONTEÚDO */
 /* ===================== */
 
-.content {
-  flex: 1;
-  padding: 2rem 2.2rem;
-  overflow-y: auto;
-  animation: fadeIn 0.6s ease;
+.content{
+  flex:1;
+  padding:2rem 2.2rem;
+  overflow-y:auto;
+  animation:fadeIn 0.6s ease;
 }
 
 /* ===================== */
 /* GRID PRINCIPAL DE CARDS
-   - ajuste: equalizei colunas para facilitar 50/50
-   - status central foi estendido para ocupar duas colunas (visual maior)
 /* ===================== */
 
-.cardsWrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  grid-template-rows: auto auto auto;
+.cardsWrapper{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  grid-template-rows:auto auto auto;
   grid-template-areas:
     "tempo   status status reconexoes"
     "qr      status status performance"
     "chats   chats  mensagens mensagens";
-  gap: 1.3rem;
-  margin-top: 0.8rem;
-  align-items: stretch;
+  gap:1.3rem;
+  margin-top:0.8rem;
+  align-items:stretch;
 }
 
-/* Status central ocupa as duas colunas do meio/direita */
-.statusFull {
-  grid-area: status;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  align-self: stretch;
+.statusFull{
+  grid-area:status;
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+  align-self:stretch;
 }
 
-/* Mapeamento por ordem (JSX tem um padrão de inserção):
-   1 -> statusFull (colocado primeiro no JSX)
-   2 -> Tempo de Conexão
-   3 -> Último QR Code
-   4 -> Reconexões
-   5 -> Chats Ativos
-   6 -> Mensagens Hoje
-   7 -> Performance
-*/
-.cardsWrapper > div:nth-child(2) { grid-area: tempo; }
-.cardsWrapper > div:nth-child(3) { grid-area: qr; }
-.cardsWrapper > div:nth-child(4) { grid-area: reconexoes; }
-.cardsWrapper > div:nth-child(5) { grid-area: chats; }
-.cardsWrapper > div:nth-child(6) { grid-area: mensagens; }
-.cardsWrapper > div:nth-child(7) { grid-area: performance; }
+/* mapeamento por ordem (mantido igual ao seu JSX) */
+.cardsWrapper>div:nth-child(2){grid-area:tempo}
+.cardsWrapper>div:nth-child(3){grid-area:qr}
+.cardsWrapper>div:nth-child(4){grid-area:reconexoes}
+.cardsWrapper>div:nth-child(5){grid-area:chats}
+.cardsWrapper>div:nth-child(6){grid-area:mensagens}
+.cardsWrapper>div:nth-child(7){grid-area:performance}
 
 /* ===================== */
-/* CARD BASE */
+/* CARD BASE
 /* ===================== */
 
 .card{
   display:flex;
-  flex-direction:row;           
+  flex-direction:row;
   align-items:center;
   gap:1rem;
   padding:1rem;
   border-radius:16px;
   backdrop-filter:blur(14px);
   border:1px solid var(--card-border);
-  box-shadow:0 6px 22px rgb(0 0 0 / .08);
+  box-shadow:0 6px 22px rgba(0,0,0,0.08);
   background:var(--card-bg);
   min-height:84px;
   transition:0.25s ease;
@@ -238,10 +226,9 @@
 }
 .card:hover{
   transform:translateY(-4px);
-  box-shadow:0 10px 28px rgb(0 0 0 / .12);
+  box-shadow:0 10px 28px rgba(0,0,0,0.12);
 }
 
-/* bloco do ícone à esquerda */
 .cardIcon{
   flex:0 0 64px;
   width:64px;
@@ -250,18 +237,16 @@
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:1.6rem;         
+  font-size:1.6rem;
   background:rgba(255,255,255,0.12);
-  box-shadow:0 6px 18px rgb(11 31 63 / .06);
+  box-shadow:0 6px 18px rgba(11,31,63,0.06);
   color:var(--text);
 }
 
-/* caso precise de um ícone menor dentro do bloco (opcional) */
 .cardIconInner{
   font-size:1.4rem;
 }
 
-/* conteúdo textual do card (título + valor) */
 .cardContent{
   display:flex;
   flex-direction:column;
@@ -269,7 +254,6 @@
   justify-content:center;
 }
 
-/* ajuste sutil nos textos para alinhamento esquerdo */
 .cardTitle{
   font-size:.85rem;
   font-weight:500;
@@ -283,7 +267,6 @@
   color:var(--text);
 }
 
-/* Destaques */
 .highlight{
   background:linear-gradient(to bottom,var(--primary-start),var(--primary-end));
   color:#fff;
@@ -297,153 +280,144 @@
 
 /* ===================== */
 /* AJUSTES ESPECÍFICOS DO STATUS
-   - força o card do Status a preencher a área inteira
-   - se o componente Status (dashboardCard) compõe card, aplicamos height:100%
 /* ===================== */
 
 .statusFull > .dashboardCard,
-.statusFull > div {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  padding: 1.2rem;
-  box-sizing: border-box;
+.statusFull > div{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  padding:1.2rem;
+  box-sizing:border-box;
 }
 
 /* ===================== */
-/* CARDS CHATS / MENSAGENS: força 50%/50% (mesma largura)
-   - chats em coluna 1, mensagens em coluna 2 (coluna 3 fica vazia)
-   - como as colunas são iguais (repeat(3,1fr)), chats e mensagens terão larguras iguais
+/* CARDS CHATS / MENSAGENS
 /* ===================== */
 
 .cardsWrapper > div:nth-child(5),
-.cardsWrapper > div:nth-child(6) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.cardsWrapper > div:nth-child(6){
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 /* ===================== */
-/* GRÁFICOS (AJUSTADOS PARA FORÇAR RESPONSIVIDADE DO CANVAS)
-   - garante que o <canvas> ocupe 100% do .chartArea
-   - .chartArea usa altura fluida com min/max para manter legibilidade
-   - media queries aumentam/ diminuem altura conforme viewport
+/* GRÁFICOS 
 /* ===================== */
 
-.chartsRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.3rem;
-  margin-top: 1.1rem;
+.chartsRow{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1.3rem;
+  margin-top:1.1rem;
 }
 
-/* manutenção do estilo do card do gráfico (mantido/compatível) */
-.chartCard {
+/* card do gráfico — altura reduzida por padrão para que fiquem "menores" */
+.chartCard{
+  background:rgba(255,255,255,0.9);
+  padding:0.65rem 0.8rem;           
+  border-radius:14px;
+  border:1px solid rgba(0,0,0,0.06);
+  box-shadow:0 6px 14px rgba(13,30,51,0.04);
   display:flex;
   flex-direction:column;
-  min-height:180px;
+  min-height:120px;                
+  max-height:360px;                
   box-sizing:border-box;
-  background:rgb(255 255 255 / .9);
-  padding:.9rem 1rem;
-  border-radius:14px;
-  border:1px solid rgb(0 0 0 / .06);
-  box-shadow:0 8px 20px rgb(13 30 51 / .04);
+  overflow:hidden;
+  gap:0.4rem;
 }
 
-/* Área que contém o canvas — usar altura fluida, sem valores px rígidos que quebrem a responsividade */
+/* título do gráfico */
+.chartTitle{
+  font-size:.98rem;
+  font-weight:700;
+  margin-bottom:.35rem;
+  color:#1f2937;
+  line-height:1;
+}
+
+/* área que contém o canvas — menor e mais fluida */
 .chartArea{
   width:100%;
-  flex:1 1 auto;
-  min-height:180px;    
-  max-height:420px;   
+  /* usa espaço disponível, mas com limites menores para manter "menor" */
+  height:calc(100% - 40px);
+  min-height:90px;   
+  max-height:260px;  
   position:relative;
-  margin-bottom:.6rem;
+  margin-bottom:0.25rem;
   box-sizing:border-box;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:4px;
+  background:transparent;
 }
 
-/* Força o canvas a ocupar 100% do container da chartArea */
+/* Forçar canvas a preencher a área e melhorar nitidez em várias telas */
+ 
 .chartArea canvas{
   width:100% !important;
   height:100% !important;
+  max-width:100%;
   display:block;
+  image-rendering:-webkit-optimize-contrast;
+  image-rendering:crisp-edges;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transform:translateZ(0);
+  will-change:transform,contents;
+  backface-visibility:hidden;
+  outline: none;
 }
 
-/* Em telas pequenas, dá mais altura pro gráfico */
+/* legenda do gráfico */
+.chartLegend{
+  display:flex;
+  gap:1rem;
+  align-items:center;
+  flex-wrap:wrap;
+  padding:8px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.6);
+  box-shadow:0 6px 12px rgba(11,31,63,0.04);
+  border:1px solid rgba(0,0,0,0.03);
+}
+
+.legendItem{
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+  font-size:0.92rem;
+  color:#374151;
+}
+
+.legendSwatch{
+  width:14px;
+  height:14px;
+  border-radius:3px;
+  display:inline-block;
+  box-shadow:0 1px 2px rgba(0,0,0,0.06);
+  border:1px solid rgba(0,0,0,0.04);
+}
+
+.legendNote{
+  color:#6b7280;
+  font-size:0.82rem;
+}
+
+/* ===================== */
+/* RESPONSIVO 
+/* ===================== */
+
 @media (max-width:1200px){
-  .chartsRow{
+  /* empilha cards */
+  .cardsWrapper{
     grid-template-columns:1fr;
-  }
-  .chartArea{
-    min-height:220px;
-  }
-}
-
-@media (min-width:1600px){
-  .chartArea{
-    max-height:520px;
-  }
-}
-
-/* ===================== */
-/* LEGEND (estética restaurada)
-   - bloco leve com ícones de swatch, texto alinhado, espaçamento consistente
-   - legível em telas pequenas também
-/* ===================== */
-
-.chartTitle {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: #1f2937;
-}
-
-.chartLegend {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 8px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.6);
-  box-shadow: 0 6px 12px rgba(11,31,63,0.04);
-  border: 1px solid rgba(0,0,0,0.03);
-}
-
-/* item da legenda */
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.92rem;
-  color: #374151;
-}
-
-/* swatch maior e com contorno sutil */
-.legendSwatch {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  display: inline-block;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.04);
-}
-
-/* nota menor */
-.legendNote {
-  color: #6b7280;
-  font-size: 0.82rem;
-}
-
-/* ===================== */
-/* RESPONSIVO */
-/* ===================== */
-
-@media (max-width: 1200px) {
-  .cardsWrapper {
-    grid-template-columns: 1fr;
     grid-template-areas:
       "status"
       "tempo"
@@ -454,12 +428,32 @@
       "mensagens";
   }
 
-  .chartsRow {
-    grid-template-columns: 1fr;
+  /* charts passam a ocupar 1 coluna */
+  .chartsRow{
+    grid-template-columns:1fr;
   }
 
-  .chartArea {
-    height: 200px;
+  /* mantém chartCard compacto, mas aumenta um pouco a altura para legibilidade em mobile */
+  .chartCard{
+    min-height:120px;
+  }
+
+  /* dá mais espaço vertical no canvas para telas pequenas (melhora leitura) */
+  .chartArea{
+    height:calc(100% - 40px);
+    min-height:130px;
+    max-height:320px;
+  }
+}
+
+/* telas muito grandes: permitir um pouco mais de altura sem ficar enorme */
+@media (min-width:1600px){
+  .chartCard{
+    min-height:130px;
+    max-height:440px;
+  }
+  .chartArea{
+    max-height:340px;
   }
 }
 
@@ -467,44 +461,44 @@
 /* ANIMAÇÕES E SCROLLBAR */
 /* ===================== */
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
 }
 
-@keyframes fadeDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes fadeDown{
+  from{opacity:0;transform:translateY(-10px)}
+  to{opacity:1;transform:translateY(0)}
 }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
 }
 
-.content::-webkit-scrollbar {
-  width: 8px;
+.content::-webkit-scrollbar{
+  width:8px;
 }
-.content::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.04);
-  border-radius: 4px;
+.content::-webkit-scrollbar-track{
+  background:rgba(0,0,0,0.04);
+  border-radius:4px;
 }
-.content::-webkit-scrollbar-thumb {
-  background: rgba(59,130,246,0.45);
-  border-radius: 6px;
+.content::-webkit-scrollbar-thumb{
+  background:rgba(59,130,246,0.45);
+  border-radius:6px;
 }
-.content::-webkit-scrollbar-thumb:hover {
-  background: rgba(59,130,246,0.7);
-}
-
-.glassSmooth {
-  background: rgba(255,255,255,0.42);
-  border-radius: 18px;
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.22);
-  box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+.content::-webkit-scrollbar-thumb:hover{
+  background:rgba(59,130,246,0.7);
 }
 
-.main, .content, body, html {
-  overflow-x: hidden !important;
+.glassSmooth{
+  background:rgba(255,255,255,0.42);
+  border-radius:18px;
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.22);
+  box-shadow:0 4px 18px rgba(0,0,0,0.12);
+}
+
+.main,.content,body,html{
+  overflow-x:hidden !important;
 }

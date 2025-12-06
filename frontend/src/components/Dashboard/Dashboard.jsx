@@ -114,7 +114,7 @@ export default function Dashboard() {
   }, []); // mantém 3s para dados pesados
 
   /* ============================================
-      ATUALIZAR CPU + TEMPOS A CADA 1 SEGUNDO (apenas esses)
+      ATUALIZAR CPU + TEMPO 1 SEGUNDO
   ============================================ */
   useEffect(() => {
     let active = true;
@@ -196,16 +196,53 @@ export default function Dashboard() {
 
   /* ============================================
       CRIAÇÃO / ATUALIZAÇÃO DOS GRÁFICOS
-      -> Depende APENAS do que os gráficos usam + chartVersion
   ============================================ */
   useEffect(() => {
     if (!dadosCarregados) return;
 
     const totalNumeros = Number(dados.grafico.totalNumeros || 0);
 
-    /* ========== DOUGHNUT ========== */
+    // função utilitária: ajusta o canvas para DPR e retorna ctx
+    function prepareCanvas(canvasEl) {
+      if (!canvasEl) return null;
+
+      canvasEl.style.width = "100%";
+      canvasEl.style.height = "100%";
+
+      // medimos CSS pixels e definimos tamanho real em device pixels
+      const rect = canvasEl.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      const width = Math.max(1, Math.round(rect.width));
+      const height = Math.max(1, Math.round(rect.height));
+
+      // somente redefinimos se diferente (evita repaints desnecessários)
+      if (
+        Math.round(canvasEl.width) !== Math.round(width * dpr) ||
+        Math.round(canvasEl.height) !== Math.round(height * dpr)
+      ) {
+        canvasEl.width = Math.round(width * dpr);
+        canvasEl.height = Math.round(height * dpr);
+        canvasEl.style.width = width + "px";
+        canvasEl.style.height = height + "px";
+      }
+
+      const ctx = canvasEl.getContext("2d");
+
+      if (ctx && typeof ctx.setTransform === "function") {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      return { ctx, dpr };
+    }
+
+    // ----- DOUGHNUT -----
     if (!doughnutInstance.current) {
-      doughnutInstance.current = new Chart(doughnutRef.current, {
+      const canvas = doughnutRef.current;
+      const prep = prepareCanvas(canvas);
+      const dpr = (prep && prep.dpr) || window.devicePixelRatio || 1;
+
+      doughnutInstance.current = new Chart(canvas, {
         type: "doughnut",
         data: {
           labels: ["Números Cadastrados"],
@@ -221,6 +258,7 @@ export default function Dashboard() {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          devicePixelRatio: dpr,
           cutout: "68%",
           animation: {
             duration: 2000,
@@ -240,9 +278,13 @@ export default function Dashboard() {
     doughnutInstance.current.data.datasets[0].data = [totalNumeros];
     doughnutInstance.current.update();
 
-    /* ========== BARRA ========== */
+    // ----- BAR (horizontal) -----
     if (!barInstance.current) {
-      barInstance.current = new Chart(barRef.current, {
+      const canvas = barRef.current;
+      const prep = prepareCanvas(canvas);
+      const dpr = (prep && prep.dpr) || window.devicePixelRatio || 1;
+
+      barInstance.current = new Chart(canvas, {
         type: "bar",
         data: {
           labels: ["Chats Individuais", "Chats em Grupo"],
@@ -258,6 +300,8 @@ export default function Dashboard() {
         options: {
           indexAxis: "y",
           responsive: true,
+          maintainAspectRatio: false,
+          devicePixelRatio: dpr,
           animation: { duration: 2000, easing: "easeOutQuart" },
           plugins: { legend: { display: false } },
           scales: { x: { beginAtZero: true } },
@@ -270,12 +314,34 @@ export default function Dashboard() {
       dados.metricas.chatsGrupos,
     ];
     barInstance.current.update();
+
+    function handleResize() {
+      if (doughnutRef.current && doughnutInstance.current) {
+        // prepara canvas novamente e atualiza opção devicePixelRatio
+        const prep = prepareCanvas(doughnutRef.current);
+        doughnutInstance.current.options.devicePixelRatio = prep?.dpr || 1;
+        doughnutInstance.current.resize();
+        doughnutInstance.current.update();
+      }
+      if (barRef.current && barInstance.current) {
+        const prep = prepareCanvas(barRef.current);
+        barInstance.current.options.devicePixelRatio = prep?.dpr || 1;
+        barInstance.current.resize();
+        barInstance.current.update();
+      }
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, [
     dadosCarregados,
     dados.grafico.totalNumeros,
     dados.metricas.chatsIndividuais,
     dados.metricas.chatsGrupos,
-    chartVersion, // garante recriação/animação ao voltar por navegação
+    chartVersion,
   ]);
 
   /* ============================================
