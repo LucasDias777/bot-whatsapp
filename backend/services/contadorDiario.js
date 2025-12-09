@@ -1,83 +1,73 @@
 const db = require("../database/database");
 
-// Retorna a data atual no formato AAAA-MM-DD
-// USANDO HORÁRIO LOCAL (NÃO UTC)
-
+// Retorna a data atual no formato AAAA-MM-DD usando representação local
 function getDiaAtual() {
-  const now = new Date();
-  const offsetMs = now.getTimezoneOffset() * 60 * 1000;
-  return new Date(now.getTime() - offsetMs)
-    .toISOString()
-    .slice(0, 10);
+  // Formato 'en-CA' produz YYYY-MM-DD
+  return new Date().toLocaleDateString('en-CA');
 }
 
-// Garante que existe a linha do contador
-// e que ela está consistente com o dia atual.
-// ✔ Roda no boot
-// ✔ Não depende do estado anterior
-// ✔ Não quebra se já existir
+// Variante para obter dia a partir de um Date (se precisar)
+function getDiaAtualFromDate(d = new Date()) {
+  return d.toLocaleDateString('en-CA');
+}
 
+// Garante que existe a linha do contador (id = 1)
 function inicializarContadorDiario() {
   const hoje = getDiaAtual();
 
+  // Inserir se não existir; caso exista não altera contador (apenas garante dia correto)
   db.run(
-    `
-    INSERT INTO mensagens_diarias (id, dia, contador)
-    VALUES (1, ?, 0)
-    ON CONFLICT(id) DO UPDATE SET
-      dia = excluded.dia,
-      contador = CASE
-        WHEN mensagens_diarias.dia = excluded.dia
-          THEN mensagens_diarias.contador
-        ELSE 0
-      END
-    `,
+    `INSERT OR IGNORE INTO mensagens_diarias (id, dia, contador) VALUES (1, ?, 0)`,
     [hoje],
     (err) => {
       if (err) {
-        console.error("Erro ao inicializar contador diário:", err);
+        console.error("Erro ao inserir linha inicial do contador diário:", err);
+        return;
       }
+
+      // Se a linha já existia mas dia está diferente, resetamos aqui.
+      db.run(
+        `UPDATE mensagens_diarias
+         SET dia = ?, contador = CASE WHEN dia = ? THEN contador ELSE 0 END
+         WHERE id = 1`,
+        [hoje, hoje],
+        (err2) => {
+          if (err2) {
+            console.error("Erro ao ajustar dia do contador diário:", err2);
+          }
+        }
+      );
     }
   );
 }
 
-// Incrementa o contador diário com proteção total
-// ✔ Sempre valida o dia
-// ✔ Reseta automaticamente ao virar
-// ✔ Primeira mensagem do dia = 1
-// ✔ Funciona mesmo se o app ficou dias desligado
-
+// Incrementa o contador diário de forma atômica.
+// Se a linha não existir, insere com contador = 1.
 function incrementarContador() {
   const hoje = getDiaAtual();
 
   db.serialize(() => {
-    db.get(
-      `SELECT dia FROM mensagens_diarias WHERE id = 1`,
-      (err, row) => {
-        if (err || !row) {
-          console.error("Erro ao ler contador diário:", err);
+    // Tenta fazer update atômico: se dia igual -> contador+1, senão -> contador = 1 e atualiza dia
+    db.run(
+      `UPDATE mensagens_diarias
+       SET contador = CASE WHEN dia = ? THEN contador + 1 ELSE 1 END,
+           dia = ?
+       WHERE id = 1`,
+      [hoje, hoje],
+      function (err) {
+        if (err) {
+          console.error("Erro ao executar update do contador diário:", err);
           return;
         }
 
-        // Dia virou → reset e começa em 1
-        if (row.dia !== hoje) {
+        // Se nenhuma linha foi atualizada (não existia), inserir a linha com contador = 1
+        if (this.changes === 0) {
           db.run(
-            `UPDATE mensagens_diarias SET dia = ?, contador = 1 WHERE id = 1`,
+            `INSERT INTO mensagens_diarias (id, dia, contador) VALUES (1, ?, 1)`,
             [hoje],
-            (err) => {
-              if (err) {
-                console.error("Erro ao resetar contador diário:", err);
-              }
-            }
-          );
-        } 
-        // Mesmo dia → incrementa
-        else {
-          db.run(
-            `UPDATE mensagens_diarias SET contador = contador + 1 WHERE id = 1`,
-            (err) => {
-              if (err) {
-                console.error("Erro ao incrementar contador diário:", err);
+            (err2) => {
+              if (err2) {
+                console.error("Erro ao inserir contador diário inicial:", err2);
               }
             }
           );
@@ -88,14 +78,13 @@ function incrementarContador() {
 }
 
 // Retorna o valor atual do contador do dia
-
 function getContadorHoje() {
   return new Promise((resolve, reject) => {
     db.get(
       `SELECT contador FROM mensagens_diarias WHERE id = 1`,
       (err, row) => {
-        if (err) reject(err);
-        else resolve(row?.contador || 0);
+        if (err) return reject(err);
+        resolve(row?.contador ?? 0);
       }
     );
   });
@@ -104,5 +93,7 @@ function getContadorHoje() {
 module.exports = {
   inicializarContadorDiario,
   incrementarContador,
-  getContadorHoje
+  getContadorHoje,
+  getDiaAtual,          
+  getDiaAtualFromDate
 };

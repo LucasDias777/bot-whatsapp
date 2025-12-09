@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { getQR } = require("../controllers/qrController");
+const { getQR, connect, disconnect } = require("../controllers/qrController");
 
 router.get("/", getQR);
+router.post("/connect", connect);
+router.post("/disconnect", disconnect);
 
 module.exports = router;
