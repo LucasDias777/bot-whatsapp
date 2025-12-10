@@ -194,10 +194,12 @@ export default function Agendamentos() {
         >
           <option value="">(Selecione)</option>
           {mensagens.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.texto}
-            </option>
-          ))}
+  <option key={m.id} value={m.id}>
+    {m.texto.length > 60
+      ? m.texto.slice(0, 60) + "..."
+      : m.texto}
+  </option>
+))}
         </select>
       </div>
 
