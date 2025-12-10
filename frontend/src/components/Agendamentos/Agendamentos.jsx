@@ -5,7 +5,6 @@ import * as msgsService from "../../services/mensagensService";
 import * as contatosService from "../../services/contatosService";
 import styles from "./Agendamentos.module.css";
 import { useAtualizar } from "../../context/AtualizarContexto";
-
 import { FaPlus, FaTrash, FaClock, FaCalendarAlt } from "react-icons/fa";
 
 export default function Agendamentos() {

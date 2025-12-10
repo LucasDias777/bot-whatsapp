@@ -32,4 +32,3 @@ Thumbs.db
 
 # Banco de dados local
 backend/database/*.db
-

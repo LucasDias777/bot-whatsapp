@@ -214,6 +214,14 @@
   box-sizing: border-box;
   resize: vertical;
 }
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;      /* ✅ centraliza verticalmente */
+  flex-shrink: 0;           /* ✅ impede compressão */
+  align-self: center;       /* ✅ impede herdar altura do texto */
+}
+
 
 /* ações do modal */
 .modalActions {

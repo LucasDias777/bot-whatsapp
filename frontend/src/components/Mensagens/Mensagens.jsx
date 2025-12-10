@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import * as mensagensService from "../../services/mensagensService";
-
 import { FiPlus, FiEdit, FiTrash } from "react-icons/fi";
-
 import styles from "./Mensagens.module.css";
 
 export default function Mensagens() {
@@ -91,7 +89,8 @@ export default function Mensagens() {
             <div className={styles.spaceBetween}>
               <span className={styles.messageText}>{m.texto}</span>
 
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className={styles.actionButtons}>
+
 
                 {/* Botão Editar (abre modal) */}
                 <button

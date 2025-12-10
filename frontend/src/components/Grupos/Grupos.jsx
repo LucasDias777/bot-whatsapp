@@ -3,7 +3,6 @@ import * as gruposService from "../../services/gruposService";
 import * as contatosService from "../../services/contatosService";
 import styles from "./Grupos.module.css";
 import { useAtualizar } from "../../context/AtualizarContexto";
-
 import { FiPlus, FiTrash, FiX, FiEdit } from "react-icons/fi";
 
 export default function Grupos() {
