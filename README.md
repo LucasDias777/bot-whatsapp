@@ -31,13 +31,14 @@ bot-whatsapp/
 │ ├── routes/ # definição das rotas da API
 │ ├── services/ # regras de negócio e serviços
 │ │ ├── envio.js # envio imediato de mensagens
-│ │ └── agenda.js # agendador com node-cron
-│ │
+│ │ ├── agenda.js # agendador com node-cron
+│ │ └── contadorDiario.js # controle e persistência da contagem diária de mensagens
+│ │ 
 │ ├── database/ # banco SQLite + scripts de criação
 │ ├── .wwebjs_auth/ # sessão persistente do WhatsApp (NÃO subir ao Git)
 │ ├── .wwebjs_cache/ # cache do WhatsApp (NÃO subir ao Git)
-│ ├── app.js # inicialização do WhatsApp + integração com o painel
-│ ├── painel.js # servidor Express + rotas da API
+│ ├── app.js # Bootstrap + variáveis globais + painel
+│ ├── painel.js # API + servidor Express + frontend
 │ └── package.json
 │
 ├── frontend/
@@ -57,29 +58,42 @@ bot-whatsapp/
 ├── package.json # scripts para rodar backend + frontend
 └── README.md
 ```
-
 ---
 
 ## 🧭 Descrição dos Principais Arquivos (Backend)
 
 ### **app.js**
-* Inicializar o cliente **whatsapp-web.js**
-* Gerenciar eventos de **QR Code** e **conexão**
-* Compartilhar o estado de conexão com o painel
-* Iniciar os agendamentos ao conectar o WhatsApp
+Responsável apenas pelo **bootstrap da aplicação backend**.
+
+* Importar o servidor Express a partir do `painel.js`
+* Declarar variáveis globais compartilhadas:
+  * estado do WhatsApp
+  * tempo do último QR Code
+  * métricas de CPU
+* Iniciar o servidor HTTP (`app.listen`)
 
 ### **painel.js**
+Responsável pela **exposição da API e do frontend**.
+
 * Criar o servidor **Express**
-* Registrar middlewares (CORS, JSON)
-* Centralizar e expor as **rotas da API**
-* Servir o **frontend buildado**
-* Compartilhar funções de estado (`setQR`, `setConectado`)
+* Registrar middlewares (**CORS**, **JSON**)
+* Centralizar e expor todas as **rotas da API**
+* Servir o frontend React como **SPA**
 
 ### **envio.js**
 * Envio rápido + validações antes do disparo.
 
 ### **agenda.js**
-* Agendador usando node-cron que verifica o banco constantemente.
+* Agendador usando **node-cron** que verifica o banco constantemente.
+
+### **contadorDiario.js**
+Responsável pelo **controle persistente da contagem diária de mensagens enviadas**.
+
+* Inicializar o contador diário no banco SQLite
+* Incrementar automaticamente o contador a cada envio
+* Resetar o contador ao trocar o dia
+* Garantir operações atômicas e seguras
+* Fornecer o valor atual para dashboards e métricas
 
 ### **database/**
 * Arquivos SQLite + scripts de criação de tabelas.
