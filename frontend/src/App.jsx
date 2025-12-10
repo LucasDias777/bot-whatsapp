@@ -15,10 +15,7 @@ export default function App() {
     <AtualizarProvider>
       <Routes>
         <Route path="/" element={<Dashboard />}>
-
-          {/* 🔥 Removido StatusPage para evitar duplicação */}
           <Route index element={null} />
-
           <Route path="contatos" element={<ContatosPage />} />
           <Route path="grupos" element={<GruposPage />} />
           <Route path="mensagens" element={<MensagensPage />} />
