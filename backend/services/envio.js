@@ -1,23 +1,47 @@
+function formatarMensagemWhatsApp(texto) {
+  if (!texto) return "";
+
+  let msg = String(texto);
+
+  // ✅ Converte \n literal em quebra real
+  msg = msg.replace(/\\n/g, "\n");
+
+  // ✅ Normaliza bullets estranhos
+  msg = msg.replace(/[•●◦]/g, "•");
+
+  // ✅ Remove espaços invisíveis quebrados
+  msg = msg.replace(/\u00A0/g, " ");
+
+  // ✅ Remove linhas excessivas (mais de 2 vazias)
+  msg = msg.replace(/\n{3,}/g, "\n\n");
+
+  // ✅ Trim geral
+  msg = msg.trim();
+
+  return msg;
+}
+
 async function sendMessageToNumber(client, rawNumero, mensagem) {
   try {
-    // Remove caracteres não numéricos
-    const numero = rawNumero.replace(/\D/g, "");
+    if (!mensagem || !client) return;
 
-    // Verifica se o número é válido e obtém o ID completo
+    // ✅ Limpa número
+    const numero = String(rawNumero).replace(/\D/g, "");
+
+    // ✅ Valida se tem WhatsApp
     const numberDetails = await client.getNumberId(numero);
-
     if (!numberDetails) {
-      console.log(`❌ O número ${numero} não tem WhatsApp.`);
+      console.log(`❌ O número ${numero} não possui WhatsApp`);
       return;
     }
-
-    // Usa o _serialized correto (ex: 5544999999999@c.us)
     const chatId = numberDetails._serialized;
 
-    // Envia a mensagem
-    await client.sendMessage(chatId, mensagem);
-    console.log(`✅ Mensagem enviada para ${numero}`);
+    // ✅ FORMATAÇÃO CENTRALIZADA AQUI
+    const mensagemFormatada = formatarMensagemWhatsApp(mensagem);
 
+    await client.sendMessage(chatId, mensagemFormatada);
+
+    console.log(`✅ Mensagem enviada para ${numero}`);
   } catch (err) {
     console.error("❌ Erro ao enviar mensagem:", err.message);
   }
