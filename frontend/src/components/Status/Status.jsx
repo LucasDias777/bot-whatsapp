@@ -7,7 +7,8 @@ export default function Status() {
     status: "idle",
     qr: "",
     connectedNumber: null,
-    lastQRCodeTime: null
+    lastQRCodeTime: null,
+    sessionExists: false,
   });
 
   const [loadingAction, setLoadingAction] = useState(false);
@@ -28,11 +29,13 @@ export default function Status() {
 
         setInfo(s);
 
+        // para polling se conectado
         if (s.status === "connected" && pollingRef.current) {
           clearInterval(pollingRef.current);
           pollingRef.current = null;
         }
 
+        // reinicia polling se desconectado
         if (s.status !== "connected" && !pollingRef.current) {
           pollingRef.current = setInterval(fetchStatus, 1500);
         }
@@ -58,19 +61,26 @@ export default function Status() {
     switch (info.status) {
       case "idle":
         return "🔌 Desconectado";
+      case "first_connect":
+        return "🟦 Iniciando primeira conexão...";
+      case "restoring":
+        return "🟨 Restaurando sessão existente...";
+      case "reconnecting":
+        return "🟧 Tentando reconectar (tentativa automática)...";
       case "waiting":
-        return "⏳ Aguardando inicialização...";
+        return "⏳ Inicializando...";
       case "qr":
         return "📱 Escaneie o QR Code!";
       case "connected":
         return "✅ Conectado";
       case "disconnecting":
         return "⚠️ Desconectando...";
+      case "fail":
+        return "❌ Falha ao conectar";
       default:
         return "ℹ️ Desconhecido";
     }
   }
-
   // ------------------------------------------------------
   // QR EXPIRADO (60s)
   // ------------------------------------------------------
@@ -100,11 +110,13 @@ export default function Status() {
     setLoadingAction(true);
     try {
       await disconnect();
+
       setInfo({
         status: "idle",
         qr: "",
         connectedNumber: null,
-        lastQRCodeTime: null
+        lastQRCodeTime: null,
+        sessionExists: false,
       });
 
       if (!pollingRef.current) {
@@ -129,9 +141,7 @@ export default function Status() {
 
       <p
         className={`${styles.statusText} ${
-          info.status === "connected"
-            ? styles.statusOk
-            : styles.statusWait
+          info.status === "connected" ? styles.statusOk : styles.statusWait
         }`}
       >
         {statusMessage()}
@@ -144,9 +154,11 @@ export default function Status() {
       )}
 
       <div className={styles.qr}>
-        {!info.connectedNumber && info.qr && (
-          <img src={info.qr} alt="QR Code" width="250" />
-        )}
+        {/* ⭐ PATCH 3 → Não mostrar QR enquanto reconecta */}
+        {info.status === "qr" && info.qr && (
+    <img src={info.qr} alt="QR Code" width="250" />
+)}
+
       </div>
 
       {qrExpired && (
@@ -156,6 +168,9 @@ export default function Status() {
       )}
 
       <div className={styles.actions}>
+        {/* =============================== */}
+        {/* BOTÃO DESCONECTADO              */}
+        {/* =============================== */}
         {info.status === "connected" ? (
           <button
             className={styles.disconnectBtn}
@@ -164,14 +179,23 @@ export default function Status() {
           >
             Desconectar
           </button>
+        ) : // ===============================
+        // ⭐ PATCH 2: existe sessão e idle/waiting → reconectando
+        // ===============================
+        info.sessionExists === true &&
+          (info.status === "idle" || info.status === "waiting") ? (
+          <button className={styles.connectBtn} disabled>
+            Tentando reconectar...
+          </button>
         ) : (
+          // ===============================
+          // BOTÃO NORMAL DE CONECTAR
+          // ===============================
           <button
             className={styles.connectBtn}
             onClick={handleConnect}
             disabled={
-              loadingAction ||
-              info.status === "waiting" ||
-              info.status === "qr"
+              loadingAction || info.status === "waiting" || info.status === "qr"
             }
           >
             {loadingAction ? "Conectando..." : "Conectar"}
