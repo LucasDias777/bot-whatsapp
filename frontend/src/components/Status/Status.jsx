@@ -1,118 +1,65 @@
-import React, { useEffect, useState, useRef } from "react";
-import { getStatus, connect, disconnect } from "../../services/statusService";
+import React, { useEffect, useState } from "react";
+import { getStatus, disconnect } from "../../services/statusService";
 import styles from "./Status.module.css";
 
 export default function Status() {
-  const [info, setInfo] = useState({
-    status: "idle",
-    qr: "",
-    connectedNumber: null,
-    lastQRCodeTime: null
-  });
-
+  // ====================================
+  // Estado inicial ajustado para evitar flicker
+  // ====================================
+  const [info, setInfo] = useState({ status: "loading" });
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
   const [error, setError] = useState(null);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const pollingRef = useRef(null);
 
-  // ------------------------------------------------------
-  // POLLING CONTROLADO
-  // ------------------------------------------------------
+  // ====================================
+  // Polling do status com primeira chamada imediata
+  // ====================================
   useEffect(() => {
-    let mounted = true;
-
-    async function fetchStatus() {
-      try {
-        const s = await getStatus();
-        if (!mounted) return;
-
-        setInfo(s);
-
-        if (s.status === "connected" && pollingRef.current) {
-          clearInterval(pollingRef.current);
-          pollingRef.current = null;
-        }
-
-        if (s.status !== "connected" && !pollingRef.current) {
-          pollingRef.current = setInterval(fetchStatus, 1500);
-        }
-      } catch {}
+    async function loadStatus() {
+      const s = await getStatus();
+      setInfo(s);
     }
 
-    fetchStatus();
-    pollingRef.current = setInterval(fetchStatus, 1500);
+    loadStatus(); // primeira chamada imediata
 
-    return () => {
-      mounted = false;
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-      }
-    };
+    const timer = setInterval(async () => {
+      const s = await getStatus();
+      setInfo(s);
+    }, 1500);
+
+    return () => clearInterval(timer);
   }, []);
 
-  // ------------------------------------------------------
-  // STATUS TEXT
-  // ------------------------------------------------------
+  // ====================================
+  // Mensagem de status
+  // ====================================
   function statusMessage() {
     switch (info.status) {
-      case "idle":
-        return "🔌 Desconectado";
-      case "waiting":
-        return "⏳ Aguardando inicialização...";
+      case "loading":
+        return "⏳ Carregando status...";
+      case "checking":
+        return "🔍 Verificando conexão...";
       case "qr":
-        return "📱 Escaneie o QR Code!";
+        return "📱 Escaneie o QR Code";
       case "connected":
         return "✅ Conectado";
       case "disconnecting":
         return "⚠️ Desconectando...";
       default:
-        return "ℹ️ Desconhecido";
+        return "ℹ️ Aguardando...";
     }
   }
 
-  // ------------------------------------------------------
-  // QR EXPIRADO (60s)
-  // ------------------------------------------------------
-  const qrExpired =
-    info.lastQRCodeTime &&
-    Date.now() - info.lastQRCodeTime > 60_000 &&
-    info.status === "qr";
-
-  // ------------------------------------------------------
-  // ACTIONS
-  // ------------------------------------------------------
-  async function handleConnect() {
-    setError(null);
-    setLoadingAction(true);
-    try {
-      await connect();
-    } catch {
-      setError("Erro ao iniciar conexão.");
-    } finally {
-      setLoadingAction(false);
-    }
-  }
-
+  // ====================================
+  // Desconectar manual
+  // ====================================
   async function confirmDisconnect() {
     setShowConfirm(false);
     setError(null);
     setLoadingAction(true);
     try {
       await disconnect();
-      setInfo({
-        status: "idle",
-        qr: "",
-        connectedNumber: null,
-        lastQRCodeTime: null
-      });
-
-      if (!pollingRef.current) {
-        pollingRef.current = setInterval(async () => {
-          const s = await getStatus();
-          setInfo(s);
-        }, 1500);
-      }
+      setInfo({ status: "loading" });
     } catch {
       setError("Erro ao desconectar.");
     } finally {
@@ -120,22 +67,11 @@ export default function Status() {
     }
   }
 
-  // ------------------------------------------------------
-  // RENDER
-  // ------------------------------------------------------
   return (
     <div className={styles.dashboardCard}>
       <h5 className={styles.titulo}>Status de Conexão</h5>
 
-      <p
-        className={`${styles.statusText} ${
-          info.status === "connected"
-            ? styles.statusOk
-            : styles.statusWait
-        }`}
-      >
-        {statusMessage()}
-      </p>
+      <p className={styles.statusText}>{statusMessage()}</p>
 
       {info.status === "connected" && info.connectedNumber && (
         <p className={styles.connectedNumber}>
@@ -143,41 +79,19 @@ export default function Status() {
         </p>
       )}
 
-      <div className={styles.qr}>
-        {!info.connectedNumber && info.qr && (
-          <img src={info.qr} alt="QR Code" width="250" />
-        )}
-      </div>
-
-      {qrExpired && (
-        <p className={styles.warning}>
-          ⏱️ QR Code expirado. Clique em conectar novamente.
-        </p>
+      {info.status === "qr" && info.qr && (
+        <img src={info.qr} alt="QR Code" width="260" />
       )}
 
-      <div className={styles.actions}>
-        {info.status === "connected" ? (
-          <button
-            className={styles.disconnectBtn}
-            onClick={() => setShowConfirm(true)}
-            disabled={loadingAction}
-          >
-            Desconectar
-          </button>
-        ) : (
-          <button
-            className={styles.connectBtn}
-            onClick={handleConnect}
-            disabled={
-              loadingAction ||
-              info.status === "waiting" ||
-              info.status === "qr"
-            }
-          >
-            {loadingAction ? "Conectando..." : "Conectar"}
-          </button>
-        )}
-      </div>
+      {info.status === "connected" && (
+        <button
+          className={styles.disconnectBtn}
+          onClick={() => setShowConfirm(true)}
+          disabled={loadingAction}
+        >
+          Desconectar
+        </button>
+      )}
 
       {error && <p className={styles.error}>{error}</p>}
 

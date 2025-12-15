@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-
 const app = express();
 
 app.use(cors());
@@ -17,6 +16,7 @@ app.use("/agendamento", require("./routes/agendamentoRoutes"));
 app.use("/grupo", require("./routes/grupoRoutes"));
 app.use("/enviar-agora", require("./routes/envioRoutes"));
 app.use("/dashboard", require("./routes/dashboardRoutes"));
+app.use("/backend", require("./routes/backend"));
 
 // ========================================================
 // FRONTEND (SPA)

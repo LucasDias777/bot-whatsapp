@@ -5,6 +5,10 @@ const { getContadorHoje } = require("../services/contadorDiario");
 // Função para retornar todos os chats
 // -----------------------------
 async function getAllChats(client) {
+  if (!client || global.isDisconnecting || !client.pupPage) {
+    return [];
+  }
+
   try {
     return await client.pupPage.evaluate(() => {
       if (!window.Store || !window.Store.Chat || !window.Store.Chat.getModelsArray)
@@ -17,7 +21,7 @@ async function getAllChats(client) {
             if (chat.isBroadcast) return false;
             if (chat.isNewsletter) return false;
             return true;
-          } catch (e) {
+          } catch {
             return false;
           }
         })
@@ -31,12 +35,11 @@ async function getAllChats(client) {
             null
         }));
     });
-  } catch (err) {
-    console.error("Erro getAllChats:", err);
+  } catch {
+    // 🔇 SILENCIOSO DE VERDADE (produção)
     return [];
   }
 }
-
 // -----------------------------
 // CONTROLLER DO DASHBOARD
 // -----------------------------
