@@ -45,6 +45,8 @@ export default function Status() {
         return "✅ Conectado";
       case "disconnecting":
         return "⚠️ Desconectando...";
+      case "remote_disconnected":
+        return "🔒 Sessão desconectada remotamente";
       default:
         return "ℹ️ Aguardando...";
     }

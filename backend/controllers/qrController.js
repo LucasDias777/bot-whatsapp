@@ -6,14 +6,19 @@ const { iniciarAgendamentos, pararAgendamentos } = require("../services/agenda")
 const { inicializarContadorDiario, incrementarContador } = require("../services/contadorDiario");
 
 /* ======================================================
-   ESTADO GLOBAL ÚNICO (CONEXÃO INTACTA)
+   ESTADO GLOBAL ÚNICO
 ====================================================== */
 let client = null;
-let status = "checking"; // checking | qr | connected | disconnecting
+let status = "checking"; // checking | qr | connected | disconnecting | remote_disconnected
 let currentQR = "";
 let connectedNumber = null;
 let lastQRCodeTime = null;
 let isShuttingDown = false;
+let remoteLogoutTimeout = null;
+let clientCreating = false;
+let sessionReady = false;
+let isDisconnecting = false;
+let clientDestroying = false;
 
 /* ======================================================
    MÉTRICAS GLOBAIS (DASHBOARD)
@@ -80,21 +85,20 @@ async function iniciarMonitorCPU(clientInstance) {
         } else if (global.__lastPerfMetrics) {
           const last = global.__lastPerfMetrics;
           const total =
-            (map.ScriptDuration || 0) - (last.ScriptDuration || 0) +
-            (map.LayoutDuration || 0) - (last.LayoutDuration || 0) +
-            (map.TaskDuration || 0) - (last.TaskDuration || 0);
+            (map.ScriptDuration || 0) -
+            (last.ScriptDuration || 0) +
+            (map.LayoutDuration || 0) -
+            (last.LayoutDuration || 0) +
+            (map.TaskDuration || 0) -
+            (last.TaskDuration || 0);
 
           global.cpuUsage = Math.min(100, Number((total * 100).toFixed(1)));
         }
 
         global.__lastPerfMetrics = map;
-      } catch {
-        /* silencioso */
-      }
+      } catch {}
     }, 1000);
-  } catch {
-    /* silencioso */
-  }
+  } catch {}
 }
 
 function pararMonitorCPU() {
@@ -106,17 +110,52 @@ function pararMonitorCPU() {
   if (cpuCDPSession) {
     cpuCDPSession.detach().catch(() => {});
     cpuCDPSession = null;
-
     global.cpuUsage = 0;
     global.__lastPerfMetrics = null;
   }
 }
 
 /* ======================================================
-   CREATE CLIENT (CONEXÃO INTACTA)
+   RESET COMPLETO DE SESSÃO
+====================================================== */
+async function resetarSessao() {
+  try {
+    pararAgendamentos?.();
+    pararMonitorCPU();
+
+    global.whatsappStartTime = null;
+    global.cpuUsage = 0;
+
+    if (client) {
+      clientDestroying = true;
+      try {
+        await client.destroy();
+      } catch {}
+      client = null;
+      global.client = null;
+      clientDestroying = false;
+    }
+
+    setTimeout(() => {
+      try {
+        fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+        fs.rmSync(CACHE_DIR, { recursive: true, force: true });
+      } catch (e) {
+        console.warn("Erro ao remover auth/cache:", e.message);
+      }
+    }, 1000);
+  } catch (e) {
+    console.warn("Erro ao resetar sessão:", e?.message);
+  }
+}
+
+/* ======================================================
+   CREATE CLIENT
 ====================================================== */
 function createClient() {
-  if (client) return;
+  if (client || clientCreating || clientDestroying) return;
+
+  clientCreating = true;
 
   console.log("🚀 Inicializando WhatsApp Client...");
 
@@ -135,6 +174,8 @@ function createClient() {
 
   /* ===================== QR ===================== */
   client.on("qr", async (qr) => {
+    if (sessionReady) return;
+    console.log("📸 Gerando QR Code...");
     currentQR = await QRCode.toDataURL(qr);
     lastQRCodeTime = Date.now();
     global.lastQRCodeTime = lastQRCodeTime;
@@ -144,6 +185,8 @@ function createClient() {
 
   /* ===================== READY ===================== */
   client.on("ready", () => {
+    if (sessionReady) return;
+    sessionReady = true;
     console.log("✅ WhatsApp conectado");
 
     status = "connected";
@@ -163,11 +206,14 @@ function createClient() {
     iniciarMonitorCPU(client);
 
     global.atualizar?.();
+
+    clientCreating = false;
   });
 
   /* ===================== MENSAGENS ===================== */
   client.on("message", (msg) => {
     try {
+      if (status !== "connected") return;
       if (msg.fromMe) return;
 
       if (global.whatsappStartTime && msg.timestamp) {
@@ -189,23 +235,57 @@ function createClient() {
     }
   });
 
-  /* ===================== DISCONNECTED ===================== */
-  client.on("disconnected", (reason) => {
+  /* ===================== DISCONNECTED (LOGOUT REMOTO) ===================== */
+  client.on("disconnected", async (reason) => {
+    if (isDisconnecting) return;
+    isDisconnecting = true;
+    clientCreating = false;
+    sessionReady = false;
+
     console.warn("⚠️ WhatsApp desconectado:", reason);
 
-    status = "checking";
+    status = "remote_disconnected";
     connectedNumber = null;
     currentQR = "";
+
+    pararAgendamentos?.();
+    pararMonitorCPU();
+
+    inicializarContadorDiario();
 
     global.whatsappStartTime = null;
     global.cpuUsage = 0;
 
     global.atualizar?.();
+
+    if (remoteLogoutTimeout) clearTimeout(remoteLogoutTimeout);
+
+    if (client) {
+      clientDestroying = true;
+      try {
+        await client.destroy();
+      } catch {}
+      client = null;
+      global.client = null;
+      clientDestroying = false;
+    }
+
+    remoteLogoutTimeout = setTimeout(async () => {
+      console.log("🔄 Recriando client após logout remoto...");
+      await new Promise((r) => setTimeout(r, 0));
+      createClient();
+      isDisconnecting = false;
+    }, 3000);
   });
 
-  client.on("auth_failure", (msg) => {
+  /* ===================== AUTH FAILURE ===================== */
+  client.on("auth_failure", async (msg) => {
+    sessionReady = false;
     console.error("❌ Falha de autenticação:", msg);
-    status = "checking";
+    status = "remote_disconnected";
+    await resetarSessao();
+    clientCreating = false;
+    createClient();
   });
 
   client.initialize();
@@ -215,6 +295,14 @@ function createClient() {
    DISCONNECT MANUAL
 ====================================================== */
 async function disconnect(req, res) {
+  if (isDisconnecting || clientDestroying) {
+    return res.json({ status: "disconnecting" });
+  }
+
+  isDisconnecting = true;
+  clientDestroying = true;
+  sessionReady = false;
+
   try {
     console.log("🧨 Desconectando manualmente...");
 
@@ -228,7 +316,9 @@ async function disconnect(req, res) {
     global.cpuUsage = 0;
 
     if (client) {
-      await client.destroy();
+      try {
+        await client.destroy();
+      } catch {}
       client = null;
       global.client = null;
     }
@@ -236,11 +326,17 @@ async function disconnect(req, res) {
     fs.rmSync(AUTH_DIR, { recursive: true, force: true });
     fs.rmSync(CACHE_DIR, { recursive: true, force: true });
 
+    clientCreating = false;
+    clientDestroying = false;
+    isDisconnecting = false;
+
     createClient();
 
     return res.json({ status: "qr" });
   } catch (err) {
     console.error("Erro ao desconectar:", err);
+    clientDestroying = false;
+    isDisconnecting = false;
     return res.status(500).json({ error: "Erro ao desconectar" });
   }
 }
@@ -271,6 +367,7 @@ async function gracefulShutdown(signal) {
     process.exit(0);
   }
 }
+
 process.on("SIGINT", gracefulShutdown);
 process.on("SIGTERM", gracefulShutdown);
 
