@@ -6,7 +6,7 @@ const { iniciarAgendamentos, pararAgendamentos } = require("../services/agenda")
 const { inicializarContadorDiario, incrementarContador } = require("../services/contadorDiario");
 
 /* ======================================================
-   ESTADO GLOBAL ÚNICO
+   ESTADOS GLOBAIS
 ====================================================== */
 let client = null;
 let status = "checking"; // checking | qr | connected | disconnecting | remote_disconnected
@@ -19,6 +19,7 @@ let clientCreating = false;
 let sessionReady = false;
 let isDisconnecting = false;
 let clientDestroying = false;
+let recreatingAfterManualDisconnect = false;
 
 /* ======================================================
    MÉTRICAS GLOBAIS (DASHBOARD)
@@ -157,9 +158,14 @@ function createClient() {
 
   clientCreating = true;
 
-  console.log("🚀 Inicializando WhatsApp Client...");
+  console.log("🚀 Inicializando WhatsApp Client");
 
-  status = "checking";
+   // 🔒 segurança extra
+  const isManualFlow = recreatingAfterManualDisconnect;
+
+  if (!isManualFlow) {
+    status = "checking";
+  }
   currentQR = "";
   connectedNumber = null;
   lastQRCodeTime = null;
@@ -175,7 +181,8 @@ function createClient() {
   /* ===================== QR ===================== */
   client.on("qr", async (qr) => {
     if (sessionReady) return;
-    console.log("📸 Gerando QR Code...");
+    console.log("📸 Gerando QR Code");
+    recreatingAfterManualDisconnect = false; // 🔓 libera fluxo
     currentQR = await QRCode.toDataURL(qr);
     lastQRCodeTime = Date.now();
     global.lastQRCodeTime = lastQRCodeTime;
@@ -237,6 +244,8 @@ function createClient() {
 
   /* ===================== DISCONNECTED (LOGOUT REMOTO) ===================== */
   client.on("disconnected", async (reason) => {
+    recreatingAfterManualDisconnect = false;
+    
     if (isDisconnecting) return;
     isDisconnecting = true;
     clientCreating = false;
@@ -271,7 +280,7 @@ function createClient() {
     }
 
     remoteLogoutTimeout = setTimeout(async () => {
-      console.log("🔄 Recriando client após logout remoto...");
+      console.log("🔄 Recriando client após logout remoto");
       await new Promise((r) => setTimeout(r, 0));
       createClient();
       isDisconnecting = false;
@@ -304,7 +313,7 @@ async function disconnect(req, res) {
   sessionReady = false;
 
   try {
-    console.log("🧨 Desconectando manualmente...");
+    console.log("🧨 Desconectando manualmente");
 
     status = "disconnecting";
     global.atualizar?.();
@@ -330,9 +339,12 @@ async function disconnect(req, res) {
     clientDestroying = false;
     isDisconnecting = false;
 
+    // 🔑 MARCA FLUXO MANUAL
+    recreatingAfterManualDisconnect = true;
+
     createClient();
 
-    return res.json({ status: "qr" });
+    return res.json({ status: "disconnecting" });
   } catch (err) {
     console.error("Erro ao desconectar:", err);
     clientDestroying = false;
@@ -348,7 +360,7 @@ async function gracefulShutdown(signal) {
   if (isShuttingDown) return;
   isShuttingDown = true;
 
-  console.log(`🛑 Recebido ${signal}. Encerrando com segurança...`);
+  console.log(`🛑 Recebido ${signal}. Encerrando com segurança`);
 
   try {
     pararAgendamentos?.();

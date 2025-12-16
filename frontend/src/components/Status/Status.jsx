@@ -3,16 +3,13 @@ import { getStatus, disconnect } from "../../services/statusService";
 import styles from "./Status.module.css";
 
 export default function Status() {
-  // ====================================
-  // Estado inicial ajustado para evitar flicker
-  // ====================================
   const [info, setInfo] = useState({ status: "loading" });
   const [showConfirm, setShowConfirm] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
   const [error, setError] = useState(null);
 
   // ====================================
-  // Polling do status com primeira chamada imediata
+  // Polling do status
   // ====================================
   useEffect(() => {
     async function loadStatus() {
@@ -20,7 +17,7 @@ export default function Status() {
       setInfo(s);
     }
 
-    loadStatus(); // primeira chamada imediata
+    loadStatus();
 
     const timer = setInterval(async () => {
       const s = await getStatus();
@@ -30,11 +27,31 @@ export default function Status() {
     return () => clearInterval(timer);
   }, []);
 
+  const effectiveStatus = info.status;
+
+  // ====================================
+  // FORMATAÇÃO DO NUMERO
+  // ====================================
+  function formatPhone(number) {
+    if (!number) return "";
+
+    const digits = number.replace(/\D/g, "");
+
+    if (digits.length < 12) return number;
+
+    const ddi = digits.slice(0, 2);
+    const ddd = digits.slice(2, 4);
+    const first = digits.slice(4, 8);
+    const last = digits.slice(8);
+
+    return `+${ddi} (${ddd}) ${first}-${last}`;
+  }
+
   // ====================================
   // Mensagem de status
   // ====================================
   function statusMessage() {
-    switch (info.status) {
+    switch (effectiveStatus) {
       case "loading":
         return "⏳ Carregando status...";
       case "checking":
@@ -44,7 +61,7 @@ export default function Status() {
       case "connected":
         return "✅ Conectado";
       case "disconnecting":
-        return "⚠️ Desconectando...";
+        return "🔴 Desconectando...";
       case "remote_disconnected":
         return "🔒 Sessão desconectada remotamente";
       default:
@@ -59,9 +76,9 @@ export default function Status() {
     setShowConfirm(false);
     setError(null);
     setLoadingAction(true);
+
     try {
       await disconnect();
-      setInfo({ status: "loading" });
     } catch {
       setError("Erro ao desconectar.");
     } finally {
@@ -70,22 +87,47 @@ export default function Status() {
   }
 
   return (
-    <div className={styles.dashboardCard}>
-      <h5 className={styles.titulo}>Status de Conexão</h5>
+    <div
+      className={[
+        styles.dashboardCard,
+        effectiveStatus === "disconnecting" && styles.disconnecting,
+        effectiveStatus === "checking" && styles.checking,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <h5
+        className={[
+          styles.titulo,
+          effectiveStatus === "disconnecting" && styles.tituloDisconnecting,
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        Status de Conexão
+      </h5>
 
       <p className={styles.statusText}>{statusMessage()}</p>
 
-      {info.status === "connected" && info.connectedNumber && (
+      {(effectiveStatus === "loading" ||
+        effectiveStatus === "checking" ||
+        effectiveStatus === "disconnecting") && (
+        <div className={styles.spinner} />
+      )}
+
+      {effectiveStatus === "connected" && info.connectedNumber && (
         <p className={styles.connectedNumber}>
-          📞 Número: <strong>{info.connectedNumber}</strong>
+          📞 Número: <strong>{formatPhone(info.connectedNumber)}</strong>
         </p>
       )}
 
-      {info.status === "qr" && info.qr && (
-        <img src={info.qr} alt="QR Code" width="260" />
+      {effectiveStatus === "qr" && info.qr && (
+        <div className={styles.qr}>
+          <img src={info.qr} alt="QR Code" width="260" />
+        </div>
       )}
 
-      {info.status === "connected" && (
+      {effectiveStatus === "connected" && (
         <button
           className={styles.disconnectBtn}
           onClick={() => setShowConfirm(true)}
@@ -97,7 +139,6 @@ export default function Status() {
 
       {error && <p className={styles.error}>{error}</p>}
 
-      {/* ================= CONFIRMAÇÃO ================= */}
       {showConfirm && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>

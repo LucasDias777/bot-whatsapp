@@ -1,145 +1,312 @@
-/* Base do card (herda do dashboard) */
+/* =========================================================
+   BASE DO CARD
+========================================================= */
 .dashboardCard {
   composes: card from "../Dashboard/Dashboard.module.css";
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+  overflow: hidden;
+
+  background: #ffffff;
+
+  transition:
+    background 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Título */
+/* Camada animada base */
+.dashboardCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  z-index: 0;
+}
+
+/* Conteúdo sempre acima */
+.dashboardCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================================================
+   TÍTULO
+========================================================= */
 .titulo {
   font-size: 1.15rem;
   font-weight: 600;
   text-align: center;
-  color: #1f2937; /* cinza corporativo */
-  letter-spacing: 0.3px;
+  color: #1f2937;
+  transition: color 0.4s ease;
 }
 
-/* ===== STATUS BADGE ===== */
-.statusText {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  gap: 8px;
+.tituloDisconnecting {
+  color: #ffffff;
+}
 
+/* =========================================================
+   BADGE DE STATUS
+========================================================= */
+.statusText {
+  align-self: center;
   font-size: 0.95rem;
   font-weight: 600;
-
-  padding: 8px 16px;
+  padding: 8px 18px;
   border-radius: 999px;
 
-  background: #f3f4f6;
+  background: rgba(255, 255, 255, 0.9);
   color: #374151;
 
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 4px 10px rgba(0, 0, 0, 0.08);
+
+  transition:
+    background 0.4s ease,
+    color 0.4s ease,
+    box-shadow 0.4s ease;
 }
 
-/* Conectado */
-.statusOk {
-  background: rgba(16, 185, 129, 0.12);
-  color: #047857;
-  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.3);
+/* =========================================================
+   CHECKING — AZUL TÉCNICO
+========================================================= */
+.checking {
+  background: linear-gradient(135deg, #eef5ff, #e0ecff);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25);
 }
 
-/* Aguardando / QR */
-.statusWait {
-  background: rgba(245, 158, 11, 0.12);
-  color: #92400e;
-  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.35);
+.checking::before {
+  opacity: 1;
+  background: linear-gradient(
+    120deg,
+    rgba(59, 130, 246, 0.15),
+    rgba(147, 197, 253, 0.25),
+    rgba(59, 130, 246, 0.15)
+  );
+  animation: checkingWave 3s linear infinite;
+}
+
+@keyframes checkingWave {
+  from {
+    transform: translateX(-30%);
+  }
+  to {
+    transform: translateX(30%);
+  }
+}
+
+/* =========================================================
+   SPINNER
+========================================================= */
+.spinner {
+  width: 38px;
+  height: 38px;
+  margin: 14px auto;
+
+  border-radius: 50%;
+  border: 4px solid rgba(0, 0, 0, 0.15);
+  border-top-color: #3b82f6;
+
+  animation:
+    spin 0.9s linear infinite,
+    spinnerFadeIn 0.4s ease;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinnerFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.disconnecting .spinner {
+  border-color: rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+}
+
+/* =========================================================
+   CONNECTED — TRANSIÇÃO VERDE REAL
+========================================================= */
+.connected {
+  background: #ecfdf5;
+}
+
+.connected::before {
+  opacity: 1;
+  background: linear-gradient(
+    to bottom,
+    #34d399 0%,
+    #34d399 50%,
+    #ecfdf5 50%,
+    #ecfdf5 100%
+  );
+  animation: connectedFill 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes connectedFill {
+  0% {
+    transform: translateY(50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.connected {
+  box-shadow:
+    0 0 0 1px rgba(16, 185, 129, 0.35),
+    0 20px 40px rgba(16, 185, 129, 0.25);
 }
 
 /* Número conectado */
 .connectedNumber {
+  font-size: 0.95rem;
+  color: #065f46;
   text-align: center;
-  font-size: 0.9rem;
-  color: #4b5563;
+
+  animation: connectedTextIn 0.5s ease both;
 }
 
-/* ===== QR ===== */
+@keyframes connectedTextIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Botão desconectar (premium) */
+.disconnectBtn {
+  align-self: center;
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  color: #065f46;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  border-radius: 999px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
+}
+
+.disconnectBtn:hover {
+  background: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 10px 24px rgba(16, 185, 129, 0.35);
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   QR CODE — TEMA ÂMBAR
+========================================================= */
 .qr {
   display: flex;
   justify-content: center;
   align-items: center;
+
+  animation: qrContainerIn 0.6s ease;
+}
+
+@keyframes qrContainerIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .qr img {
   background: #ffffff;
-  padding: 12px;
-  border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  padding: 14px;
+  border-radius: 18px;
+
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(245, 158, 11, 0.35);
+
+  animation: qrIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Aviso de expiração */
-.warning {
-  font-size: 0.85rem;
-  text-align: center;
-  color: #b45309;
-  background: rgba(251, 191, 36, 0.1);
-  padding: 10px 12px;
-  border-radius: 8px;
+@keyframes qrIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
 }
 
-/* ===== AÇÕES ===== */
-.actions {
-  display: flex;
-  justify-content: center;
+/* =========================================================
+   DISCONNECTING — ALERTA
+========================================================= */
+.disconnecting {
+  background: linear-gradient(135deg, #7f1d1d, #991b1b);
+  box-shadow:
+    0 0 0 1px rgba(239, 68, 68, 0.45),
+    0 0 30px rgba(239, 68, 68, 0.6);
+
+  animation: pulseRed 1.4s infinite;
 }
 
-/* Botão conectar */
-.connectBtn {
-  padding: 10px 22px;
-  font-size: 0.9rem;
-  font-weight: 600;
-
-  color: #ffffff;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+@keyframes pulseRed {
+  0% {
+    box-shadow:
+      0 0 0 1px rgba(239, 68, 68, 0.35),
+      0 0 18px rgba(239, 68, 68, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(239, 68, 68, 0.55),
+      0 0 32px rgba(239, 68, 68, 0.7);
+  }
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(239, 68, 68, 0.35),
+      0 0 18px rgba(239, 68, 68, 0.45);
+  }
 }
 
-.connectBtn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
-}
-
-.connectBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Botão desconectar */
-.disconnectBtn {
-  padding: 10px 22px;
-  font-size: 0.9rem;
-  font-weight: 600;
-
-  color: #991b1b;
-  background: rgba(239, 68, 68, 0.12);
-
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  border-radius: 999px;
-  cursor: pointer;
-
-  transition: background 0.15s ease, box-shadow 0.15s ease;
-}
-
-.disconnectBtn:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.18);
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);
-}
-
-/* Erro */
+/* =========================================================
+   ERRO
+========================================================= */
 .error {
   font-size: 0.85rem;
   text-align: center;
   color: #b91c1c;
 }
-/* ===== MODAL CONFIRMAÇÃO ===== */
+
+/* =========================================================
+   MODAL
+========================================================= */
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -156,8 +323,21 @@
   max-width: 420px;
   padding: 24px;
   border-radius: 16px;
+
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
-  animation: fadeIn 0.2s ease;
+
+  animation: modalIn 0.25s ease;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .modal h4 {
@@ -179,16 +359,14 @@
   gap: 12px;
 }
 
-/* Botões */
 .cancelBtn {
   padding: 8px 18px;
   font-size: 0.85rem;
   font-weight: 600;
   background: #f3f4f6;
   color: #374151;
-  border: none;
   border-radius: 999px;
-  cursor: pointer;
+  border: none;
 }
 
 .confirmBtn {
@@ -197,23 +375,6 @@
   font-weight: 600;
   background: #dc2626;
   color: #ffffff;
-  border: none;
   border-radius: 999px;
-  cursor: pointer;
-}
-
-.confirmBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  border: none;
 }
