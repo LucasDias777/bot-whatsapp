@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import * as contatosService from "../../services/contatosService";
 import * as gruposService from "../../services/gruposService";
 import * as mensagensService from "../../services/mensagensService";
 import * as enviarService from "../../services/enviarAgoraService";
+import { getStatus } from "../../services/statusService";
 import styles from "./EnviarAgora.module.css";
 import { useAtualizar } from "../../context/AtualizarContexto";
 import { FaPaperPlane, FaUsers, FaUser, FaCommentDots } from "react-icons/fa";
@@ -15,6 +17,8 @@ export default function EnviarAgora() {
   const [numero, setNumero] = useState("");
   const [grupo, setGrupo] = useState("");
   const [mensagemId, setMensagemId] = useState("");
+
+  const [toast, setToast] = useState(null); // { type: "success" | "error", text: string }
 
   const { atualizarToken } = useAtualizar();
   const pollingRef = useRef(null);
@@ -61,26 +65,66 @@ export default function EnviarAgora() {
     }
   }
 
+ function showToast(type, text) {
+  setToast({ type, text });
+
+  const duration = type === "error" ? 5000 : 4000;
+
+  setTimeout(() => {
+    setToast(null);
+  }, duration);
+}
+
   async function enviarAgora() {
-    // NOVA ORDEM DE VALIDAÇÃO
-    if (!numero && !grupo) return alert("Selecione um número ou grupo!");
-    if (!mensagemId) return alert("Selecione uma mensagem!");
+    if (!numero && !grupo) {
+      showToast("error", "Selecione um número ou grupo.");
+      return;
+    }
+
+    if (!mensagemId) {
+      showToast("error", "Selecione uma mensagem.");
+      return;
+    }
+
+    // 🔒 VERIFICAÇÃO REAL DO STATUS DO WHATSAPP
+    let statusInfo;
+    try {
+      statusInfo = await getStatus();
+    } catch {
+      showToast(
+        "error",
+        "Não foi possível verificar o status do WhatsApp."
+      );
+      return;
+    }
+
+    if (statusInfo.status !== "connected") {
+      showToast(
+        "error",
+        "WhatsApp desconectado. Conecte antes de enviar a mensagem."
+      );
+      return;
+    }
 
     const mensagemTexto = mensagens.find((m) => m.id == mensagemId)?.texto;
 
-    await enviarService.enviarAgora({
-      numero: numero || null,
-      grupo_id: grupo || null,
-      mensagem: mensagemTexto,
-    });
+    try {
+      await enviarService.enviarAgora({
+        numero: numero || null,
+        grupo_id: grupo || null,
+        mensagem: mensagemTexto,
+      });
 
-    alert("✅ Mensagem enviada!");
+      showToast("success", "Mensagem enviada com sucesso!");
 
-    setNumero("");
-    setGrupo("");
-    setMensagemId("");
+      setNumero("");
+      setGrupo("");
+      setMensagemId("");
 
-    await carregarDados();
+      await carregarDados();
+    } catch {
+      showToast("error", "Erro ao enviar mensagem.");
+    }
   }
 
   return (
@@ -157,6 +201,25 @@ export default function EnviarAgora() {
           <FaPaperPlane /> Enviar Mensagem
         </button>
       </div>
+
+      {/* === TOAST === */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            className={`${styles.toast} ${
+              toast.type === "error"
+                ? styles.toastError
+                : styles.toastSuccess
+            }`}
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {toast.type === "success" ? "✅" : "⚠️"} {toast.text}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

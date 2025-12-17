@@ -6,6 +6,7 @@ import * as contatosService from "../../services/contatosService";
 import styles from "./Agendamentos.module.css";
 import { useAtualizar } from "../../context/AtualizarContexto";
 import { FaPlus, FaTrash, FaClock, FaCalendarAlt } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Agendamentos() {
   const [tipo, setTipo] = useState("numero");
@@ -22,6 +23,16 @@ export default function Agendamentos() {
 
   const { atualizar, atualizarToken } = useAtualizar();
   const pollingRef = useRef(null);
+  // TOAST
+  const [toast, setToast] = useState(null);
+  // CONFIRM
+  const [confirmData, setConfirmData] = useState(null);
+
+  function showToast(type, text) {
+    setToast({ type, text });
+    const duration = type === "error" ? 5000 : 4000;
+    setTimeout(() => setToast(null), duration);
+  }
 
   function normalizeDias(v) {
     if (Array.isArray(v)) return v;
@@ -48,7 +59,9 @@ export default function Agendamentos() {
 
   async function carregarAgendamentos() {
     const lista = await agService.listarAgendamentos();
-    setAgendamentos((lista || []).map((a) => ({ ...a, dias: normalizeDias(a.dias) })));
+    setAgendamentos(
+      (lista || []).map((a) => ({ ...a, dias: normalizeDias(a.dias) }))
+    );
   }
 
   async function refreshAll() {
@@ -61,9 +74,7 @@ export default function Agendamentos() {
 
   useEffect(() => {
     function onVisibilityChange() {
-      if (document.visibilityState === "visible") {
-        refreshAll();
-      }
+      if (document.visibilityState === "visible") refreshAll();
     }
     window.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("focus", onVisibilityChange);
@@ -75,9 +86,7 @@ export default function Agendamentos() {
 
   useEffect(() => {
     if (pollingRef.current) clearInterval(pollingRef.current);
-    pollingRef.current = setInterval(() => {
-      refreshAll();
-    }, 1000);
+    pollingRef.current = setInterval(refreshAll, 1000);
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
@@ -89,42 +98,86 @@ export default function Agendamentos() {
     );
   }
 
+  // =========================
+  // CRIAR AGENDAMENTO
+  // =========================
   async function criar() {
-    if (!mensagemId) return alert("Selecione uma mensagem!");
+    if (!mensagemId) {
+      showToast("error", "Selecione uma mensagem!");
+      return;
+    }
+
     if (
       (tipo === "numero" && !numero) ||
       (tipo === "grupo" && !grupo) ||
       !horario ||
       diasSelecionados.length === 0
     ) {
-      return alert("Preencha todos os campos e selecione ao menos um dia!");
+      showToast("error", "Preencha todos os campos e selecione ao menos um dia!");
+      return;
     }
 
     const mensagemTexto = mensagens.find((m) => m.id == mensagemId)?.texto;
 
-    await agService.criarAgendamento({
-      numero: tipo === "numero" ? numero : null,
-      grupo: tipo === "grupo" ? grupo : null,
-      mensagem: mensagemTexto,
-      horario,
-      dias: diasSelecionados,
-    });
+    try {
+      await agService.criarAgendamento({
+        numero: tipo === "numero" ? numero : null,
+        grupo: tipo === "grupo" ? grupo : null,
+        mensagem: mensagemTexto,
+        horario,
+        dias: diasSelecionados,
+      });
 
-    setNumero("");
-    setGrupo("");
-    setMensagemId("");
-    setHorario("");
-    setDiasSelecionados([]);
+      setNumero("");
+      setGrupo("");
+      setMensagemId("");
+      setHorario("");
+      setDiasSelecionados([]);
 
-    await refreshAll();
-    atualizar();
+      await refreshAll();
+      atualizar();
+
+      showToast("success", "Agendamento criado com sucesso!");
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Erro ao criar agendamento.");
+    }
   }
 
-  async function remover(id) {
-    if (!confirm("Remover este agendamento?")) return;
-    await agService.removerAgendamento(id);
-    await refreshAll();
-    atualizar();
+  // =========================
+  // REMOVER AGENDAMENTO (CONFIRM)
+  // =========================
+  function remover(id) {
+    setConfirmData({
+      title: "Remover agendamento",
+      message: "Tem certeza que deseja remover este agendamento?",
+      onConfirm: async () => {
+        try {
+          await agService.removerAgendamento(id);
+          await refreshAll();
+          atualizar();
+          showToast("success", "Agendamento excluído com sucesso!");
+        } catch (err) {
+          console.error(err);
+          showToast("error", "Erro ao remover agendamento.");
+        } finally {
+          setConfirmData(null);
+        }
+      },
+    });
+  }
+
+   function contatoPorNumero(num) {
+    if (!num) return undefined;
+    return contatos.find(
+      (c) => String(c.numero) === String(num) || String(c.id) === String(num)
+    );
+  }
+
+  function nomeDoGrupoPorId(id) {
+    if (!id) return undefined;
+    const g = grupos.find((x) => String(x.id) === String(id));
+    return g ? g.nome : undefined;
   }
 
   const nomesDias = {
@@ -137,22 +190,8 @@ export default function Agendamentos() {
     6: "Sáb",
   };
 
-  // helper: busca contato pelo número (string). Retorna objeto contato ou undefined.
-  function contatoPorNumero(num) {
-    if (!num) return undefined;
-    return contatos.find(c => String(c.numero) === String(num) || String(c.id) === String(num));
-  }
-
-  // helper: busca nome do grupo pelo id
-  function nomeDoGrupoPorId(id) {
-    if (!id) return undefined;
-    const g = grupos.find(x => String(x.id) === String(id));
-    return g ? g.nome : undefined;
-  }
-
   return (
     <div className={styles.container}>
-      {/* ==== TOP BAR ==== */}
       <div className={styles.topBar}>
         <h5 className={styles.titulo}>Agendamentos</h5>
       </div>
@@ -170,7 +209,7 @@ export default function Agendamentos() {
             <option value="">(Escolher número)</option>
             {contatos.map((c) => (
               <option key={c.id} value={c.numero}>
-                {c.nome ? c.nome : "Sem nome"} — {c.numero}
+                {c.nome || "Sem nome"} — {c.numero}
               </option>
             ))}
           </select>
@@ -188,36 +227,23 @@ export default function Agendamentos() {
 
       <div className={styles.row}>
         <label>Mensagem</label>
-        <select
-          value={mensagemId}
-          onChange={(e) => setMensagemId(e.target.value)}
-        >
+        <select value={mensagemId} onChange={(e) => setMensagemId(e.target.value)}>
           <option value="">(Selecione)</option>
           {mensagens.map((m) => (
-  <option key={m.id} value={m.id}>
-    {m.texto.length > 60
-      ? m.texto.slice(0, 60) + "..."
-      : m.texto}
-  </option>
-))}
+            <option key={m.id} value={m.id}>
+              {m.texto.length > 60 ? m.texto.slice(0, 60) + "..." : m.texto}
+            </option>
+          ))}
         </select>
       </div>
 
       <div className={styles.row}>
-        <label>
-          <FaClock /> Horário (HH:MM)
-        </label>
-        <input
-          type="time"
-          value={horario}
-          onChange={(e) => setHorario(e.target.value)}
-        />
+        <label><FaClock /> Horário</label>
+        <input type="time" value={horario} onChange={(e) => setHorario(e.target.value)} />
       </div>
 
       <div className={styles.row}>
-        <label>
-          <FaCalendarAlt /> Dias da semana
-        </label>
+        <label><FaCalendarAlt /> Dias</label>
         <div style={{ display: "flex", gap: 10 }}>
           {[1, 2, 3, 4, 5, 6, 0].map((d) => (
             <label key={d}>
@@ -225,7 +251,6 @@ export default function Agendamentos() {
                 type="checkbox"
                 checked={diasSelecionados.includes(d)}
                 onChange={() => toggleDia(d)}
-                value={d}
               />{" "}
               {nomesDias[d]}
             </label>
@@ -244,7 +269,6 @@ export default function Agendamentos() {
         {agendamentos.map((a) => {
           const diasTexto = (a.dias || []).map((d) => nomesDias[d]).join(", ");
 
-          // destino: se grupo => mostrar nome do grupo; se numero => mostrar nome + numero do contato (se encontrado)
           let destinoTexto = "";
           if (a.grupo) {
             const nomeGrupo = nomeDoGrupoPorId(a.grupo);
@@ -252,7 +276,7 @@ export default function Agendamentos() {
           } else if (a.numero) {
             const contato = contatoPorNumero(a.numero);
             destinoTexto = contato
-              ? `${contato.nome ? contato.nome : "Sem nome"} — ${contato.numero}`
+              ? `${contato.nome || "Sem nome"} — ${contato.numero}`
               : a.numero;
           }
 
@@ -276,6 +300,63 @@ export default function Agendamentos() {
           );
         })}
       </div>
+
+      {/* ==== TOAST ==== */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            className={`${styles.toast} ${
+              toast.type === "error"
+                ? styles.toastError
+                : styles.toastSuccess
+            }`}
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {toast.type === "success" ? "✅" : "⚠️"} {toast.text}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ==== CONFIRM ==== */}
+      <AnimatePresence>
+        {confirmData && (
+          <motion.div
+            className={styles.confirmOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className={styles.confirmBox}
+              initial={{ y: -40, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -20, opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <h4>{confirmData.title}</h4>
+              <p>{confirmData.message}</p>
+
+              <div className={styles.confirmActions}>
+                <button
+                  className={styles.confirmCancel}
+                  onClick={() => setConfirmData(null)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className={styles.confirmDanger}
+                  onClick={confirmData.onConfirm}
+                >
+                  Remover
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

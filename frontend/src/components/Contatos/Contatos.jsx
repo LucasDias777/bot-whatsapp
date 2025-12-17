@@ -3,10 +3,12 @@ import * as contatosService from "../../services/contatosService";
 import { FiPlus, FiEdit, FiTrash } from "react-icons/fi";
 import styles from "./Contatos.module.css";
 import { useAtualizar } from "../../context/AtualizarContexto";
+import { motion, AnimatePresence } from "framer-motion";
+import { getStatus } from "../../services/statusService";
 
 export default function Contatos() {
   const [lista, setLista] = useState([]);
-  const [rawNumero, setRawNumero] = useState(""); 
+  const [rawNumero, setRawNumero] = useState("");
   const [nome, setNome] = useState("");
 
   const [filtroNome, setFiltroNome] = useState("");
@@ -17,6 +19,20 @@ export default function Contatos() {
   const { atualizar } = useAtualizar();
   const [editNome, setEditNome] = useState("");
   const [editRawNumero, setEditRawNumero] = useState("");
+  // TOAST
+  const [toast, setToast] = useState(null);
+  // { type: "success" | "error", text: string }
+  const [confirmData, setConfirmData] = useState(null);
+  // { title, message, onConfirm }
+
+  function showToast(type, text) {
+    setToast({ type, text });
+
+    const duration = type === "error" ? 5000 : 4000;
+    setTimeout(() => {
+      setToast(null);
+    }, duration);
+  }
 
   async function carregar() {
     try {
@@ -49,8 +65,8 @@ export default function Contatos() {
     if (s.length > 11) s = s.slice(0, 11);
 
     if (s.length <= 2) return `+55 (${s}`;
-    if (s.length <= 7) return `+55 (${s.slice(0,2)})${s.slice(2)}`;
-    return `+55 (${s.slice(0,2)})${s.slice(2,7)}-${s.slice(7)}`;
+    if (s.length <= 7) return `+55 (${s.slice(0, 2)})${s.slice(2)}`;
+    return `+55 (${s.slice(0, 2)})${s.slice(2, 7)}-${s.slice(7)}`;
   }
 
   function limparNumeroParaEnviarDeRaw(valorRaw) {
@@ -63,45 +79,92 @@ export default function Contatos() {
     return "55" + v;
   }
 
+  // =========================
+  // SALVAR CONTATO
+  // =========================
   async function salvarContato() {
-    if (!nome.trim()) return alert("Digite um nome!");
-    if (!rawNumero.trim()) return alert("Digite um número válido!");
+    if (!nome.trim()) {
+      showToast("error", "Digite um nome!");
+      return;
+    }
+
+    if (!rawNumero.trim()) {
+      showToast("error", "Digite um número válido!");
+      return;
+    }
 
     const numeroLimpo = limparNumeroParaEnviarDeRaw(rawNumero);
 
     if (!/^55\d{2}9\d{8}$/.test(numeroLimpo)) {
-      return alert("Número inválido. Use: (44) 99999-9999");
+      showToast("error", "Número inválido. Use: (44) 99999-9999");
+      return;
     }
 
-    const jaExiste = lista.some(c => String(c.numero) === numeroLimpo);
+    const jaExiste = lista.some((c) => String(c.numero) === numeroLimpo);
     if (jaExiste) {
       const display = formatarParaLista(numeroLimpo);
-      return alert(`Número já cadastrado: ${display}`);
+      showToast("error", `Número já cadastrado: ${display}`);
+      return;
     }
 
+    // 🔒 VERIFICA STATUS DO WHATSAPP
+    let statusInfo;
+    try {
+      statusInfo = await getStatus();
+    } catch {
+      showToast("error", "Não foi possível verificar o status do WhatsApp.");
+      return;
+    }
+
+    if (statusInfo.status !== "connected") {
+      showToast(
+        "error",
+        "WhatsApp desconectado. Conecte antes de criar o contato.",
+      );
+      return;
+    }
+
+    // ✅ CRIAR CONTATO
     try {
       const r = await contatosService.criarContato(nome.trim(), numeroLimpo);
-      if (!r.ok) return alert(r.erro || "Falha ao criar contato");
+
+      if (!r || r.ok !== true) {
+        showToast("error", r?.erro || "Falha ao criar contato.");
+        return;
+      }
+
+      showToast("success", "Contato criado com sucesso!");
 
       setNome("");
       setRawNumero("");
       await carregar();
-
-      atualizar(); // 🔥 Dashboard atualiza
+      atualizar();
     } catch (e) {
       console.error(e);
-      alert("Número não encontrado no WhatsApp.");
+      showToast("error", "Número não encontrado no WhatsApp.");
     }
   }
 
-  async function removerContato(id) {
-    if (!confirm("Remover este contato?")) return;
+ function removerContato(id) {
+  setConfirmData({
+    title: "Remover contato",
+    message: "Tem certeza que deseja remover este contato?",
+    onConfirm: async () => {
+      try {
+        await contatosService.removerContato(id);
+        await carregar();
+        atualizar();
+        showToast("success", "Contato removido com sucesso!");
 
-    await contatosService.removerContato(id);
-    await carregar();
-
-    atualizar(); // 🔥 Dashboard atualiza
-  }
+      } catch (err) {
+        console.error(err);
+        showToast("error", "Erro ao remover contato.");
+      } finally {
+        setConfirmData(null);
+      }
+    },
+  });
+}
 
   function abrirModalEditar(contato) {
     setEditId(contato.id);
@@ -119,42 +182,52 @@ export default function Contatos() {
   }
 
   async function salvarEdicao() {
-    if (!editNome.trim()) return alert("Digite um nome!");
-    if (!editRawNumero.trim()) return alert("Digite um número!");
+    if (!editNome.trim()) {
+      showToast("error", "Digite um nome!");
+      return;
+    }
+
+    if (!editRawNumero.trim()) {
+      showToast("error", "Digite um número!");
+      return;
+    }
 
     const numeroLimpo = limparNumeroParaEnviarDeRaw(editRawNumero);
 
     if (!/^55\d{2}9\d{8}$/.test(numeroLimpo)) {
-      return alert("Número inválido. Use (44) 99999-9999");
+      showToast("error", "Número inválido. Use (44) 99999-9999");
+      return;
     }
 
     const existsOther = lista.some(
-      c => String(c.numero) === numeroLimpo && c.id !== editId
+      (c) => String(c.numero) === numeroLimpo && c.id !== editId,
     );
     if (existsOther) {
       const display = formatarParaLista(numeroLimpo);
-      return alert(`Número já cadastrado: ${display}`);
+      showToast("error", `Número já cadastrado: ${display}`);
+      return;
     }
 
     try {
       const res = await contatosService.editarContato(
         editId,
         editNome.trim(),
-        numeroLimpo
+        numeroLimpo,
       );
 
       if (!res || res.ok !== true) {
-        alert(res?.erro || "Falha ao editar.");
+        showToast("error", res?.erro || "Falha ao editar.");
         return;
       }
 
+      showToast("success", "Contato atualizado com sucesso!");
+
       await carregar();
       fecharModal();
-
-      atualizar(); // 🔥 Dashboard atualiza
+      atualizar();
     } catch (err) {
       console.error(err);
-      alert("Número não encontrado no WhatsApp.");
+      showToast("error", "Número não encontrado no WhatsApp.");
     }
   }
 
@@ -172,7 +245,6 @@ export default function Contatos() {
     let raw = v;
 
     if (raw.length > 11 && raw.startsWith("55")) raw = raw.slice(2);
-
     setRawNumero(raw.slice(0, 11));
   }
 
@@ -181,7 +253,6 @@ export default function Contatos() {
     let raw = v;
 
     if (raw.length > 11 && raw.startsWith("55")) raw = raw.slice(2);
-
     setEditRawNumero(raw.slice(0, 11));
   }
 
@@ -287,7 +358,7 @@ export default function Contatos() {
           >
             <h3 className={styles.modalTitle}>Editar Contato</h3>
 
-            <label className={styles.inputLabel}>Nome</label>
+            <label className={styles.inputLabel}>Nome:</label>
             <input
               className={styles.modalInput}
               value={editNome}
@@ -295,7 +366,7 @@ export default function Contatos() {
               placeholder="Nome do contato"
             />
 
-            <label className={styles.inputLabel}>Número</label>
+            <label className={styles.inputLabel}>Número:</label>
             <input
               className={styles.modalInput}
               value={formatarNumeroBRParaInput(editRawNumero)}
@@ -321,6 +392,67 @@ export default function Contatos() {
           </div>
         </div>
       )}
+      {/* =========================
+          TOAST ANIMADO
+         ========================= */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            className={`${styles.toast} ${
+              toast.type === "error" ? styles.toastError : styles.toastSuccess
+            }`}
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{
+              duration: 0.35,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            {toast.type === "success" ? "✅" : "⚠️"} {toast.text}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {confirmData && (
+          <motion.div
+            className={styles.confirmOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className={styles.confirmBox}
+              initial={{ y: -40, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -20, opacity: 0, scale: 0.95 }}
+              transition={{
+                duration: 0.35,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              <h4>{confirmData.title}</h4>
+              <p>{confirmData.message}</p>
+
+              <div className={styles.confirmActions}>
+                <button
+                  className={styles.confirmCancel}
+                  onClick={() => setConfirmData(null)}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className={styles.confirmDanger}
+                  onClick={confirmData.onConfirm}
+                >
+                  Remover
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,21 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import styles from "./Dashboard.module.css";
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/Logo-Bot.png";
 import Status from "../Status/Status";
 import { getDashboardData } from "../../services/dashboardService";
 import { useAtualizar } from "../../context/AtualizarContexto";
-import {
-  Chart,
-  ArcElement,
-  DoughnutController,
-  Tooltip,
-  Legend,
-  BarElement,
-  BarController,
-  CategoryScale,
-  LinearScale,
-} from "chart.js";
+import { Chart, ArcElement, DoughnutController, Tooltip, Legend, BarElement, BarController, CategoryScale, LinearScale } from "chart.js";
 import { useCountAnimation } from "../../hooks/DispararAnimation";
 
 function formatarTempo(ms) {
@@ -27,16 +17,7 @@ function formatarTempo(ms) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
 }
 
-Chart.register(
-  DoughnutController,
-  ArcElement,
-  BarController,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend,
-);
+Chart.register( DoughnutController, ArcElement, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend );
 
 export default function Dashboard() {
   const { pathname } = useLocation();
@@ -164,8 +145,6 @@ export default function Dashboard() {
 
   /* ============================================
       COMPORTAMENTO AO NAVEGAR ENTRE ROTAS
-      - Ao sair da rota "/", zera os datasets (visual)
-      - Ao voltar para "/", força recriação via chartVersion
   ============================================ */
   useEffect(() => {
     if (pathname === "/") {
@@ -377,7 +356,7 @@ export default function Dashboard() {
       {/* SIDEBAR */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarLogoBox}>
-          <img src={logo} alt="Logo" className={styles.logo} />
+          <img src={logo} alt="logo" className={styles.logo} />
           <span className={styles.logoText}>BOT WhatsApp</span>
         </div>
 

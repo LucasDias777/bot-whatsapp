@@ -108,3 +108,73 @@
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* === TOAST DE CONFIRMAÇÃO === */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+
+  background: #16a34a;
+  color: white;
+  padding: 14px 18px;
+  border-radius: 10px;
+
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  animation: toastIn 0.35s ease;
+  z-index: 9999;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toastSuccess {
+  background: #16a34a; /* verde */
+}
+
+.toastError {
+  background: #dc2626; /* vermelho forte */
+  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+  animation:
+    toastIn 0.35s ease,
+    toastShake 0.4s ease 0.4s,
+    toastPulse 1.2s ease-in-out infinite 1s;
+}
+
+/* === ANIMAÇÃO DE ALERTA (SHAKE) === */
+@keyframes toastShake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+
+/* === PULSO DE ATENÇÃO (ERROR) === */
+@keyframes toastPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(220, 38, 38, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}

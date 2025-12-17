@@ -24,3 +24,21 @@ exports.removerAgendamento = (req, res) => {
     res.json({ ok: !err });
   });
 };
+
+exports.editarAgendamento = (req, res) => {
+  const id = req.params.id;
+  const { numero = null, grupo = null, mensagem, horario, dias } = req.body;
+
+  db.run(
+    `UPDATE agendamentos
+     SET numero = ?, grupo = ?, mensagem = ?, horario = ?, dias = ?
+     WHERE id = ?`,
+    [numero, grupo, mensagem, horario, JSON.stringify(dias), id],
+    err => {
+      if (err) {
+        return res.status(500).json({ ok: false, err: err.message });
+      }
+      res.json({ ok: true });
+    }
+  );
+};

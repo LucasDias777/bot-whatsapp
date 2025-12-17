@@ -2,15 +2,34 @@ import React, { useEffect, useState } from "react";
 import * as mensagensService from "../../services/mensagensService";
 import { FiPlus, FiEdit, FiTrash } from "react-icons/fi";
 import styles from "./Mensagens.module.css";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Mensagens() {
   const [lista, setLista] = useState([]);
   const [texto, setTexto] = useState("");
 
-  // Modal de edição
+  // =========================
+  // MODAL EDIÇÃO
+  // =========================
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [editTexto, setEditTexto] = useState("");
+  // TOAST
+  const [toast, setToast] = useState(null);
+  // { type: "success" | "error", text }
+  // CONFIRM
+  const [confirmData, setConfirmData] = useState(null);
+  // { title, message, onConfirm }
+
+  // =========================
+  // TOAST HELPER
+  // =========================
+  function showToast(type, text) {
+    setToast({ type, text });
+
+    const duration = type === "error" ? 5000 : 4000;
+    setTimeout(() => setToast(null), duration);
+  }
 
   async function carregar() {
     const r = await mensagensService.listMensagens();
@@ -21,20 +40,51 @@ export default function Mensagens() {
     carregar();
   }, []);
 
+  // =========================
+  // CRIAR MENSAGEM
+  // =========================
   async function salvarMensagem() {
-    if (!texto.trim()) return alert("Digite uma mensagem!");
-    await mensagensService.criarMensagem(texto.trim());
-    setTexto("");
-    await carregar();
+    if (!texto.trim()) {
+      showToast("error", "Digite uma mensagem!");
+      return;
+    }
+
+    try {
+      await mensagensService.criarMensagem(texto.trim());
+      setTexto("");
+      await carregar();
+      showToast("success", "Mensagem criada com sucesso!");
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Erro ao criar mensagem.");
+    }
   }
 
-  async function removerMensagem(id) {
-    if (!confirm("Tem certeza que deseja excluir esta mensagem?")) return;
-    await mensagensService.removerMensagem(id);
-    await carregar();
+  // =========================
+  // REMOVER MENSAGEM (CONFIRM)
+  // =========================
+  function removerMensagem(id) {
+    setConfirmData({
+      title: "Excluir mensagem",
+      message: "Tem certeza que deseja excluir esta mensagem?",
+      onConfirm: async () => {
+        try {
+          await mensagensService.removerMensagem(id);
+          await carregar();
+          showToast("success", "Mensagem excluída com sucesso!");
+        } catch (err) {
+          console.error(err);
+          showToast("error", "Erro ao excluir mensagem.");
+        } finally {
+          setConfirmData(null);
+        }
+      },
+    });
   }
 
-  // Abre modal preenchendo campos
+  // =========================
+  // EDITAR
+  // =========================
   function abrirModalEditar(m) {
     setEditId(m.id);
     setEditTexto(m.texto || "");
@@ -48,20 +98,24 @@ export default function Mensagens() {
   }
 
   async function salvarEdicao() {
-    if (!editTexto.trim()) return alert("O texto não pode estar vazio!");
+    if (!editTexto.trim()) {
+      showToast("error", "O texto não pode estar vazio!");
+      return;
+    }
+
     try {
       await mensagensService.editarMensagem(editId, editTexto.trim());
       await carregar();
       fecharModalEditar();
+      showToast("success", "Mensagem editada com sucesso!");
     } catch (err) {
-      console.error("Erro ao editar mensagem:", err);
-      alert("Erro ao editar mensagem.");
+      console.error(err);
+      showToast("error", "Erro ao editar mensagem.");
     }
   }
 
   return (
     <div className={styles.container}>
-
       {/* Barra Superior */}
       <div className={styles.topBar}>
         <h2 className={styles.titulo}>Mensagens</h2>
@@ -76,7 +130,10 @@ export default function Mensagens() {
           className={styles.textarea}
         />
 
-        <button className={`${styles.btn} ${styles.addButton}`} onClick={salvarMensagem}>
+        <button
+          className={`${styles.btn} ${styles.addButton}`}
+          onClick={salvarMensagem}
+        >
           <FiPlus size={18} />
           Adicionar
         </button>
@@ -90,9 +147,6 @@ export default function Mensagens() {
               <span className={styles.messageText}>{m.texto}</span>
 
               <div className={styles.actionButtons}>
-
-
-                {/* Botão Editar (abre modal) */}
                 <button
                   className={`${styles.smallBtn} ${styles.editButton}`}
                   onClick={() => abrirModalEditar(m)}
@@ -101,7 +155,6 @@ export default function Mensagens() {
                   Editar
                 </button>
 
-                {/* Botão Excluir */}
                 <button
                   className={`${styles.smallBtn} ${styles.deleteButton}`}
                   onClick={() => removerMensagem(m.id)}
@@ -109,14 +162,13 @@ export default function Mensagens() {
                   <FiTrash size={16} />
                   Excluir
                 </button>
-
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* MODAL DE EDIÇÃO */}
+      {/* MODAL EDIÇÃO */}
       {isEditModalOpen && (
         <div className={styles.modalOverlay} onMouseDown={fecharModalEditar}>
           <div
@@ -134,10 +186,16 @@ export default function Mensagens() {
             />
 
             <div className={styles.modalActions}>
-              <button className={`${styles.btn} ${styles.addButton}`} onClick={salvarEdicao}>
+              <button
+                className={`${styles.btn} ${styles.addButton}`}
+                onClick={salvarEdicao}
+              >
                 Salvar
               </button>
-               <button className={`${styles.btn} ${styles.secondaryBtn}`} onClick={fecharModalEditar}>
+              <button
+                className={`${styles.btn} ${styles.secondaryBtn}`}
+                onClick={fecharModalEditar}
+              >
                 Cancelar
               </button>
             </div>
@@ -145,6 +203,73 @@ export default function Mensagens() {
         </div>
       )}
 
+      {/* =========================
+          TOAST ANIMADO
+         ========================= */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            className={`${styles.toast} ${
+              toast.type === "error"
+                ? styles.toastError
+                : styles.toastSuccess
+            }`}
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{
+              duration: 0.35,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            {toast.type === "success" ? "✅" : "⚠️"} {toast.text}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* =========================
+          CONFIRM ANIMADO
+         ========================= */}
+      <AnimatePresence>
+        {confirmData && (
+          <motion.div
+            className={styles.confirmOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className={styles.confirmBox}
+              initial={{ y: -40, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -20, opacity: 0, scale: 0.95 }}
+              transition={{
+                duration: 0.35,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              <h4>{confirmData.title}</h4>
+              <p>{confirmData.message}</p>
+
+              <div className={styles.confirmActions}>
+                <button
+                  className={styles.confirmCancel}
+                  onClick={() => setConfirmData(null)}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className={styles.confirmDanger}
+                  onClick={confirmData.onConfirm}
+                >
+                  Excluir
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

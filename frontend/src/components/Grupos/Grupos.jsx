@@ -4,6 +4,7 @@ import * as contatosService from "../../services/contatosService";
 import styles from "./Grupos.module.css";
 import { useAtualizar } from "../../context/AtualizarContexto";
 import { FiPlus, FiTrash, FiX, FiEdit } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Grupos() {
   const [grupos, setGrupos] = useState([]);
@@ -12,11 +13,23 @@ export default function Grupos() {
 
   const { atualizar, atualizarToken } = useAtualizar();
   const pollingRef = useRef(null);
+  // TOAST
+  const [toast, setToast] = useState(null);
+  // { type: "success" | "error", text }
+  // CONFIRM
+  const [confirmData, setConfirmData] = useState(null);
+  // { title, message, onConfirm }
+
+  function showToast(type, text) {
+    setToast({ type, text });
+    const duration = type === "error" ? 5000 : 4000;
+    setTimeout(() => setToast(null), duration);
+  }
 
   async function carregar() {
     const [gs, cs] = await Promise.all([
       gruposService.listGrupos(),
-      contatosService.listContatos()
+      contatosService.listContatos(),
     ]);
     setGrupos(gs);
     setContatos(cs);
@@ -41,24 +54,34 @@ export default function Grupos() {
   useEffect(() => {
     if (pollingRef.current) clearInterval(pollingRef.current);
     pollingRef.current = setInterval(() => carregar(), 3000);
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
+    return () => pollingRef.current && clearInterval(pollingRef.current);
   }, []);
 
   async function criarGrupo() {
-    if (!novoGrupo.trim()) return alert("Digite um nome de grupo!");
+    if (!novoGrupo.trim()) {
+      showToast("error", "Digite um nome de grupo!");
+      return;
+    }
+
     await gruposService.criarGrupo(novoGrupo.trim());
     setNovoGrupo("");
     await carregar();
     atualizar();
+    showToast("success", "Grupo criado com sucesso!");
   }
 
-  async function removerGrupo(id) {
-    if (!confirm("Remover este grupo?")) return;
-    await gruposService.removerGrupo(id);
-    await carregar();
-    atualizar();
+  function removerGrupo(id) {
+    setConfirmData({
+      title: "Remover grupo",
+      message: "Tem certeza que deseja remover este grupo?",
+      onConfirm: async () => {
+        await gruposService.removerGrupo(id);
+        await carregar();
+        atualizar();
+        showToast("success", "Grupo excluído com sucesso!");
+        setConfirmData(null);
+      },
+    });
   }
 
   return (
@@ -70,31 +93,100 @@ export default function Grupos() {
       <div className={styles.row}>
         <input
           value={novoGrupo}
-          onChange={e => setNovoGrupo(e.target.value)}
+          onChange={(e) => setNovoGrupo(e.target.value)}
           placeholder="Nome do grupo"
         />
-        <button className={`${styles.btn} ${styles.addButton}`} onClick={criarGrupo}>
+        <button
+          className={`${styles.btn} ${styles.addButton}`}
+          onClick={criarGrupo}
+        >
           <FiPlus size={18} />
           Criar Grupo
         </button>
       </div>
 
       <div id="listaGrupos">
-        {grupos.map(g => (
+        {grupos.map((g) => (
           <GroupCard
             key={`${g.id}-${atualizarToken}-${contatos.length}`}
             grupo={g}
             contatos={contatos}
             onRemoveGroup={() => removerGrupo(g.id)}
-            onUpdated={() => { carregar(); atualizar(); }}
+            onUpdated={() => {
+              carregar();
+              atualizar();
+            }}
+            showToast={showToast}
+            setConfirmData={setConfirmData}
           />
         ))}
       </div>
+
+      {/* =========================
+          TOAST
+         ========================= */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            className={`${styles.toast} ${
+              toast.type === "error"
+                ? styles.toastError
+                : styles.toastSuccess
+            }`}
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {toast.type === "success" ? "✅" : "⚠️"} {toast.text}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* =========================
+          CONFIRM
+         ========================= */}
+      <AnimatePresence>
+        {confirmData && (
+          <motion.div
+            className={styles.confirmOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className={styles.confirmBox}
+              initial={{ y: -40, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -20, opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <h4>{confirmData.title}</h4>
+              <p>{confirmData.message}</p>
+
+              <div className={styles.confirmActions}>
+                <button
+                  className={styles.confirmCancel}
+                  onClick={() => setConfirmData(null)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className={styles.confirmDanger}
+                  onClick={confirmData.onConfirm}
+                >
+                  Confirmar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated }) {
+function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated, showToast, setConfirmData}) {
   const [membros, setMembros] = useState([]);
   const [selectedToAdd, setSelectedToAdd] = useState("");
   const { atualizar, atualizarToken } = useAtualizar();
@@ -104,52 +196,49 @@ function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated }) {
   const [editGroupName, setEditGroupName] = useState("");
 
   async function carregarMembros() {
-    try {
-      const data = await gruposService.listarContatosDoGrupo(grupo.id, { t: Date.now() });
-      setMembros(data);
-    } catch (err) {
-      console.error("Erro ao carregar contatos do grupo", err);
-    }
+    const data = await gruposService.listarContatosDoGrupo(grupo.id, {
+      t: Date.now(),
+    });
+    setMembros(data);
   }
 
   useEffect(() => {
     carregarMembros();
-  }, [grupo.id]);
+  }, [grupo.id, atualizarToken]);
 
   useEffect(() => {
-    carregarMembros();
-  }, [atualizarToken]);
-
-  useEffect(() => {
-    setMembros(prev => prev.filter(m => contatos.some(c => c.id === m.id)));
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => carregarMembros(), 300);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
+    return () => debounceRef.current && clearTimeout(debounceRef.current);
   }, [contatos]);
 
   async function adicionarContatoAoGrupo(contatoId) {
-    if (!contatoId) return alert("Selecione um contato para adicionar.");
+    if (!contatoId) {
+      showToast("error", "Selecione um contato para adicionar.");
+      return;
+    }
     await gruposService.adicionarContatoAoGrupo(grupo.id, parseInt(contatoId));
     setSelectedToAdd("");
     await carregarMembros();
     atualizar();
-    if (onUpdated) onUpdated();
+    onUpdated && onUpdated();
+    showToast("success", "Contato adicionado ao grupo!");
   }
 
-  async function removerContatoDoGrupo(contatoId) {
-    if (!confirm("Remover esse contato do grupo?")) return;
-    await gruposService.removerContatoDoGrupo(grupo.id, contatoId);
-    await carregarMembros();
-    atualizar();
-    if (onUpdated) onUpdated();
+  function removerContatoDoGrupo(contatoId) {
+    setConfirmData({
+      title: "Remover contato",
+      message: "Deseja remover este contato do grupo?",
+      onConfirm: async () => {
+        await gruposService.removerContatoDoGrupo(grupo.id, contatoId);
+        await carregarMembros();
+        atualizar();
+        onUpdated && onUpdated();
+        showToast("success", "Contato removido do grupo!");
+        setConfirmData(null);
+      },
+    });
   }
-
-  const idsNoGrupo = membros.map(m => m.id);
-  const opcoesAdd = contatos.filter(c => !idsNoGrupo.includes(c.id));
 
   function abrirModalEditarGrupo() {
     setEditGroupName(grupo.nome || "");
@@ -163,18 +252,20 @@ function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated }) {
 
   async function salvarEdicaoGrupo() {
     const novo = (editGroupName || "").trim();
-    if (!novo) return alert("Digite um nome válido!");
-
-    try {
-      await gruposService.editarGrupo(grupo.id, novo);
-
-      fecharModalEditarGrupo();
-      atualizar();
-      if (onUpdated) onUpdated();
-    } catch (err) {
-      console.error("Erro real ao editar grupo →", err);
+    if (!novo) {
+      showToast("error", "Digite um nome válido!");
+      return;
     }
+
+    await gruposService.editarGrupo(grupo.id, novo);
+    fecharModalEditarGrupo();
+    atualizar();
+    onUpdated && onUpdated();
+    showToast("success", "Grupo editado com sucesso!");
   }
+
+  const idsNoGrupo = membros.map((m) => m.id);
+  const opcoesAdd = contatos.filter((c) => !idsNoGrupo.includes(c.id));
 
   return (
     <div className={styles.listItem}>
@@ -201,14 +292,14 @@ function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated }) {
       </div>
 
       <div style={{ marginTop: 12 }}>
-        {membros.length ? membros.map(m => (
-          <div key={m.id} className={styles.memberRow}>
-            <span>
-              {m.nome ? m.nome : "Sem nome"}
-              {m.numero ? ` — ${m.numero}` : ""}
-            </span>
+        {membros.length ? (
+          membros.map((m) => (
+            <div key={m.id} className={styles.memberRow}>
+              <span>
+                {m.nome || "Sem nome"}
+                {m.numero ? ` — ${m.numero}` : ""}
+              </span>
 
-            <div style={{ display: "flex", gap: "8px" }}>
               <button
                 onClick={() => removerContatoDoGrupo(m.id)}
                 className={`${styles.smallBtn} ${styles.deleteButton}`}
@@ -217,19 +308,21 @@ function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated }) {
                 Remover
               </button>
             </div>
-          </div>
-        )) : <small>Nenhum contato neste grupo.</small>}
+          ))
+        ) : (
+          <small>Nenhum contato neste grupo.</small>
+        )}
       </div>
 
       <div className={styles.row} style={{ marginTop: 10 }}>
         <select
           value={selectedToAdd}
-          onChange={e => setSelectedToAdd(e.target.value)}
+          onChange={(e) => setSelectedToAdd(e.target.value)}
         >
           <option value="">Adicionar contato...</option>
-          {opcoesAdd.map(o => (
+          {opcoesAdd.map((o) => (
             <option key={o.id} value={o.id}>
-              {o.nome ? o.nome : "Sem nome"} — {o.numero}
+              {o.nome || "Sem nome"} — {o.numero}
             </option>
           ))}
         </select>
@@ -244,7 +337,10 @@ function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated }) {
       </div>
 
       {isEditModalOpen && (
-        <div className={styles.modalOverlay} onMouseDown={fecharModalEditarGrupo}>
+        <div
+          className={styles.modalOverlay}
+          onMouseDown={fecharModalEditarGrupo}
+        >
           <div
             className={styles.modal}
             onMouseDown={(e) => e.stopPropagation()}
@@ -256,15 +352,20 @@ function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated }) {
               className={styles.modalInput}
               value={editGroupName}
               onChange={(e) => setEditGroupName(e.target.value)}
-              placeholder="Nome do grupo"
               autoFocus
             />
 
             <div className={styles.modalActions}>
-              <button className={`${styles.btn} ${styles.addButton}`} onClick={salvarEdicaoGrupo}>
+              <button
+                className={`${styles.btn} ${styles.addButton}`}
+                onClick={salvarEdicaoGrupo}
+              >
                 Salvar
               </button>
-              <button className={`${styles.btn} ${styles.secondaryBtn}`} onClick={fecharModalEditarGrupo}>
+              <button
+                className={`${styles.btn} ${styles.secondaryBtn}`}
+                onClick={fecharModalEditarGrupo}
+              >
                 Cancelar
               </button>
             </div>
