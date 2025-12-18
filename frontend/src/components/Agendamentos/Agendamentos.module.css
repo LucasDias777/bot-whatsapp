@@ -18,11 +18,9 @@
   border-radius:16px;
   box-shadow:0 6px 24px rgba(0,0,0,0.08);
 
-  /* 🔥 EXATAMENTE igual ao Mensagens.module.css */
   width:100%;
   max-width:960px;
   margin:5px auto;
-
   box-sizing:border-box;
 }
 
