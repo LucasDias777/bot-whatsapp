@@ -158,31 +158,45 @@
   color:#6b7280;
 }
 
-.smallBtn{
-  padding:7px 10px;
-  border-radius:8px;
-  border:none;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  font-size:0.9rem;
+/* === BOTÕES DE AÇÃO (EDITAR / EXCLUIR) === */
+.actionButtons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
 }
 
-.deleteButton{
-  background:#dc3545;
-  color:#fff;
-}
-.deleteButton:hover{
-  background:#c82333;
+.smallBtn {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  transition: 0.2s;
 }
 
-.editButton{
-  background:#007bff;
-  color:#fff;
+.editButton {
+  background-color: #007bff;
+  color: white;
 }
-.editButton:hover{
-  background:#0056b3;
+
+.editButton:hover {
+  background-color: #0b5ed7;
+  transform: translateY(-1px);
+}
+
+/* Excluir */
+.deleteButton {
+  background-color: #dc3545;
+  color: white;
+}
+.deleteButton:hover {
+  background-color: #bb2d3b;
+  transform: translateY(-1px);
 }
 
 .spaceBetween{
@@ -215,7 +229,9 @@ label small{
   to { opacity:1; transform:translateY(0); }
 }
 
-/* === TOAST DE CONFIRMAÇÃO === */
+/* ===============================
+   TOAST
+================================ */
 .toast {
   position: fixed;
   bottom: 30px;

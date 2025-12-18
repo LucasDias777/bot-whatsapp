@@ -5,17 +5,18 @@ import * as msgsService from "../../services/mensagensService";
 import * as contatosService from "../../services/contatosService";
 import styles from "./Agendamentos.module.css";
 import { useAtualizar } from "../../context/AtualizarContexto";
-import { FaPlus, FaTrash, FaClock, FaCalendarAlt } from "react-icons/fa";
+import { FiPlus, FiTrash, FiClock, FiCalendar, FiEdit } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Agendamentos() {
+  // CRIAR AGENDAMENTO
   const [tipo, setTipo] = useState("numero");
-  const [numero, setNumero] = useState("");
-  const [grupo, setGrupo] = useState("");
+  const [contatoId, setContatoId] = useState("");
+  const [grupoId, setGrupoId] = useState("");
   const [mensagemId, setMensagemId] = useState("");
   const [horario, setHorario] = useState("");
   const [diasSelecionados, setDiasSelecionados] = useState([]);
-
+  // LISTAS
   const [agendamentos, setAgendamentos] = useState([]);
   const [grupos, setGrupos] = useState([]);
   const [mensagens, setMensagens] = useState([]);
@@ -27,6 +28,16 @@ export default function Agendamentos() {
   const [toast, setToast] = useState(null);
   // CONFIRM
   const [confirmData, setConfirmData] = useState(null);
+  // EDITAR AGENDAMENTO
+  const [editOpen, setEditOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
+
+  const [editTipo, setEditTipo] = useState("numero");
+  const [editContatoId, setEditContatoId] = useState("");
+  const [editGrupoId, setEditGrupoId] = useState("");
+  const [editMensagemId, setEditMensagemId] = useState("");
+  const [editHorario, setEditHorario] = useState("");
+  const [editDiasSelecionados, setEditDiasSelecionados] = useState([]);
 
   function showToast(type, text) {
     setToast({ type, text });
@@ -60,7 +71,7 @@ export default function Agendamentos() {
   async function carregarAgendamentos() {
     const lista = await agService.listarAgendamentos();
     setAgendamentos(
-      (lista || []).map((a) => ({ ...a, dias: normalizeDias(a.dias) }))
+      (lista || []).map((a) => ({ ...a, dias: normalizeDias(a.dias) })),
     );
   }
 
@@ -94,7 +105,7 @@ export default function Agendamentos() {
 
   function toggleDia(v) {
     setDiasSelecionados((prev) =>
-      prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]
+      prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v],
     );
   }
 
@@ -108,28 +119,29 @@ export default function Agendamentos() {
     }
 
     if (
-      (tipo === "numero" && !numero) ||
-      (tipo === "grupo" && !grupo) ||
+      (tipo === "numero" && !contatoId) ||
+      (tipo === "grupo" && !grupoId) ||
       !horario ||
       diasSelecionados.length === 0
     ) {
-      showToast("error", "Preencha todos os campos e selecione ao menos um dia!");
+      showToast(
+        "error",
+        "Preencha todos os campos e selecione ao menos um dia!",
+      );
       return;
     }
 
-    const mensagemTexto = mensagens.find((m) => m.id == mensagemId)?.texto;
-
     try {
       await agService.criarAgendamento({
-        numero: tipo === "numero" ? numero : null,
-        grupo: tipo === "grupo" ? grupo : null,
-        mensagem: mensagemTexto,
+        contato_id: tipo === "numero" ? contatoId : null,
+        grupo_id: tipo === "grupo" ? grupoId : null,
+        mensagem_id: mensagemId,
         horario,
         dias: diasSelecionados,
       });
 
-      setNumero("");
-      setGrupo("");
+      setContatoId("");
+      setGrupoId("");
       setMensagemId("");
       setHorario("");
       setDiasSelecionados([]);
@@ -145,7 +157,60 @@ export default function Agendamentos() {
   }
 
   // =========================
-  // REMOVER AGENDAMENTO (CONFIRM)
+  // EDITAR AGENDAMENTO
+  // =========================
+  function abrirEditar(a) {
+    setEditId(a.id);
+
+    if (a.grupo_id) {
+      setEditTipo("grupo");
+      setEditGrupoId(a.grupo_id);
+      setEditContatoId("");
+    } else {
+      setEditTipo("numero");
+      setEditContatoId(a.contato_id);
+      setEditGrupoId("");
+    }
+
+    setEditMensagemId(a.mensagem_id);
+    setEditHorario(a.horario);
+    setEditDiasSelecionados(a.dias || []);
+
+    setEditOpen(true);
+  }
+  function toggleDiaEdicao(d) {
+    setEditDiasSelecionados((prev) =>
+      prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d],
+    );
+  }
+
+  async function salvarEdicao() {
+    if (!editId) return;
+
+    try {
+      await agService.editarAgendamento(editId, {
+        contato_id: editTipo === "numero" ? editContatoId : null,
+        grupo_id: editTipo === "grupo" ? editGrupoId : null,
+        mensagem_id: editMensagemId,
+        horario: editHorario,
+        dias: editDiasSelecionados,
+      });
+
+      setEditOpen(false);
+      setEditId(null);
+
+      await refreshAll();
+      atualizar();
+
+      showToast("success", "Agendamento atualizado com sucesso!");
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Erro ao editar agendamento.");
+    }
+  }
+
+  // =========================
+  // REMOVER AGENDAMENTO
   // =========================
   function remover(id) {
     setConfirmData({
@@ -165,19 +230,6 @@ export default function Agendamentos() {
         }
       },
     });
-  }
-
-   function contatoPorNumero(num) {
-    if (!num) return undefined;
-    return contatos.find(
-      (c) => String(c.numero) === String(num) || String(c.id) === String(num)
-    );
-  }
-
-  function nomeDoGrupoPorId(id) {
-    if (!id) return undefined;
-    const g = grupos.find((x) => String(x.id) === String(id));
-    return g ? g.nome : undefined;
   }
 
   const nomesDias = {
@@ -205,16 +257,19 @@ export default function Agendamentos() {
         </select>
 
         {tipo === "numero" ? (
-          <select value={numero} onChange={(e) => setNumero(e.target.value)}>
+          <select
+            value={contatoId}
+            onChange={(e) => setContatoId(e.target.value)}
+          >
             <option value="">(Escolher número)</option>
             {contatos.map((c) => (
-              <option key={c.id} value={c.numero}>
+              <option key={c.id} value={c.id}>
                 {c.nome || "Sem nome"} — {c.numero}
               </option>
             ))}
           </select>
         ) : (
-          <select value={grupo} onChange={(e) => setGrupo(e.target.value)}>
+          <select value={grupoId} onChange={(e) => setGrupoId(e.target.value)}>
             <option value="">(Escolher grupo)</option>
             {grupos.map((g) => (
               <option key={g.id} value={g.id}>
@@ -227,7 +282,10 @@ export default function Agendamentos() {
 
       <div className={styles.row}>
         <label>Mensagem</label>
-        <select value={mensagemId} onChange={(e) => setMensagemId(e.target.value)}>
+        <select
+          value={mensagemId}
+          onChange={(e) => setMensagemId(e.target.value)}
+        >
           <option value="">(Selecione)</option>
           {mensagens.map((m) => (
             <option key={m.id} value={m.id}>
@@ -238,12 +296,20 @@ export default function Agendamentos() {
       </div>
 
       <div className={styles.row}>
-        <label><FaClock /> Horário</label>
-        <input type="time" value={horario} onChange={(e) => setHorario(e.target.value)} />
+        <label>
+          <FiClock /> Horário
+        </label>
+        <input
+          type="time"
+          value={horario}
+          onChange={(e) => setHorario(e.target.value)}
+        />
       </div>
 
       <div className={styles.row}>
-        <label><FaCalendarAlt /> Dias</label>
+        <label>
+          <FiCalendar /> Dias
+        </label>
         <div style={{ display: "flex", gap: 10 }}>
           {[1, 2, 3, 4, 5, 6, 0].map((d) => (
             <label key={d}>
@@ -260,7 +326,7 @@ export default function Agendamentos() {
 
       <div className={styles.rowCenter}>
         <button className={styles.btn} onClick={criar}>
-          <FaPlus /> Criar Agendamento
+          <FiPlus /> Criar Agendamento
         </button>
       </div>
 
@@ -268,47 +334,177 @@ export default function Agendamentos() {
       <div className={styles.listaContatos} style={{ marginTop: 10 }}>
         {agendamentos.map((a) => {
           const diasTexto = (a.dias || []).map((d) => nomesDias[d]).join(", ");
-
+          
           let destinoTexto = "";
-          if (a.grupo) {
-            const nomeGrupo = nomeDoGrupoPorId(a.grupo);
-            destinoTexto = nomeGrupo ? `Grupo ${nomeGrupo}` : `Grupo ${a.grupo}`;
-          } else if (a.numero) {
-            const contato = contatoPorNumero(a.numero);
+
+          if (a.grupo_id) {
+            const grupo = grupos.find(
+              (g) => String(g.id) === String(a.grupo_id),
+            );
+            destinoTexto = grupo
+              ? `Grupo ${grupo.nome}`
+              : `Grupo #${a.grupo_id}`;
+          } else if (a.contato_id) {
+            const contato = contatos.find(
+              (c) => String(c.id) === String(a.contato_id),
+            );
             destinoTexto = contato
               ? `${contato.nome || "Sem nome"} — ${contato.numero}`
-              : a.numero;
+              : `Contato #${a.contato_id}`;
           }
 
           return (
             <div key={a.id} className={styles.listItem}>
               <div className={styles.spaceBetween}>
                 <div>
-                  <b>{destinoTexto}</b> → {a.mensagem}
-                  <br />
-                  ⏰ {a.horario} | 📅 {diasTexto}
+                  <b>{destinoTexto}</b> → {a.mensagem || "Mensagem não encontrada"}
+                  <br />⏰ {a.horario} | 📅 {diasTexto}
                 </div>
 
-                <button
-                  className={`${styles.smallBtn} ${styles.deleteButton}`}
-                  onClick={() => remover(a.id)}
-                >
-                  <FaTrash /> Excluir
-                </button>
+                <div className={styles.actionButtons}>
+                  <button
+                    className={`${styles.smallBtn} ${styles.editButton}`}
+                    onClick={() => abrirEditar(a)}
+                  >
+                    <FiEdit size={16} /> Editar
+                  </button>
+
+                  <button
+                    className={`${styles.smallBtn} ${styles.deleteButton}`}
+                    onClick={() => remover(a.id)}
+                  >
+                    <FiTrash size={16} /> Excluir
+                  </button>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
+      {/* ==== MODAL EDITAR ==== */}
+      <AnimatePresence>
+        {editOpen && (
+          <motion.div
+            className={styles.confirmOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className={styles.confirmBox}
+              initial={{ y: -30, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -20, opacity: 0, scale: 0.95 }}
+            >
+              <h4>Editar Agendamento</h4>
+
+              {/* FORM IGUAL AO DE CRIAR */}
+              <div className={styles.row}>
+                <label>Enviar para</label>
+                <select
+                  value={editTipo}
+                  onChange={(e) => setEditTipo(e.target.value)}
+                >
+                  <option value="numero">Número individual</option>
+                  <option value="grupo">Grupo</option>
+                </select>
+
+                {editTipo === "numero" ? (
+                  <select
+                    value={editContatoId}
+                    onChange={(e) => setEditContatoId(e.target.value)}
+                  >
+                    <option value="">(Escolher número)</option>
+                    {contatos.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.nome || "Sem nome"} — {c.numero}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <select
+                    value={editGrupoId}
+                    onChange={(e) => setEditGrupoId(e.target.value)}
+                  >
+                    <option value="">(Escolher grupo)</option>
+                    {grupos.map((g) => (
+                      <option key={g.id} value={g.id}>
+                        {g.nome}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div className={styles.row}>
+                <label>Mensagem</label>
+                <select
+                  value={editMensagemId}
+                  onChange={(e) => setEditMensagemId(e.target.value)}
+                >
+                  <option value="">(Selecione)</option>
+                  {mensagens.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.texto.length > 60
+                        ? m.texto.slice(0, 60) + "..."
+                        : m.texto}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.row}>
+                <label>
+                  <FiClock /> Horário
+                </label>
+                <input
+                  type="time"
+                  value={editHorario}
+                  onChange={(e) => setEditHorario(e.target.value)}
+                />
+              </div>
+
+              <div className={styles.row}>
+                <label>
+                  <FiCalendar /> Dias
+                </label>
+                <div style={{ display: "flex", gap: 10 }}>
+                  {[1, 2, 3, 4, 5, 6, 0].map((d) => (
+                    <label key={d}>
+                      <input
+                        type="checkbox"
+                        checked={editDiasSelecionados.includes(d)}
+                        onChange={() => toggleDiaEdicao(d)}
+                      />{" "}
+                      {nomesDias[d]}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.confirmActions}>
+                <button
+                  className={styles.confirmCancel}
+                  onClick={() => setEditOpen(false)}
+                >
+                  Cancelar
+                </button>
+                <button className={styles.confirmDanger} onClick={salvarEdicao}>
+                  Salvar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ==== TOAST ==== */}
       <AnimatePresence>
         {toast && (
           <motion.div
             className={`${styles.toast} ${
-              toast.type === "error"
-                ? styles.toastError
-                : styles.toastSuccess
+              toast.type === "error" ? styles.toastError : styles.toastSuccess
             }`}
             initial={{ opacity: 0, y: 16, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -334,7 +530,6 @@ export default function Agendamentos() {
               initial={{ y: -40, opacity: 0, scale: 0.95 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: -20, opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
               <h4>{confirmData.title}</h4>
               <p>{confirmData.message}</p>

@@ -109,7 +109,9 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* === TOAST DE CONFIRMAÇÃO === */
+/* ===============================
+   TOAST
+================================ */
 .toast {
   position: fixed;
   bottom: 30px;

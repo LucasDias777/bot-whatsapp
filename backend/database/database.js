@@ -24,17 +24,6 @@ db.serialize(() => {
   `);
 
   db.run(`
-    CREATE TABLE IF NOT EXISTS agendamentos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      numero TEXT,
-      grupo TEXT,
-      mensagem TEXT NOT NULL,
-      horario TEXT NOT NULL,
-      dias TEXT NOT NULL
-    );
-  `);
-
-  db.run(`
     CREATE TABLE IF NOT EXISTS grupos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL
@@ -48,6 +37,20 @@ db.serialize(() => {
       PRIMARY KEY (grupo_id, contato_id),
       FOREIGN KEY (grupo_id) REFERENCES grupos(id),
       FOREIGN KEY (contato_id) REFERENCES contatos(id)
+    );
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS agendamentos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      contato_id INTEGER,
+      grupo_id INTEGER,
+      mensagem_id INTEGER NOT NULL,
+      horario TEXT NOT NULL,
+      dias TEXT NOT NULL,
+      FOREIGN KEY (contato_id) REFERENCES contatos(id),
+      FOREIGN KEY (grupo_id) REFERENCES grupos(id),
+      FOREIGN KEY (mensagem_id) REFERENCES mensagens(id)
     );
   `);
 
