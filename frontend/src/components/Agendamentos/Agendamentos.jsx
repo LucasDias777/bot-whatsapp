@@ -132,12 +132,16 @@ export default function Agendamentos() {
     }
 
     try {
+      const ordem = [1, 2, 3, 4, 5, 6, 0];
+
       await agService.criarAgendamento({
         contato_id: tipo === "numero" ? contatoId : null,
         grupo_id: tipo === "grupo" ? grupoId : null,
         mensagem_id: mensagemId,
         horario,
-        dias: diasSelecionados,
+        dias: [...diasSelecionados].sort(
+          (a, b) => ordem.indexOf(a) - ordem.indexOf(b),
+        ),
       });
 
       setContatoId("");
@@ -188,12 +192,16 @@ export default function Agendamentos() {
     if (!editId) return;
 
     try {
+      const ordem = [1, 2, 3, 4, 5, 6, 0];
+
       await agService.editarAgendamento(editId, {
         contato_id: editTipo === "numero" ? editContatoId : null,
         grupo_id: editTipo === "grupo" ? editGrupoId : null,
         mensagem_id: editMensagemId,
         horario: editHorario,
-        dias: editDiasSelecionados,
+        dias: [...editDiasSelecionados].sort(
+          (a, b) => ordem.indexOf(a) - ordem.indexOf(b),
+        ),
       });
 
       setEditOpen(false);
@@ -333,8 +341,14 @@ export default function Agendamentos() {
       {/* ==== LISTA ==== */}
       <div className={styles.listaContatos} style={{ marginTop: 10 }}>
         {agendamentos.map((a) => {
-          const diasTexto = (a.dias || []).map((d) => nomesDias[d]).join(", ");
-          
+          const ordem = [1, 2, 3, 4, 5, 6, 0];
+
+          const diasTexto = (a.dias || [])
+            .slice()
+            .sort((a, b) => ordem.indexOf(a) - ordem.indexOf(b))
+            .map((d) => nomesDias[d])
+            .join(", ");
+
           let destinoTexto = "";
 
           if (a.grupo_id) {
@@ -357,7 +371,8 @@ export default function Agendamentos() {
             <div key={a.id} className={styles.listItem}>
               <div className={styles.spaceBetween}>
                 <div>
-                  <b>{destinoTexto}</b> → {a.mensagem || "Mensagem não encontrada"}
+                  <b>{destinoTexto}</b> →{" "}
+                  {a.mensagem || "Mensagem não encontrada"}
                   <br />⏰ {a.horario} | 📅 {diasTexto}
                 </div>
 
@@ -382,29 +397,30 @@ export default function Agendamentos() {
         })}
       </div>
 
-      {/* ==== MODAL EDITAR ==== */}
+      {/* ==== MODAL ==== */}
       <AnimatePresence>
         {editOpen && (
           <motion.div
-            className={styles.confirmOverlay}
+            className={styles.editOverlay}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className={styles.confirmBox}
-              initial={{ y: -30, opacity: 0, scale: 0.95 }}
+              className={styles.editModal}
+              initial={{ y: -25, opacity: 0, scale: 0.97 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: -20, opacity: 0, scale: 0.95 }}
+              exit={{ y: -20, opacity: 0, scale: 0.97 }}
             >
-              <h4>Editar Agendamento</h4>
+              <h3 className={styles.editTitle}>Editar Agendamento</h3>
 
-              {/* FORM IGUAL AO DE CRIAR */}
-              <div className={styles.row}>
+              {/* Enviar Para */}
+              <div className={styles.editRow}>
                 <label>Enviar para</label>
                 <select
                   value={editTipo}
                   onChange={(e) => setEditTipo(e.target.value)}
+                  className={styles.editInput}
                 >
                   <option value="numero">Número individual</option>
                   <option value="grupo">Grupo</option>
@@ -414,6 +430,7 @@ export default function Agendamentos() {
                   <select
                     value={editContatoId}
                     onChange={(e) => setEditContatoId(e.target.value)}
+                    className={styles.editInput}
                   >
                     <option value="">(Escolher número)</option>
                     {contatos.map((c) => (
@@ -426,6 +443,7 @@ export default function Agendamentos() {
                   <select
                     value={editGrupoId}
                     onChange={(e) => setEditGrupoId(e.target.value)}
+                    className={styles.editInput}
                   >
                     <option value="">(Escolher grupo)</option>
                     {grupos.map((g) => (
@@ -437,11 +455,13 @@ export default function Agendamentos() {
                 )}
               </div>
 
-              <div className={styles.row}>
+              {/* Mensagem */}
+              <div className={styles.editRow}>
                 <label>Mensagem</label>
                 <select
                   value={editMensagemId}
                   onChange={(e) => setEditMensagemId(e.target.value)}
+                  className={styles.editInput}
                 >
                   <option value="">(Selecione)</option>
                   {mensagens.map((m) => (
@@ -454,7 +474,8 @@ export default function Agendamentos() {
                 </select>
               </div>
 
-              <div className={styles.row}>
+              {/* Horário */}
+              <div className={styles.editRow}>
                 <label>
                   <FiClock /> Horário
                 </label>
@@ -462,35 +483,38 @@ export default function Agendamentos() {
                   type="time"
                   value={editHorario}
                   onChange={(e) => setEditHorario(e.target.value)}
+                  className={styles.editInput}
                 />
               </div>
 
-              <div className={styles.row}>
+              {/* Dias */}
+              <div className={styles.editRow}>
                 <label>
                   <FiCalendar /> Dias
                 </label>
-                <div style={{ display: "flex", gap: 10 }}>
+                <div className={styles.editDaysGrid}>
                   {[1, 2, 3, 4, 5, 6, 0].map((d) => (
-                    <label key={d}>
+                    <label key={d} className={styles.editDayItem}>
                       <input
                         type="checkbox"
                         checked={editDiasSelecionados.includes(d)}
                         onChange={() => toggleDiaEdicao(d)}
-                      />{" "}
+                      />
                       {nomesDias[d]}
                     </label>
                   ))}
                 </div>
               </div>
 
-              <div className={styles.confirmActions}>
+              {/* Botões */}
+              <div className={styles.editActions}>
                 <button
-                  className={styles.confirmCancel}
+                  className={styles.editCancel}
                   onClick={() => setEditOpen(false)}
                 >
                   Cancelar
                 </button>
-                <button className={styles.confirmDanger} onClick={salvarEdicao}>
+                <button className={styles.editSave} onClick={salvarEdicao}>
                   Salvar
                 </button>
               </div>
