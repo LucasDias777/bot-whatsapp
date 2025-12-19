@@ -56,9 +56,10 @@ db.serialize(() => {
 
   db.run(`
     CREATE TABLE IF NOT EXISTS mensagens_diarias (
-      id INTEGER PRIMARY KEY,
-      dia TEXT,
-      contador INTEGER
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      numero TEXT NOT NULL UNIQUE,
+      dia TEXT NOT NULL,
+      contador INTEGER DEFAULT 0
     );
   `);
 });

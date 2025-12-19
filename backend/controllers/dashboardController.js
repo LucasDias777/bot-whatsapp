@@ -70,7 +70,8 @@ async function getDashboard(req, res) {
       chatsIndividuais = chats.filter(c => !c.isGroup).length;
 
       // 🟩 MENSAGENS DO DIA
-      mensagensHoje = await getContadorHoje();
+      const numero = client.info.wid.user;
+      mensagensHoje = await getContadorHoje(numero);
     }
 
     // -----------------------------

@@ -208,7 +208,7 @@ function createClient() {
     global.client = client;
     global.whatsappStartTime = Date.now();
 
-    inicializarContadorDiario();
+    inicializarContadorDiario(connectedNumber);
     iniciarAgendamentos(client);
     iniciarMonitorCPU(client);
 
@@ -229,7 +229,7 @@ function createClient() {
         if (msgMs < global.whatsappStartTime - tolerance) return;
       }
 
-      incrementarContador();
+      incrementarContador(connectedNumber);
     } catch (e) {
       console.warn("Erro contador diário:", e?.message);
     }
@@ -259,8 +259,6 @@ function createClient() {
 
     pararAgendamentos?.();
     pararMonitorCPU();
-
-    inicializarContadorDiario();
 
     global.whatsappStartTime = null;
     global.cpuUsage = 0;

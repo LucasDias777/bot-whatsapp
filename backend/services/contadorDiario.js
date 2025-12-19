@@ -1,87 +1,79 @@
 const db = require("../database/database");
 
-// Retorna a data atual no formato AAAA-MM-DD usando representação local
+// Data no formato YYYY-MM-DD (local)
 function getDiaAtual() {
-  // Formato 'en-CA' produz YYYY-MM-DD
-  return new Date().toLocaleDateString('en-CA');
+  return new Date().toLocaleDateString("en-CA");
 }
 
-// Variante para obter dia a partir de um Date (se precisar)
-function getDiaAtualFromDate(d = new Date()) {
-  return d.toLocaleDateString('en-CA');
-}
-
-// Garante que existe a linha do contador (id = 1)
-function inicializarContadorDiario() {
-  const hoje = getDiaAtual();
-
-  // Inserir se não existir; caso exista não altera contador (apenas garante dia correto)
-  db.run(
-    `INSERT OR IGNORE INTO mensagens_diarias (id, dia, contador) VALUES (1, ?, 0)`,
-    [hoje],
-    (err) => {
-      if (err) {
-        console.error("Erro ao inserir linha inicial do contador diário:", err);
-        return;
-      }
-
-      // Se a linha já existia mas dia está diferente, resetamos aqui.
-      db.run(
-        `UPDATE mensagens_diarias
-         SET dia = ?, contador = CASE WHEN dia = ? THEN contador ELSE 0 END
-         WHERE id = 1`,
-        [hoje, hoje],
-        (err2) => {
-          if (err2) {
-            console.error("Erro ao ajustar dia do contador diário:", err2);
-          }
-        }
-      );
-    }
-  );
-}
-
-// Incrementa o contador diário de forma atômica.
-// Se a linha não existir, insere com contador = 1.
-function incrementarContador() {
+/**
+ * Garante que o número conectado tenha uma linha válida.
+ * - Se não existir → cria
+ * - Se existir e o dia for diferente → zera contador
+ */
+function inicializarContadorDiario(numero) {
   const hoje = getDiaAtual();
 
   db.serialize(() => {
-    // Tenta fazer update atômico: se dia igual -> contador+1, senão -> contador = 1 e atualiza dia
+    // Cria registro se não existir
     db.run(
-      `UPDATE mensagens_diarias
-       SET contador = CASE WHEN dia = ? THEN contador + 1 ELSE 1 END,
-           dia = ?
-       WHERE id = 1`,
-      [hoje, hoje],
-      function (err) {
-        if (err) {
-          console.error("Erro ao executar update do contador diário:", err);
-          return;
-        }
+      `
+      INSERT OR IGNORE INTO mensagens_diarias (numero, dia, contador)
+      VALUES (?, ?, 0)
+      `,
+      [numero, hoje]
+    );
 
-        // Se nenhuma linha foi atualizada (não existia), inserir a linha com contador = 1
-        if (this.changes === 0) {
-          db.run(
-            `INSERT INTO mensagens_diarias (id, dia, contador) VALUES (1, ?, 1)`,
-            [hoje],
-            (err2) => {
-              if (err2) {
-                console.error("Erro ao inserir contador diário inicial:", err2);
-              }
-            }
-          );
-        }
-      }
+    // Se dia mudou, zera contador
+    db.run(
+      `
+      UPDATE mensagens_diarias
+      SET contador = 0,
+          dia = ?
+      WHERE numero = ?
+        AND dia <> ?
+      `,
+      [hoje, numero, hoje]
     );
   });
 }
 
-// Retorna o valor atual do contador do dia
-function getContadorHoje() {
+/**
+ * Incrementa contador APENAS do número conectado
+ */
+function incrementarContador(numero) {
+  const hoje = getDiaAtual();
+
+  db.run(
+    `
+    UPDATE mensagens_diarias
+    SET contador = CASE
+      WHEN dia = ? THEN contador + 1
+      ELSE 1
+    END,
+    dia = ?
+    WHERE numero = ?
+    `,
+    [hoje, hoje, numero],
+    function (err) {
+      if (err) {
+        console.error("Erro ao incrementar contador diário:", err);
+      }
+    }
+  );
+}
+
+/**
+ * Retorna contador atual do número conectado
+ */
+function getContadorHoje(numero) {
   return new Promise((resolve, reject) => {
     db.get(
-      `SELECT contador FROM mensagens_diarias WHERE id = 1`,
+      `
+      SELECT contador
+      FROM mensagens_diarias
+      WHERE numero = ?
+      `,
+      [numero],
       (err, row) => {
         if (err) return reject(err);
         resolve(row?.contador ?? 0);
@@ -90,10 +82,4 @@ function getContadorHoje() {
   });
 }
 
-module.exports = {
-  inicializarContadorDiario,
-  incrementarContador,
-  getContadorHoje,
-  getDiaAtual,          
-  getDiaAtualFromDate
-};
+module.exports = { inicializarContadorDiario, incrementarContador, getContadorHoje, getDiaAtual };
