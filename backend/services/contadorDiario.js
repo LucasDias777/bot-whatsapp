@@ -5,11 +5,10 @@ function getDiaAtual() {
   return new Date().toLocaleDateString("en-CA");
 }
 
-/**
- * Garante que o número conectado tenha uma linha válida.
- * - Se não existir → cria
- * - Se existir e o dia for diferente → zera contador
- */
+// Garante que o número conectado tenha uma linha válida.
+// Se não existir → cria
+// Se existir e o dia for diferente → zera contador
+
 function inicializarContadorDiario(numero) {
   const hoje = getDiaAtual();
 
@@ -37,9 +36,7 @@ function inicializarContadorDiario(numero) {
   });
 }
 
-/**
- * Incrementa contador APENAS do número conectado
- */
+//Incrementa contador APENAS do número conectado
 function incrementarContador(numero) {
   const hoje = getDiaAtual();
 
@@ -62,9 +59,7 @@ function incrementarContador(numero) {
   );
 }
 
-/**
- * Retorna contador atual do número conectado
- */
+//Retorna contador atual do número conectado
 function getContadorHoje(numero) {
   return new Promise((resolve, reject) => {
     db.get(

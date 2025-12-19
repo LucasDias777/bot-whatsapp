@@ -3,7 +3,7 @@ const QRCode = require("qrcode");
 const fs = require("fs");
 const path = require("path");
 const { iniciarAgendamentos, pararAgendamentos } = require("../services/agenda");
-const { inicializarContadorDiario, incrementarContador } = require("../services/contadorDiario");
+const { inicializarContadorDiario, incrementarContador, getDiaAtual } = require("../services/contadorDiario");
 
 /* ======================================================
    ESTADOS GLOBAIS
@@ -20,6 +20,8 @@ let sessionReady = false;
 let isDisconnecting = false;
 let clientDestroying = false;
 let recreatingAfterManualDisconnect = false;
+let readyMessageBoundary = null;
+let processedMessageIds = new Set();
 
 /* ======================================================
    MÉTRICAS GLOBAIS (DASHBOARD)
@@ -160,7 +162,7 @@ function createClient() {
 
   console.log("🚀 Inicializando WhatsApp Client");
 
-   // 🔒 segurança extra
+  // 🔒 segurança extra
   const isManualFlow = recreatingAfterManualDisconnect;
 
   if (!isManualFlow) {
@@ -194,19 +196,20 @@ function createClient() {
   client.on("ready", () => {
     if (sessionReady) return;
     sessionReady = true;
+
     console.log("✅ WhatsApp conectado");
 
     status = "connected";
     currentQR = "";
     lastQRCodeTime = null;
 
-    connectedNumber =
-      client.info?.wid?.user ||
-      client.info?.me?.user ||
-      null;
+    connectedNumber = client.info?.wid?.user || client.info?.me?.user || null;
 
     global.client = client;
-    global.whatsappStartTime = Date.now();
+
+    readyMessageBoundary = Date.now();
+    global.whatsappStartTime = readyMessageBoundary;
+    processedMessageIds.clear();
 
     inicializarContadorDiario(connectedNumber);
     iniciarAgendamentos(client);
@@ -218,16 +221,27 @@ function createClient() {
   });
 
   /* ===================== MENSAGENS ===================== */
-  client.on("message", (msg) => {
+  client.on("message_create", (msg) => {
     try {
       if (status !== "connected") return;
       if (msg.fromMe) return;
+      if (!msg.id?._serialized) return;
+      if (!msg.timestamp) return;
 
-      if (global.whatsappStartTime && msg.timestamp) {
-        const msgMs = msg.timestamp * 1000;
-        const tolerance = 60 * 1000;
-        if (msgMs < global.whatsappStartTime - tolerance) return;
-      }
+      const msgId = msg.id._serialized;
+
+      if (processedMessageIds.has(msgId)) return;
+      processedMessageIds.add(msgId);
+
+      const msgMs = msg.timestamp * 1000;
+
+      // ⛔ Mensagens criadas antes do ready NÃO contam
+      if (!readyMessageBoundary || msgMs < readyMessageBoundary) return;
+
+      // ⛔ Garante que é do dia atual
+      const diaMsg = new Date(msgMs).toLocaleDateString("en-CA");
+      const hoje = getDiaAtual();
+      if (diaMsg !== hoje) return;
 
       incrementarContador(connectedNumber);
     } catch (e) {
@@ -245,11 +259,12 @@ function createClient() {
   /* ===================== DISCONNECTED (LOGOUT REMOTO) ===================== */
   client.on("disconnected", async (reason) => {
     recreatingAfterManualDisconnect = false;
-    
+
     if (isDisconnecting) return;
     isDisconnecting = true;
     clientCreating = false;
     sessionReady = false;
+    readyMessageBoundary = null;
 
     console.warn("⚠️ WhatsApp desconectado:", reason);
 
@@ -339,6 +354,10 @@ async function disconnect(req, res) {
 
     // 🔑 MARCA FLUXO MANUAL
     recreatingAfterManualDisconnect = true;
+
+    sessionReady = false;
+    readyMessageBoundary = null;
+    connectedNumber = null;
 
     createClient();
 
