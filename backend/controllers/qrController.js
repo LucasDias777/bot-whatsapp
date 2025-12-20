@@ -193,12 +193,20 @@ function createClient() {
   });
 
   /* ===================== READY ===================== */
-  client.on("ready", () => {
+  client.on("ready", async () => {
     if (sessionReady) return;
     sessionReady = true;
 
+    // 🎬 CENA INTERMEDIÁRIA: CONNECTING
+    status = "connecting";
+    global.atualizar?.();
+
+    // tempo cinematográfico para animação premium no frontend
+    await new Promise((r) => setTimeout(r, 5500));
+
     console.log("✅ WhatsApp conectado");
 
+    // ✅ ESTADO FINAL
     status = "connected";
     currentQR = "";
     lastQRCodeTime = null;
