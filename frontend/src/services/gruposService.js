@@ -1,6 +1,5 @@
 import { apiGET, apiPOST, apiDELETE, apiPUT } from "./api";
 
-
 export const listGrupos = () => apiGET("/grupo");
 export const criarGrupo = (nome) => apiPOST("/grupo", { nome });
 export const editarGrupo = (id, nome) => apiPUT(`/grupo/${id}`, { nome });

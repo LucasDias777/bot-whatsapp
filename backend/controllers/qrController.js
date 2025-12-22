@@ -162,7 +162,6 @@ function createClient() {
 
   console.log("🚀 Inicializando WhatsApp Client");
 
-  // 🔒 segurança extra
   const isManualFlow = recreatingAfterManualDisconnect;
 
   if (!isManualFlow) {
@@ -184,7 +183,7 @@ function createClient() {
   client.on("qr", async (qr) => {
     if (sessionReady) return;
     console.log("📸 Gerando QR Code");
-    recreatingAfterManualDisconnect = false; // 🔓 libera fluxo
+    recreatingAfterManualDisconnect = false;
     currentQR = await QRCode.toDataURL(qr);
     lastQRCodeTime = Date.now();
     global.lastQRCodeTime = lastQRCodeTime;
@@ -201,12 +200,11 @@ function createClient() {
     status = "connecting";
     global.atualizar?.();
 
-    // tempo cinematográfico para animação premium no frontend
+    // TEMPO PARA ANIMAÇÃO FRONTEND
     await new Promise((r) => setTimeout(r, 5500));
 
     console.log("✅ WhatsApp conectado");
 
-    // ✅ ESTADO FINAL
     status = "connected";
     currentQR = "";
     lastQRCodeTime = null;
@@ -243,10 +241,8 @@ function createClient() {
 
       const msgMs = msg.timestamp * 1000;
 
-      // ⛔ Mensagens criadas antes do ready NÃO contam
       if (!readyMessageBoundary || msgMs < readyMessageBoundary) return;
 
-      // ⛔ Garante que é do dia atual
       const diaMsg = new Date(msgMs).toLocaleDateString("en-CA");
       const hoje = getDiaAtual();
       if (diaMsg !== hoje) return;
@@ -360,7 +356,6 @@ async function disconnect(req, res) {
     clientDestroying = false;
     isDisconnecting = false;
 
-    // 🔑 MARCA FLUXO MANUAL
     recreatingAfterManualDisconnect = true;
 
     sessionReady = false;

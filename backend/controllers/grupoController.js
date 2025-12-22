@@ -29,22 +29,47 @@ exports.editarGrupo = (req, res) => {
     function (err) {
       if (err) return res.json({ ok: false, err: err.message });
       res.json({ ok: true });
-    }
+    },
   );
 };
 
 exports.deletarGrupo = (req, res) => {
   const id = req.params.id;
 
-  db.run("DELETE FROM grupos WHERE id = ?", [id], err => {
-    if (err) return res.json({ ok: false, err: err.message });
+  db.get(
+    "SELECT 1 FROM agendamentos WHERE grupo_id = ? LIMIT 1",
+    [id],
+    (err, row) => {
+      if (err) {
+        console.error("Erro verificação agendamento grupo:", err);
+        return res.status(500).json({ ok: false });
+      }
 
-    db.run("DELETE FROM grupo_contatos WHERE grupo_id = ?", [id], () => {
-      db.run("UPDATE contatos SET grupo = NULL WHERE grupo = ?", [id], () => {
-        res.json({ ok: true });
+      if (row) {
+        return res.status(400).json({
+          ok: false,
+          erro: "Grupo possui agendamento",
+        });
+      }
+
+      db.run("DELETE FROM grupos WHERE id = ?", [id], (err) => {
+        if (err) {
+          console.error("Erro ao deletar grupo:", err);
+          return res.status(500).json({ ok: false });
+        }
+
+        db.run("DELETE FROM grupo_contatos WHERE grupo_id = ?", [id], () => {
+          db.run(
+            "UPDATE contatos SET grupo = NULL WHERE grupo = ?",
+            [id],
+            () => {
+              return res.json({ ok: true });
+            },
+          );
+        });
       });
-    });
-  });
+    },
+  );
 };
 
 exports.listarContatosDoGrupo = (req, res) => {
@@ -62,7 +87,7 @@ exports.listarContatosDoGrupo = (req, res) => {
     (err, rows) => {
       if (err) return res.status(500).json({ ok: false, err: err.message });
       res.json(rows);
-    }
+    },
   );
 };
 
@@ -73,15 +98,15 @@ exports.adicionarContatoAoGrupo = (req, res) => {
   db.run(
     "INSERT OR IGNORE INTO grupo_contatos (grupo_id, contato_id) VALUES (?, ?)",
     [grupo_id, contato_id],
-    err => {
+    (err) => {
       if (err) return res.json({ ok: false, err: err.message });
 
       db.run(
         "UPDATE contatos SET grupo = ? WHERE id = ?",
         [grupo_id, contato_id],
-        uErr => res.json({ ok: !uErr })
+        (uErr) => res.json({ ok: !uErr }),
       );
-    }
+    },
   );
 };
 
@@ -92,12 +117,16 @@ exports.removerContatoDoGrupo = (req, res) => {
   db.run(
     "DELETE FROM grupo_contatos WHERE grupo_id = ? AND contato_id = ?",
     [grupo_id, contato_id],
-    err => {
+    (err) => {
       if (err) return res.json({ ok: false, err: err.message });
 
-      db.run("UPDATE contatos SET grupo = NULL WHERE id = ?", [contato_id], uErr => {
-        res.json({ ok: !uErr });
-      });
-    }
+      db.run(
+        "UPDATE contatos SET grupo = NULL WHERE id = ?",
+        [contato_id],
+        (uErr) => {
+          res.json({ ok: !uErr });
+        },
+      );
+    },
   );
 };

@@ -19,11 +19,9 @@ export default function Contatos() {
   const { atualizar } = useAtualizar();
   const [editNome, setEditNome] = useState("");
   const [editRawNumero, setEditRawNumero] = useState("");
-  // TOAST
+ 
   const [toast, setToast] = useState(null);
-  // { type: "success" | "error", text: string }
   const [confirmData, setConfirmData] = useState(null);
-  // { title, message, onConfirm }
 
   function showToast(type, text) {
     setToast({ type, text });
@@ -145,26 +143,35 @@ export default function Contatos() {
     }
   }
 
- function removerContato(id) {
-  setConfirmData({
-    title: "Remover contato",
-    message: "Tem certeza que deseja remover este contato?",
-    onConfirm: async () => {
-      try {
-        await contatosService.removerContato(id);
-        await carregar();
-        atualizar();
-        showToast("success", "Contato removido com sucesso!");
+  function removerContato(id) {
+    setConfirmData({
+      title: "Remover contato",
+      message: "Tem certeza que deseja remover este contato?",
+      onConfirm: async () => {
+        try {
+          await contatosService.removerContato(id);
 
-      } catch (err) {
-        console.error(err);
-        showToast("error", "Erro ao remover contato.");
-      } finally {
-        setConfirmData(null);
-      }
-    },
-  });
-}
+          await carregar();
+          atualizar();
+
+          showToast("success", "Contato removido com sucesso!");
+        } catch (err) {
+          console.error("Erro ao remover contato:", err);
+
+          if (err?.status === 400) {
+            showToast(
+              "error",
+              "Este contato possui agendamento criado. Exclusão não permitida.",
+            );
+          } else {
+            showToast("error", "Erro ao remover contato.");
+          }
+        } finally {
+          setConfirmData(null);
+        }
+      },
+    });
+  }
 
   function abrirModalEditar(contato) {
     setEditId(contato.id);

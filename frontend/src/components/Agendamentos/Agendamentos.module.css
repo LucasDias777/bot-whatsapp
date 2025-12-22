@@ -187,7 +187,6 @@
   transform: translateY(-1px);
 }
 
-/* Excluir */
 .deleteButton {
   background-color: #dc3545;
   color: white;
@@ -265,11 +264,11 @@ label small{
 }
 
 .toastSuccess {
-  background: #16a34a; /* verde */
+  background: #16a34a;
 }
 
 .toastError {
-  background: #dc2626; /* vermelho forte */
+  background: #dc2626;
   box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
   animation:
     toastIn 0.35s ease,
@@ -387,7 +386,7 @@ label small{
 /* ========== MODAL BOX ========== */
 .editModal {
   width: 100%;
-  max-width: 650px; /* 🔥 mais largo */
+  max-width: 650px;
   background: #ffffff;
   padding: 30px 34px;
   border-radius: 18px;
@@ -403,7 +402,7 @@ label small{
   font-size: 1.6rem;
   font-weight: 700;
   color: #0f172a;
-  text-align: center; /* 🔥 centralizado */
+  text-align: center;
 }
 
 /* ========== FORM ROWS (LABEL + LINHA) ========== */
@@ -484,7 +483,6 @@ label small{
   transition: 0.2s ease;
 }
 
-/* Cancelar */
 .editCancel {
   background-color: #6c757d;
   color: #fff;
@@ -495,7 +493,6 @@ label small{
   transform: translateY(-1px);
 }
 
-/* Salvar */
 .editSave {
   background: #2563eb;
   color: #fff;

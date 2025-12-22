@@ -6,9 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ========================================================
 // ROTAS API
-// ========================================================
 app.use("/qr", require("./routes/qrRoutes"));
 app.use("/contato", require("./routes/contatoRoutes"));
 app.use("/mensagem", require("./routes/mensagemRoutes"));
@@ -18,9 +16,7 @@ app.use("/enviar-agora", require("./routes/envioRoutes"));
 app.use("/dashboard", require("./routes/dashboardRoutes"));
 app.use("/backend", require("./routes/backend"));
 
-// ========================================================
-// FRONTEND (SPA)
-// ========================================================
+// FRONTEND
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 app.get(/.*/, (req, res) => {

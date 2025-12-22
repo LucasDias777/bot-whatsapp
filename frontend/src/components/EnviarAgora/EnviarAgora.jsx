@@ -18,7 +18,7 @@ export default function EnviarAgora() {
   const [grupo, setGrupo] = useState("");
   const [mensagemId, setMensagemId] = useState("");
 
-  const [toast, setToast] = useState(null); // { type: "success" | "error", text: string }
+  const [toast, setToast] = useState(null);
 
   const { atualizarToken } = useAtualizar();
   const pollingRef = useRef(null);

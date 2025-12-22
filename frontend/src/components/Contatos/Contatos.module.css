@@ -61,7 +61,6 @@
   background-color: #0056b3;
 }
 
-/* Botão secundário neutro (usado no modal cancelar) */
 .secondaryBtn {
   background-color: #6c757d;
 }
@@ -85,16 +84,15 @@
   border-radius: 8px;
 }
 
-/* === BLOCO DE FILTROS (CENTRALIZADO) === */
+/* === BLOCO DE FILTROS === */
 .filtersBlock {
   display: flex;
   align-items: center;
-  justify-content: center; /* centraliza o bloco horizontalmente */
+  justify-content: center;
   gap: 16px;
   margin-bottom: 22px;
 }
 
-/* etiqueta "Filtros:" */
 .filtersLabel {
   font-weight: 600;
   color: #333;
@@ -102,13 +100,11 @@
   white-space: nowrap;
 }
 
-/* inputs em linha ao lado da label */
 .filtersRow {
   display: flex;
   gap: 12px;
 }
 
-/* input dos filtros */
 .filtersRow input {
   padding: 10px;
   width: 260px;
@@ -144,7 +140,6 @@
   color: #333;
 }
 
-/* mensagem de vazio */
 .emptyRow {
   text-align: center;
   padding: 18px;
@@ -237,7 +232,6 @@
   box-sizing: border-box;
 }
 
-/* ações do modal */
 .modalActions {
   margin-top: 16px;
   display: flex;
@@ -245,7 +239,6 @@
   gap: 10px;
 }
 
-/* keyframe de entrada */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -289,11 +282,11 @@
 }
 
 .toastSuccess {
-  background: #16a34a; /* verde */
+  background: #16a34a;
 }
 
 .toastError {
-  background: #dc2626; /* vermelho forte */
+  background: #dc2626;
   box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
   animation:
     toastIn 0.35s ease,

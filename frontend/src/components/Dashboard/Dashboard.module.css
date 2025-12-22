@@ -196,7 +196,6 @@
   align-self:stretch;
 }
 
-/* mapeamento por ordem (mantido igual ao seu JSX) */
 .cardsWrapper>div:nth-child(2){grid-area:tempo}
 .cardsWrapper>div:nth-child(3){grid-area:qr}
 .cardsWrapper>div:nth-child(4){grid-area:reconexoes}
@@ -316,7 +315,6 @@
   margin-top:1.1rem;
 }
 
-/* card do gráfico — altura reduzida por padrão para que fiquem "menores" */
 .chartCard{
   background:rgba(255,255,255,0.9);
   padding:0.65rem 0.8rem;           
@@ -332,7 +330,6 @@
   gap:0.4rem;
 }
 
-/* título do gráfico */
 .chartTitle{
   font-size:.98rem;
   font-weight:700;
@@ -341,10 +338,8 @@
   line-height:1;
 }
 
-/* área que contém o canvas — menor e mais fluida */
 .chartArea{
   width:100%;
-  /* usa espaço disponível, mas com limites menores para manter "menor" */
   height:calc(100% - 40px);
   min-height:90px;   
   max-height:260px;  
@@ -358,8 +353,6 @@
   background:transparent;
 }
 
-/* Forçar canvas a preencher a área e melhorar nitidez em várias telas */
- 
 .chartArea canvas{
   width:100% !important;
   height:100% !important;
@@ -375,7 +368,6 @@
   outline: none;
 }
 
-/* legenda do gráfico */
 .chartLegend{
   display:flex;
   gap:1rem;
@@ -415,7 +407,6 @@
 /* ===================== */
 
 @media (max-width:1200px){
-  /* empilha cards */
   .cardsWrapper{
     grid-template-columns:1fr;
     grid-template-areas:
@@ -428,17 +419,14 @@
       "mensagens";
   }
 
-  /* charts passam a ocupar 1 coluna */
   .chartsRow{
     grid-template-columns:1fr;
   }
 
-  /* mantém chartCard compacto, mas aumenta um pouco a altura para legibilidade em mobile */
   .chartCard{
     min-height:120px;
   }
 
-  /* dá mais espaço vertical no canvas para telas pequenas (melhora leitura) */
   .chartArea{
     height:calc(100% - 40px);
     min-height:130px;
@@ -446,7 +434,6 @@
   }
 }
 
-/* telas muito grandes: permitir um pouco mais de altura sem ficar enorme */
 @media (min-width:1600px){
   .chartCard{
     min-height:130px;

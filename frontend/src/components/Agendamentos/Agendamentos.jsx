@@ -9,14 +9,13 @@ import { FiPlus, FiTrash, FiClock, FiCalendar, FiEdit } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Agendamentos() {
-  // CRIAR AGENDAMENTO
   const [tipo, setTipo] = useState("numero");
   const [contatoId, setContatoId] = useState("");
   const [grupoId, setGrupoId] = useState("");
   const [mensagemId, setMensagemId] = useState("");
   const [horario, setHorario] = useState("");
   const [diasSelecionados, setDiasSelecionados] = useState([]);
-  // LISTAS
+
   const [agendamentos, setAgendamentos] = useState([]);
   const [grupos, setGrupos] = useState([]);
   const [mensagens, setMensagens] = useState([]);
@@ -24,11 +23,10 @@ export default function Agendamentos() {
 
   const { atualizar, atualizarToken } = useAtualizar();
   const pollingRef = useRef(null);
-  // TOAST
+  
   const [toast, setToast] = useState(null);
-  // CONFIRM
   const [confirmData, setConfirmData] = useState(null);
-  // EDITAR AGENDAMENTO
+ 
   const [editOpen, setEditOpen] = useState(false);
   const [editId, setEditId] = useState(null);
 
@@ -414,7 +412,7 @@ export default function Agendamentos() {
             >
               <h3 className={styles.editTitle}>Editar Agendamento</h3>
 
-              {/* Enviar Para */}
+              {/* ENVIAR PARA */}
               <div className={styles.editRow}>
                 <label>Enviar para</label>
                 <select
@@ -455,7 +453,7 @@ export default function Agendamentos() {
                 )}
               </div>
 
-              {/* Mensagem */}
+              {/* MENSAGEM */}
               <div className={styles.editRow}>
                 <label>Mensagem</label>
                 <select
@@ -474,7 +472,7 @@ export default function Agendamentos() {
                 </select>
               </div>
 
-              {/* Horário */}
+              {/* HORÁRIO */}
               <div className={styles.editRow}>
                 <label>
                   <FiClock /> Horário
@@ -487,7 +485,7 @@ export default function Agendamentos() {
                 />
               </div>
 
-              {/* Dias */}
+              {/* DIAS */}
               <div className={styles.editRow}>
                 <label>
                   <FiCalendar /> Dias
@@ -506,7 +504,7 @@ export default function Agendamentos() {
                 </div>
               </div>
 
-              {/* Botões */}
+              {/* BOTÕES */}
               <div className={styles.editActions}>
                 <button
                   className={styles.editCancel}

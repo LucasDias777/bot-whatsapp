@@ -29,7 +29,6 @@ export default function Dashboard() {
   const doughnutInstance = useRef(null);
   const barInstance = useRef(null);
 
-  // força recriação dos gráficos quando necessário (navegação)
   const [chartVersion, setChartVersion] = useState(0);
 
   const [dados, setDados] = useState({
@@ -92,7 +91,7 @@ export default function Dashboard() {
       mounted = false;
       clearInterval(interval);
     };
-  }, []); // mantém 3s para dados pesados
+  }, []);
 
   /* ============================================
       ATUALIZAR CPU + TEMPO 1 SEGUNDO
@@ -105,7 +104,6 @@ export default function Dashboard() {
         const res = await getDashboardData();
         if (!active) return;
 
-        // atualiza só os campos rápidos, sem tocar nos outros
         setDados((prev) => ({
           ...prev,
           metricas: {
@@ -128,7 +126,7 @@ export default function Dashboard() {
   }, []);
 
   /* ============================================
-      LIMPEZA AO DESMONTAR (garante nenhum leak)
+      LIMPEZA AO DESMONTAR
   ============================================ */
   useEffect(() => {
     return () => {
@@ -148,7 +146,6 @@ export default function Dashboard() {
   ============================================ */
   useEffect(() => {
     if (pathname === "/") {
-      // força recriação completa para garantir animação ao voltar
       if (doughnutInstance.current) {
         doughnutInstance.current.destroy();
         doughnutInstance.current = null;
@@ -157,12 +154,10 @@ export default function Dashboard() {
         barInstance.current.destroy();
         barInstance.current = null;
       }
-      // small bump para forçar efeito de criação (quando já tem dados)
       setChartVersion((v) => v + 1);
       return;
     }
 
-    // ao sair do dashboard, apenas zera visualmente (evita destruir se quiser manter instância)
     if (doughnutInstance.current) {
       doughnutInstance.current.data.datasets[0].data = [0];
       doughnutInstance.current.update();
@@ -181,21 +176,18 @@ export default function Dashboard() {
 
     const totalNumeros = Number(dados.grafico.totalNumeros || 0);
 
-    // função utilitária: ajusta o canvas para DPR e retorna ctx
     function prepareCanvas(canvasEl) {
       if (!canvasEl) return null;
 
       canvasEl.style.width = "100%";
       canvasEl.style.height = "100%";
 
-      // medimos CSS pixels e definimos tamanho real em device pixels
       const rect = canvasEl.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
 
       const width = Math.max(1, Math.round(rect.width));
       const height = Math.max(1, Math.round(rect.height));
 
-      // somente redefinimos se diferente (evita repaints desnecessários)
       if (
         Math.round(canvasEl.width) !== Math.round(width * dpr) ||
         Math.round(canvasEl.height) !== Math.round(height * dpr)
@@ -257,7 +249,7 @@ export default function Dashboard() {
     doughnutInstance.current.data.datasets[0].data = [totalNumeros];
     doughnutInstance.current.update();
 
-    // ----- BAR (horizontal) -----
+    // ----- BAR (HORIZONTAL) -----
     if (!barInstance.current) {
       const canvas = barRef.current;
       const prep = prepareCanvas(canvas);
@@ -296,7 +288,6 @@ export default function Dashboard() {
 
     function handleResize() {
       if (doughnutRef.current && doughnutInstance.current) {
-        // prepara canvas novamente e atualiza opção devicePixelRatio
         const prep = prepareCanvas(doughnutRef.current);
         doughnutInstance.current.options.devicePixelRatio = prep?.dpr || 1;
         doughnutInstance.current.resize();
@@ -426,7 +417,7 @@ export default function Dashboard() {
                   <Status />
                 </div>
 
-                {/* Tempo de Conexão */}
+                {/* TEMPO DE CONEXÃO */}
                 <div className={styles.card}>
                   <div className={styles.cardIcon} aria-hidden="true">
                     ⏱️
@@ -439,7 +430,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Último QR Code */}
+                {/* ÚLTIMO QR CODE */}
                 <div className={styles.card}>
                   <div className={styles.cardIcon} aria-hidden="true">
                     🔳
@@ -452,7 +443,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Reconexões (destaque) */}
+                {/* RECONEXÕES */}
                 <div className={`${styles.card} ${styles.highlight}`}>
                   <div className={styles.cardIcon} aria-hidden="true">
                     🔁
@@ -465,7 +456,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Chats Ativos */}
+                {/* CHATS ATIVOS */}
                 <div className={styles.card}>
                   <div className={styles.cardIcon} aria-hidden="true">
                     💬
@@ -476,7 +467,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Mensagens Hoje */}
+                {/* MENSAGENS HOJE */}
                 <div className={styles.card}>
                   <div className={styles.cardIcon} aria-hidden="true">
                     ✉️
@@ -487,7 +478,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Performance (destaque) */}
+                {/* PERFORMANCE */}
                 <div className={`${styles.card} ${styles.highlight}`}>
                   <div className={styles.cardIcon} aria-hidden="true">
                     📈

@@ -18,7 +18,6 @@ async function waitBackendReady() {
         return;
       }
     } catch (err) {
-      // backend ainda não está disponível
     }
 
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -40,6 +39,6 @@ async function waitBackendReady() {
   createRoot(rootElement).render(
     <BrowserRouter>
       <App />
-    </BrowserRouter>
+    </BrowserRouter>,
   );
 })();

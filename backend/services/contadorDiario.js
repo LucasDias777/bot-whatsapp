@@ -1,19 +1,14 @@
 const db = require("../database/database");
 
-// Data no formato YYYY-MM-DD (local)
+// DATA NO FORMATO YYYY-MM-DD (LOCAL)
 function getDiaAtual() {
   return new Date().toLocaleDateString("en-CA");
 }
-
-// Garante que o número conectado tenha uma linha válida.
-// Se não existir → cria
-// Se existir e o dia for diferente → zera contador
 
 function inicializarContadorDiario(numero) {
   const hoje = getDiaAtual();
 
   db.serialize(() => {
-    // Cria registro se não existir
     db.run(
       `
       INSERT OR IGNORE INTO mensagens_diarias (numero, dia, contador)
@@ -22,7 +17,6 @@ function inicializarContadorDiario(numero) {
       [numero, hoje]
     );
 
-    // Se dia mudou, zera contador
     db.run(
       `
       UPDATE mensagens_diarias
@@ -36,7 +30,6 @@ function inicializarContadorDiario(numero) {
   });
 }
 
-//Incrementa contador APENAS do número conectado
 function incrementarContador(numero) {
   const hoje = getDiaAtual();
 
@@ -59,7 +52,6 @@ function incrementarContador(numero) {
   );
 }
 
-//Retorna contador atual do número conectado
 function getContadorHoje(numero) {
   return new Promise((resolve, reject) => {
     db.get(

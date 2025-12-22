@@ -1,9 +1,7 @@
 const db = require("../database/database");
 const { getContadorHoje } = require("../services/contadorDiario");
 
-// -----------------------------
-// Função para retornar todos os chats
-// -----------------------------
+// FUNÇÃO RETORNAR ALL CHATS
 async function getAllChats(client) {
   if (!client || global.isDisconnecting || !client.pupPage) {
     return [];
@@ -36,16 +34,13 @@ async function getAllChats(client) {
         }));
     });
   } catch {
-    // 🔇 SILENCIOSO DE VERDADE (produção)
     return [];
   }
 }
-// -----------------------------
+
 // CONTROLLER DO DASHBOARD
-// -----------------------------
 async function getDashboard(req, res) {
   try {
-    // total de números no banco
     const totalNumeros = await new Promise((resolve, reject) => {
       db.get(`SELECT COUNT(*) AS total FROM contatos`, (err, row) => {
         if (err) reject(err);
@@ -62,21 +57,16 @@ async function getDashboard(req, res) {
 
     if (client?.info?.wid && client.pupPage) {
 
-      // 🟦 PEGAR LISTA DE CHATS
       const chats = await getAllChats(client);
 
       chatsAtivos = chats.length;
       chatsGrupos = chats.filter(c => c.isGroup).length;
       chatsIndividuais = chats.filter(c => !c.isGroup).length;
 
-      // 🟩 MENSAGENS DO DIA
       const numero = client.info.wid.user;
       mensagensHoje = await getContadorHoje(numero);
     }
 
-    // -----------------------------
-    // NOVAS MÉTRICAS
-    // -----------------------------
     const cpuUso = global.cpuUsage ?? 0;
 
     const tempoConexao = global.whatsappStartTime
@@ -89,9 +79,7 @@ async function getDashboard(req, res) {
 
     const reconexoes = global.reconnectCount ?? 0;
 
-    // -----------------------------
     // JSON FINAL ENVIADO AO DASHBOARD
-    // -----------------------------
     res.json({
       grafico: { totalNumeros },
       metricas: {

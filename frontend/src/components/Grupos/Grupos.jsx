@@ -13,13 +13,10 @@ export default function Grupos() {
 
   const { atualizar, atualizarToken } = useAtualizar();
   const pollingRef = useRef(null);
-  // TOAST
+ 
   const [toast, setToast] = useState(null);
-  // { type: "success" | "error", text }
-  // CONFIRM
   const [confirmData, setConfirmData] = useState(null);
-  // { title, message, onConfirm }
-
+ 
   function showToast(type, text) {
     setToast({ type, text });
     const duration = type === "error" ? 5000 : 4000;
@@ -75,11 +72,25 @@ export default function Grupos() {
       title: "Remover grupo",
       message: "Tem certeza que deseja remover este grupo?",
       onConfirm: async () => {
-        await gruposService.removerGrupo(id);
-        await carregar();
-        atualizar();
-        showToast("success", "Grupo excluído com sucesso!");
-        setConfirmData(null);
+        try {
+          await gruposService.removerGrupo(id);
+          await carregar();
+          atualizar();
+          showToast("success", "Grupo excluído com sucesso!");
+        } catch (err) {
+          console.error("Erro ao remover grupo:", err);
+
+          if (err?.status === 400) {
+            showToast(
+              "error",
+              "Este grupo possui agendamento criado. Exclusão não permitida.",
+            );
+          } else {
+            showToast("error", "Erro ao remover grupo.");
+          }
+        } finally {
+          setConfirmData(null);
+        }
       },
     });
   }
@@ -129,9 +140,7 @@ export default function Grupos() {
         {toast && (
           <motion.div
             className={`${styles.toast} ${
-              toast.type === "error"
-                ? styles.toastError
-                : styles.toastSuccess
+              toast.type === "error" ? styles.toastError : styles.toastSuccess
             }`}
             initial={{ opacity: 0, y: 16, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -186,7 +195,7 @@ export default function Grupos() {
   );
 }
 
-function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated, showToast, setConfirmData}) {
+function GroupCard({ grupo, contatos, onRemoveGroup, onUpdated, showToast, setConfirmData }) {
   const [membros, setMembros] = useState([]);
   const [selectedToAdd, setSelectedToAdd] = useState("");
   const { atualizar, atualizarToken } = useAtualizar();

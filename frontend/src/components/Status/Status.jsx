@@ -10,7 +10,7 @@ export default function Status() {
   const [error, setError] = useState(null);
 
   // ====================================
-  // Polling do status
+  // POLLING DO STATUS
   // ====================================
   useEffect(() => {
     async function loadStatus() {
@@ -49,7 +49,7 @@ export default function Status() {
   }
 
   // ====================================
-  // Mensagem de status
+  // MENSAGEM DE STATUS
   // ====================================
   function statusMessage() {
     switch (effectiveStatus) {
@@ -72,9 +72,9 @@ export default function Status() {
 
   const statusWithDots = ["loading", "checking", "disconnecting"];
 
-  // ====================================
-  // Animações (linguagem Apple-like)
-  // ====================================
+  // ======================
+  // ANIMAÇÕES 
+  // ======================
   const sceneVariants = {
     initial: {
       opacity: 0,
@@ -105,7 +105,7 @@ export default function Status() {
   };
 
   // ====================================
-  // Desconectar manual
+  // DESCONECTAR MANUAL
   // ====================================
   async function confirmDisconnect() {
     setShowConfirm(false);

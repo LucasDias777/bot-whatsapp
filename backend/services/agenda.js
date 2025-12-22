@@ -74,8 +74,6 @@ function iniciarAgendamentos(client) {
               );
               return;
             }
-
-            // ⚠️ CASO IMPOSSÍVEL (dados inconsistentes)
             console.warn("Agendamento sem contato nem grupo:", ag);
           } catch (e) {
             console.error("Erro processando agendamento:", e.message);
