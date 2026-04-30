@@ -1,183 +1,128 @@
-import React, { useEffect, useState } from "react";
-import * as contatosService from "../../services/contatosService";
-import { FiPlus, FiEdit, FiTrash } from "react-icons/fi";
-import styles from "./Contatos.module.css";
+import React, { useEffect, useMemo, useState } from "react";
+import { FiEdit2, FiPhone, FiPlus, FiSearch, FiTrash2, FiUser, FiX } from "react-icons/fi";
 import { useAtualizar } from "../../context/AtualizarContexto";
-import { motion, AnimatePresence } from "framer-motion";
-import { getStatus } from "../../services/statusService";
+import * as contatosService from "../../services/contatosService";
+import { getStatus, hasConnectedConnection } from "../../services/statusService";
+import styles from "./Contatos.module.css";
+
+function formatarNumeroBRParaInput(digits) {
+  if (!digits) return "";
+  let value = String(digits).replace(/\D/g, "");
+  if (value.length > 11) value = value.slice(0, 11);
+  if (value.length <= 2) return `(${value}`;
+  if (value.length <= 7) return `(${value.slice(0, 2)}) ${value.slice(2)}`;
+  return `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+}
+
+function formatarParaLista(numeroCom55) {
+  if (!numeroCom55) return "";
+  let value = String(numeroCom55).replace(/\D/g, "");
+  if (value.startsWith("55")) value = value.slice(2);
+  if (value.length > 11) value = value.slice(0, 11);
+  if (value.length <= 2) return `+55 (${value}`;
+  if (value.length <= 7) return `+55 (${value.slice(0, 2)}) ${value.slice(2)}`;
+  return `+55 (${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+}
+
+function limparNumeroParaEnviar(raw) {
+  let value = String(raw || "").replace(/\D/g, "");
+  if (value.length > 11 && value.startsWith("55")) value = value.slice(2);
+  return `55${value}`;
+}
+
+function getInitial(nome) {
+  return (nome || "?").trim().charAt(0).toUpperCase();
+}
 
 export default function Contatos() {
   const [lista, setLista] = useState([]);
-  const [rawNumero, setRawNumero] = useState("");
   const [nome, setNome] = useState("");
-
+  const [rawNumero, setRawNumero] = useState("");
   const [filtroNome, setFiltroNome] = useState("");
   const [filtroNumero, setFiltroNumero] = useState("");
-
+  const [toast, setToast] = useState(null);
+  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [loadingEdit, setLoadingEdit] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editId, setEditId] = useState(null);
-  const { atualizar } = useAtualizar();
   const [editNome, setEditNome] = useState("");
   const [editRawNumero, setEditRawNumero] = useState("");
- 
-  const [toast, setToast] = useState(null);
   const [confirmData, setConfirmData] = useState(null);
+  const { atualizar } = useAtualizar();
 
   function showToast(type, text) {
     setToast({ type, text });
-
-    const duration = type === "error" ? 5000 : 4000;
-    setTimeout(() => {
-      setToast(null);
-    }, duration);
+    window.clearTimeout(showToast.timeoutId);
+    showToast.timeoutId = window.setTimeout(() => setToast(null), type === "error" ? 5000 : 3500);
   }
 
   async function carregar() {
     try {
-      const r = await contatosService.listContatos();
-      setLista(r || []);
-    } catch (e) {
-      console.error(e);
+      const response = await contatosService.listContatos();
+      setLista(response || []);
+    } catch (error) {
+      console.error(error);
     }
   }
 
   useEffect(() => {
     carregar();
+    return () => window.clearTimeout(showToast.timeoutId);
   }, []);
 
-  function formatarNumeroBRParaInput(digits) {
-    if (!digits) return "";
-    let v = String(digits).replace(/\D/g, "");
-
-    if (v.length > 11) v = v.slice(0, 11);
-
-    if (v.length <= 2) return `(${v}`;
-    if (v.length <= 7) return `(${v.slice(0, 2)})${v.slice(2)}`;
-    return `(${v.slice(0, 2)})${v.slice(2, 7)}-${v.slice(7)}`;
+  function handleNumeroChange(event, setter) {
+    let value = String(event.target.value).replace(/\D/g, "");
+    if (value.length > 11 && value.startsWith("55")) value = value.slice(2);
+    setter(value.slice(0, 11));
   }
 
-  function formatarParaLista(numeroCom55) {
-    if (!numeroCom55) return "";
-    let s = String(numeroCom55).replace(/\D/g, "");
-    if (s.startsWith("55")) s = s.slice(2);
-    if (s.length > 11) s = s.slice(0, 11);
-
-    if (s.length <= 2) return `+55 (${s}`;
-    if (s.length <= 7) return `+55 (${s.slice(0, 2)})${s.slice(2)}`;
-    return `+55 (${s.slice(0, 2)})${s.slice(2, 7)}-${s.slice(7)}`;
-  }
-
-  function limparNumeroParaEnviarDeRaw(valorRaw) {
-    let v = String(valorRaw || "").replace(/\D/g, "");
-
-    if (v.length > 11 && v.startsWith("55")) {
-      v = v.slice(2);
-    }
-
-    return "55" + v;
-  }
-
-  // =========================
-  // SALVAR CONTATO
-  // =========================
   async function salvarContato() {
-    if (!nome.trim()) {
-      showToast("error", "Digite um nome!");
-      return;
-    }
+    if (!nome.trim()) return showToast("error", "Digite um nome.");
+    if (!rawNumero.trim()) return showToast("error", "Digite um numero valido.");
 
-    if (!rawNumero.trim()) {
-      showToast("error", "Digite um número válido!");
-      return;
-    }
-
-    const numeroLimpo = limparNumeroParaEnviarDeRaw(rawNumero);
-
+    const numeroLimpo = limparNumeroParaEnviar(rawNumero);
     if (!/^55\d{2}9\d{8}$/.test(numeroLimpo)) {
-      showToast("error", "Número inválido. Use: (44) 99999-9999");
-      return;
+      return showToast("error", "Use um numero no formato (44) 99999-9999.");
     }
 
-    const jaExiste = lista.some((c) => String(c.numero) === numeroLimpo);
-    if (jaExiste) {
-      const display = formatarParaLista(numeroLimpo);
-      showToast("error", `Número já cadastrado: ${display}`);
-      return;
+    if (lista.some((contato) => String(contato.numero) === numeroLimpo)) {
+      return showToast("error", "Esse numero ja esta cadastrado.");
     }
 
-    // 🔒 VERIFICA STATUS DO WHATSAPP
-    let statusInfo;
     try {
-      statusInfo = await getStatus();
-    } catch {
-      showToast("error", "Não foi possível verificar o status do WhatsApp.");
-      return;
-    }
-
-    if (statusInfo.status !== "connected") {
-      showToast(
-        "error",
-        "WhatsApp desconectado. Conecte antes de criar o contato.",
-      );
-      return;
-    }
-
-    // ✅ CRIAR CONTATO
-    try {
-      const r = await contatosService.criarContato(nome.trim(), numeroLimpo);
-
-      if (!r || r.ok !== true) {
-        showToast("error", r?.erro || "Falha ao criar contato.");
-        return;
+      const status = await getStatus();
+      if (!hasConnectedConnection(status)) {
+        return showToast("error", "Conecte o WhatsApp antes de criar um contato.");
       }
+    } catch (error) {
+      return showToast("error", "Nao foi possivel validar o status do WhatsApp.");
+    }
 
-      showToast("success", "Contato criado com sucesso!");
+    setLoadingAdd(true);
+    try {
+      const response = await contatosService.criarContato(nome.trim(), numeroLimpo);
+      if (!response?.ok) {
+        return showToast("error", response?.erro || "Falha ao criar o contato.");
+      }
 
       setNome("");
       setRawNumero("");
+      setCreateOpen(false);
       await carregar();
       atualizar();
-    } catch (e) {
-      console.error(e);
-      showToast("error", "Número não encontrado no WhatsApp.");
+      showToast("success", "Contato criado com sucesso.");
+    } catch (error) {
+      showToast("error", error?.message || "Falha ao criar o contato.");
+    } finally {
+      setLoadingAdd(false);
     }
-  }
-
-  function removerContato(id) {
-    setConfirmData({
-      title: "Remover contato",
-      message: "Tem certeza que deseja remover este contato?",
-      onConfirm: async () => {
-        try {
-          await contatosService.removerContato(id);
-
-          await carregar();
-          atualizar();
-
-          showToast("success", "Contato removido com sucesso!");
-        } catch (err) {
-          console.error("Erro ao remover contato:", err);
-
-          if (err?.status === 400) {
-            showToast(
-              "error",
-              "Este contato possui agendamento criado. Exclusão não permitida.",
-            );
-          } else {
-            showToast("error", "Erro ao remover contato.");
-          }
-        } finally {
-          setConfirmData(null);
-        }
-      },
-    });
   }
 
   function abrirModalEditar(contato) {
     setEditId(contato.id);
-    const num = contato.numero ? String(contato.numero).replace(/^55/, "") : "";
     setEditNome(contato.nome || "");
-    setEditRawNumero(num);
+    setEditRawNumero(String(contato.numero || "").replace(/^55/, ""));
     setIsModalOpen(true);
   }
 
@@ -188,278 +133,261 @@ export default function Contatos() {
     setEditRawNumero("");
   }
 
+  function fecharModalCriacao() {
+    setCreateOpen(false);
+    setNome("");
+    setRawNumero("");
+  }
+
   async function salvarEdicao() {
-    if (!editNome.trim()) {
-      showToast("error", "Digite um nome!");
-      return;
-    }
+    if (!editNome.trim()) return showToast("error", "Digite um nome.");
+    if (!editRawNumero.trim()) return showToast("error", "Digite um numero.");
 
-    if (!editRawNumero.trim()) {
-      showToast("error", "Digite um número!");
-      return;
-    }
-
-    const numeroLimpo = limparNumeroParaEnviarDeRaw(editRawNumero);
-
+    const numeroLimpo = limparNumeroParaEnviar(editRawNumero);
     if (!/^55\d{2}9\d{8}$/.test(numeroLimpo)) {
-      showToast("error", "Número inválido. Use (44) 99999-9999");
-      return;
+      return showToast("error", "Use um numero no formato (44) 99999-9999.");
     }
 
-    const existsOther = lista.some(
-      (c) => String(c.numero) === numeroLimpo && c.id !== editId,
-    );
-    if (existsOther) {
-      const display = formatarParaLista(numeroLimpo);
-      showToast("error", `Número já cadastrado: ${display}`);
-      return;
+    if (lista.some((contato) => String(contato.numero) === numeroLimpo && contato.id !== editId)) {
+      return showToast("error", "Esse numero ja esta cadastrado em outro contato.");
     }
 
+    setLoadingEdit(true);
     try {
-      const res = await contatosService.editarContato(
-        editId,
-        editNome.trim(),
-        numeroLimpo,
-      );
-
-      if (!res || res.ok !== true) {
-        showToast("error", res?.erro || "Falha ao editar.");
-        return;
+      const response = await contatosService.editarContato(editId, editNome.trim(), numeroLimpo);
+      if (!response?.ok) {
+        return showToast("error", response?.erro || "Falha ao editar o contato.");
       }
 
-      showToast("success", "Contato atualizado com sucesso!");
-
       await carregar();
-      fecharModal();
       atualizar();
-    } catch (err) {
-      console.error(err);
-      showToast("error", "Número não encontrado no WhatsApp.");
+      fecharModal();
+      showToast("success", "Contato atualizado com sucesso.");
+    } catch (error) {
+      showToast("error", error?.message || "Falha ao editar o contato.");
+    } finally {
+      setLoadingEdit(false);
     }
   }
 
-  const listaFiltrada = lista.filter((c) => {
-    const nomeVal = (c.nome || "").toLowerCase();
-    const numeroVal = (c.numero || "").toLowerCase();
-    return (
-      nomeVal.includes(filtroNome.toLowerCase()) &&
-      numeroVal.includes(filtroNumero.toLowerCase())
-    );
-  });
-
-  function handleNumeroChange(e) {
-    const v = String(e.target.value).replace(/\D/g, "");
-    let raw = v;
-
-    if (raw.length > 11 && raw.startsWith("55")) raw = raw.slice(2);
-    setRawNumero(raw.slice(0, 11));
+  function removerContato(id) {
+    setConfirmData({
+      title: "Remover contato",
+      message: "Essa acao nao pode ser desfeita e pode afetar agendamentos existentes.",
+      onConfirm: async () => {
+        try {
+          await contatosService.removerContato(id);
+          await carregar();
+          atualizar();
+          showToast("success", "Contato removido com sucesso.");
+        } catch (error) {
+          if (error?.status === 400) {
+            showToast("error", "Esse contato possui agendamento ativo.");
+          } else {
+            showToast("error", "Erro ao remover o contato.");
+          }
+        } finally {
+          setConfirmData(null);
+        }
+      },
+    });
   }
 
-  function handleEditNumeroChange(e) {
-    const v = String(e.target.value).replace(/\D/g, "");
-    let raw = v;
-
-    if (raw.length > 11 && raw.startsWith("55")) raw = raw.slice(2);
-    setEditRawNumero(raw.slice(0, 11));
-  }
+  const listaFiltrada = useMemo(() => {
+    return lista.filter((contato) => {
+      return (
+        (contato.nome || "").toLowerCase().includes(filtroNome.toLowerCase()) &&
+        String(contato.numero || "").includes(filtroNumero.replace(/\D/g, ""))
+      );
+    });
+  }, [filtroNome, filtroNumero, lista]);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.topBar}>
-        <h2 className={styles.titulo}>Contatos</h2>
-      </div>
+    <>
+      <section className={styles.card}>
+        <header className={styles.header}>
+          <div>
+            <span className={styles.eyebrow}>Base ativa</span>
+            <h3 className={styles.title}>Contatos</h3>
+          </div>
+          <div className={styles.headerActions}>
+            <span className={styles.counter}>{lista.length} registros</span>
+            <button type="button" className={styles.primaryButton} onClick={() => setCreateOpen(true)}>
+              <FiPlus size={16} />
+              Adicionar contato
+            </button>
+          </div>
+        </header>
 
-      <div className={styles.row}>
-        <input
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          placeholder="Nome do contato"
-        />
+        <div className={styles.filters}>
+          <div className={styles.inputWrap}>
+            <FiSearch size={15} />
+            <input
+              value={filtroNome}
+              onChange={(event) => setFiltroNome(event.target.value)}
+              placeholder="Buscar por nome"
+            />
+          </div>
 
-        <input
-          value={formatarNumeroBRParaInput(rawNumero)}
-          onChange={handleNumeroChange}
-          placeholder="(44) 99999-9999"
-        />
+          <div className={styles.inputWrap}>
+            <FiSearch size={15} />
+            <input
+              value={filtroNumero}
+              onChange={(event) => setFiltroNumero(event.target.value)}
+              placeholder="Buscar por numero"
+            />
+          </div>
 
-        <button
-          className={`${styles.btn} ${styles.addButton}`}
-          onClick={salvarContato}
-        >
-          <FiPlus size={18} />
-          Adicionar
-        </button>
-      </div>
-
-      <div className={styles.filtersBlock}>
-        <div className={styles.filtersLabel}>Filtros:</div>
-        <div className={styles.filtersRow}>
-          <input
-            placeholder="Filtrar por nome..."
-            value={filtroNome}
-            onChange={(e) => setFiltroNome(e.target.value)}
-          />
-
-          <input
-            placeholder="Filtrar por número..."
-            value={filtroNumero}
-            onChange={(e) => setFiltroNumero(e.target.value)}
-          />
+          {(filtroNome || filtroNumero) && (
+            <button type="button" className={styles.ghostButton} onClick={() => { setFiltroNome(""); setFiltroNumero(""); }}>
+              <FiX size={14} />
+              Limpar
+            </button>
+          )}
         </div>
-      </div>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Número</th>
-              <th style={{ width: 140 }}>Ações</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {listaFiltrada.map((c) => (
-              <tr key={c.id}>
-                <td>{c.nome}</td>
-                <td>{formatarParaLista(String(c.numero || ""))}</td>
-
-                <td>
-                  <div className={styles.actionButtons}>
-                    <button
-                      className={`${styles.smallBtn} ${styles.editButton}`}
-                      onClick={() => abrirModalEditar(c)}
-                      title="Editar"
-                    >
-                      <FiEdit size={16} />
-                    </button>
-
-                    <button
-                      className={`${styles.smallBtn} ${styles.deleteButton}`}
-                      onClick={() => removerContato(c.id)}
-                      title="Excluir"
-                    >
-                      <FiTrash size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-
-            {listaFiltrada.length === 0 && (
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
               <tr>
-                <td colSpan={3} className={styles.emptyRow}>
-                  Nenhum contato encontrado.
-                </td>
+                <th>Contato</th>
+                <th>Numero</th>
+                <th>Acoes</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {listaFiltrada.map((contato) => (
+                <tr key={contato.id}>
+                  <td>
+                    <div className={styles.person}>
+                      <span className={styles.avatar}>{getInitial(contato.nome)}</span>
+                      <div>
+                        <strong>{contato.nome}</strong>
+                        <span>Disponivel para disparo</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className={styles.mono}>{formatarParaLista(String(contato.numero || ""))}</td>
+                  <td>
+                    <div className={styles.actions}>
+                      <button type="button" className={styles.iconButton} onClick={() => abrirModalEditar(contato)}>
+                        <FiEdit2 size={15} />
+                      </button>
+                      <button type="button" className={`${styles.iconButton} ${styles.iconDanger}`} onClick={() => removerContato(contato.id)}>
+                        <FiTrash2 size={15} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {isModalOpen && (
-        <div className={styles.modalOverlay} onMouseDown={fecharModal}>
-          <div
-            className={styles.modal}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <h3 className={styles.modalTitle}>Editar Contato</h3>
+          {listaFiltrada.length === 0 && (
+            <div className={styles.emptyState}>
+              <strong>Nenhum contato encontrado</strong>
+              <span>Revise os filtros ou adicione um novo contato acima.</span>
+            </div>
+          )}
+        </div>
+      </section>
 
-            <label className={styles.inputLabel}>Nome:</label>
-            <input
-              className={styles.modalInput}
-              value={editNome}
-              onChange={(e) => setEditNome(e.target.value)}
-              placeholder="Nome do contato"
-            />
+      {createOpen && (
+        <div className={styles.overlay} role="presentation" onClick={fecharModalCriacao}>
+          <div className={styles.modal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <h4 className={styles.modalTitle}>Adicionar contato</h4>
 
-            <label className={styles.inputLabel}>Número:</label>
-            <input
-              className={styles.modalInput}
-              value={formatarNumeroBRParaInput(editRawNumero)}
-              onChange={handleEditNumeroChange}
-              placeholder="(44) 99999-9999"
-            />
+            <div className={styles.modalField}>
+              <label>Nome</label>
+              <div className={styles.inputWrap}>
+                <FiUser size={15} />
+                <input
+                  value={nome}
+                  onChange={(event) => setNome(event.target.value)}
+                  onKeyDown={(event) => event.key === "Enter" && salvarContato()}
+                  placeholder="Nome do contato"
+                />
+              </div>
+            </div>
+
+            <div className={styles.modalField}>
+              <label>Numero</label>
+              <div className={styles.inputWrap}>
+                <FiPhone size={15} />
+                <input
+                  value={formatarNumeroBRParaInput(rawNumero)}
+                  onChange={(event) => handleNumeroChange(event, setRawNumero)}
+                  onKeyDown={(event) => event.key === "Enter" && salvarContato()}
+                  placeholder="(44) 99999-9999"
+                />
+              </div>
+            </div>
 
             <div className={styles.modalActions}>
-              <button
-                className={`${styles.btn} ${styles.addButton}`}
-                onClick={salvarEdicao}
-              >
-                Salvar
-              </button>
-
-              <button
-                className={`${styles.btn} ${styles.secondaryBtn}`}
-                onClick={fecharModal}
-              >
+              <button type="button" className={styles.ghostButton} onClick={fecharModalCriacao}>
                 Cancelar
+              </button>
+              <button type="button" className={styles.primaryButton} onClick={salvarContato} disabled={loadingAdd}>
+                <FiPlus size={16} />
+                {loadingAdd ? "Adicionando..." : "Adicionar contato"}
               </button>
             </div>
           </div>
         </div>
       )}
-      {/* =========================
-          TOAST ANIMADO
-         ========================= */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            className={`${styles.toast} ${
-              toast.type === "error" ? styles.toastError : styles.toastSuccess
-            }`}
-            initial={{ opacity: 0, y: 16, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{
-              duration: 0.35,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            {toast.type === "success" ? "✅" : "⚠️"} {toast.text}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {confirmData && (
-          <motion.div
-            className={styles.confirmOverlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className={styles.confirmBox}
-              initial={{ y: -40, opacity: 0, scale: 0.95 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: -20, opacity: 0, scale: 0.95 }}
-              transition={{
-                duration: 0.35,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
-              <h4>{confirmData.title}</h4>
-              <p>{confirmData.message}</p>
 
-              <div className={styles.confirmActions}>
-                <button
-                  className={styles.confirmCancel}
-                  onClick={() => setConfirmData(null)}
-                >
-                  Cancelar
-                </button>
+      {isModalOpen && (
+        <div className={styles.overlay} role="presentation" onClick={fecharModal}>
+          <div className={styles.modal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <h4 className={styles.modalTitle}>Editar contato</h4>
 
-                <button
-                  className={styles.confirmDanger}
-                  onClick={confirmData.onConfirm}
-                >
-                  Remover
-                </button>
+            <div className={styles.modalField}>
+              <label>Nome</label>
+              <div className={styles.inputWrap}>
+                <FiUser size={15} />
+                <input value={editNome} onChange={(event) => setEditNome(event.target.value)} />
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+            </div>
+
+            <div className={styles.modalField}>
+              <label>Numero</label>
+              <div className={styles.inputWrap}>
+                <FiPhone size={15} />
+                <input
+                  value={formatarNumeroBRParaInput(editRawNumero)}
+                  onChange={(event) => handleNumeroChange(event, setEditRawNumero)}
+                />
+              </div>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button type="button" className={styles.ghostButton} onClick={fecharModal}>Cancelar</button>
+              <button type="button" className={styles.primaryButton} onClick={salvarEdicao} disabled={loadingEdit}>
+                {loadingEdit ? "Salvando..." : "Salvar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmData && (
+        <div className={styles.overlay} role="presentation" onClick={() => setConfirmData(null)}>
+          <div className={styles.modal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <h4 className={styles.modalTitle}>{confirmData.title}</h4>
+            <p className={styles.modalText}>{confirmData.message}</p>
+            <div className={styles.modalActions}>
+              <button type="button" className={styles.ghostButton} onClick={() => setConfirmData(null)}>Cancelar</button>
+              <button type="button" className={styles.dangerButton} onClick={confirmData.onConfirm}>Remover</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className={`${styles.toast} ${toast.type === "error" ? styles.toastError : styles.toastSuccess}`}>
+          {toast.text}
+        </div>
+      )}
+    </>
   );
 }

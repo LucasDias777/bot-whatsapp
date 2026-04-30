@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 const app = express();
 
 app.use(cors());
@@ -16,11 +17,29 @@ app.use("/enviar-agora", require("./routes/envioRoutes"));
 app.use("/dashboard", require("./routes/dashboardRoutes"));
 app.use("/backend", require("./routes/backend"));
 
-// FRONTEND
-app.use(express.static(path.join(__dirname, "../frontend")));
+const frontendDistDir = path.join(__dirname, "../frontend/dist");
+const frontendDistIndex = path.join(frontendDistDir, "index.html");
+const frontendDevUrl = process.env.FRONTEND_DEV_URL || "";
+const hasBuiltFrontend = fs.existsSync(frontendDistIndex);
 
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/index.html"));
-});
+// FRONTEND
+if (frontendDevUrl) {
+  app.get(/.*/, (req, res) => {
+    res.redirect(`${frontendDevUrl}${req.originalUrl}`);
+  });
+} else if (hasBuiltFrontend) {
+  app.use(express.static(frontendDistDir));
+
+  app.get(/.*/, (req, res) => {
+    res.sendFile(frontendDistIndex);
+  });
+} else {
+  app.get(/.*/, (req, res) => {
+    res.status(503).json({
+      error: "frontend_unavailable",
+      message: "Frontend build not found. Run the frontend dev server or build the frontend first.",
+    });
+  });
+}
 
 module.exports = { app };

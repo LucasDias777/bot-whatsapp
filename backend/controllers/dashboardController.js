@@ -1,5 +1,6 @@
 const db = require("../database/database");
-const { getContadorHoje } = require("../services/contadorDiario");
+const { getContadorHoje, getDiaAtual } = require("../services/contadorDiario");
+const { getConnectionsSnapshot } = require("./qrController");
 
 // FUNÇÃO RETORNAR ALL CHATS
 async function getAllChats(client) {
@@ -38,8 +39,8 @@ async function getAllChats(client) {
   }
 }
 
-// CONTROLLER DO DASHBOARD
-async function getDashboard(req, res) {
+// Mantido apenas como referencia do formato antigo de dashboard single-session.
+async function getDashboardLegacy(req, res) {
   try {
     const totalNumeros = await new Promise((resolve, reject) => {
       db.get(`SELECT COUNT(*) AS total FROM contatos`, (err, row) => {
@@ -94,6 +95,108 @@ async function getDashboard(req, res) {
       }
     });
 
+  } catch (error) {
+    console.error("Erro dashboard:", error);
+    res.status(500).json({ error: "Erro ao carregar dashboard" });
+  }
+}
+
+function dbGet(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.get(sql, params, (err, row) => {
+      if (err) reject(err);
+      else resolve(row || {});
+    });
+  });
+}
+
+async function countRows(tableName) {
+  const row = await dbGet(`SELECT COUNT(*) AS total FROM ${tableName}`);
+  return Number(row.total || 0);
+}
+
+function getStatusLabel(status, connectionMode, awaitingReauth) {
+  if (connectionMode === "restore" && ["checking", "connecting"].includes(status)) {
+    return "Reconectando";
+  }
+
+  if (awaitingReauth && status === "qr") {
+    return "Novo QR pronto";
+  }
+
+  if (awaitingReauth && status === "remote_disconnected") {
+    return "QR pendente";
+  }
+
+  if (awaitingReauth && status === "checking") {
+    return "Gerando QR";
+  }
+
+  const labels = {
+    checking: "Verificando",
+    connecting: "Conectando",
+    qr: "Aguardando QR",
+    connected: "Conectado",
+    disconnected: "Desconectado",
+    disconnecting: "Desconectando",
+    remote_disconnected: "Desconectado remotamente",
+  };
+
+  return labels[status] || "Aguardando";
+}
+
+async function getMensagensHoje() {
+  const row = await dbGet(
+    "SELECT COALESCE(SUM(contador), 0) AS total FROM mensagens_diarias WHERE dia = ?",
+    [getDiaAtual()],
+  );
+
+  return Number(row.total || 0);
+}
+
+// CONTROLLER DO DASHBOARD
+async function getDashboard(req, res) {
+  try {
+    const [totalNumeros, totalMensagens, totalGrupos, totalAgendamentos, mensagensHoje] = await Promise.all([
+      countRows("contatos"),
+      countRows("mensagens"),
+      countRows("grupos"),
+      countRows("agendamentos"),
+      getMensagensHoje(),
+    ]);
+
+    const snapshot = getConnectionsSnapshot();
+    const conexoes = snapshot.connections.map((connection) => ({
+      ...connection,
+      statusLabel: getStatusLabel(connection.status, connection.connectionMode, connection.awaitingReauth),
+    }));
+
+    const aguardandoQR = conexoes.filter((connection) =>
+      ["qr", "disconnected", "remote_disconnected"].includes(connection.status),
+    ).length;
+    const reconectando = conexoes.filter((connection) =>
+      ["checking", "connecting"].includes(connection.status),
+    ).length;
+
+    res.json({
+      grafico: {
+        totalNumeros,
+        totalMensagens,
+        totalGrupos,
+        totalAgendamentos,
+      },
+      conexoes,
+      metricas: {
+        totalConexoes: conexoes.length,
+        conexoesAtivas: snapshot.connectedCount,
+        limiteConexoes: snapshot.maxConnections,
+        slotsDisponiveis: Math.max(snapshot.maxConnections - conexoes.length, 0),
+        aguardandoQR,
+        reconectando,
+        mensagensHoje,
+        pollingIntervalMs: snapshot.pollingIntervalMs,
+      },
+    });
   } catch (error) {
     console.error("Erro dashboard:", error);
     res.status(500).json({ error: "Erro ao carregar dashboard" });

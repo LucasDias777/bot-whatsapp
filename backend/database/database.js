@@ -48,11 +48,24 @@ db.serialize(() => {
       mensagem_id INTEGER NOT NULL,
       horario TEXT NOT NULL,
       dias TEXT NOT NULL,
+      connection_ids TEXT,
       FOREIGN KEY (contato_id) REFERENCES contatos(id),
       FOREIGN KEY (grupo_id) REFERENCES grupos(id),
       FOREIGN KEY (mensagem_id) REFERENCES mensagens(id)
     );
   `);
+
+  db.all("PRAGMA table_info(agendamentos)", [], (err, columns = []) => {
+    if (err) {
+      console.error("Erro ao verificar colunas de agendamentos:", err.message);
+      return;
+    }
+
+    const hasConnectionIds = columns.some((column) => column.name === "connection_ids");
+    if (!hasConnectionIds) {
+      db.run("ALTER TABLE agendamentos ADD COLUMN connection_ids TEXT");
+    }
+  });
 
   db.run(`
     CREATE TABLE IF NOT EXISTS mensagens_diarias (
@@ -60,6 +73,16 @@ db.serialize(() => {
       numero TEXT NOT NULL UNIQUE,
       dia TEXT NOT NULL,
       contador INTEGER DEFAULT 0
+    );
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS whatsapp_connections (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      connected_number TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
   `);
 });

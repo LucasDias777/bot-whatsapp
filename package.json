@@ -2,7 +2,7 @@
   "name": "bot-whatsapp",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run backend\"",
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"set FRONTEND_DEV_URL=http://localhost:5173&& npm run backend\"",
     "frontend": "npm run dev --prefix frontend",
     "backend": "npm start --prefix backend"
   },

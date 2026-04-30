@@ -1,15 +1,17 @@
 const db = require("../database/database");
+const { normalizeConnectionIds } = require("../services/connectionRegistry");
 
 exports.adicionarAgendamento = (req, res) => {
-  const { contato_id = null, grupo_id = null, mensagem_id, horario, dias } = req.body;
+  const { contato_id = null, grupo_id = null, mensagem_id, horario, dias, connection_ids = [] } = req.body;
+  const connectionIds = normalizeConnectionIds(connection_ids);
 
   db.run(
     `
     INSERT INTO agendamentos
-    (contato_id, grupo_id, mensagem_id, horario, dias)
-    VALUES (?, ?, ?, ?, ?)
+    (contato_id, grupo_id, mensagem_id, horario, dias, connection_ids)
+    VALUES (?, ?, ?, ?, ?, ?)
     `,
-    [contato_id, grupo_id, mensagem_id, horario, JSON.stringify(dias)],
+    [contato_id, grupo_id, mensagem_id, horario, JSON.stringify(dias), JSON.stringify(connectionIds)],
     (err) => {
       if (err) {
         return res.status(500).json({ ok: false, err: err.message });
@@ -32,7 +34,8 @@ exports.listarAgendamentos = (req, res) => {
       g.id AS grupo_id,
       g.nome AS grupo_nome,
       m.id AS mensagem_id,
-      m.texto AS mensagem
+      m.texto AS mensagem,
+      a.connection_ids
     FROM agendamentos a
     LEFT JOIN contatos c ON a.contato_id = c.id
     LEFT JOIN grupos g ON a.grupo_id = g.id
@@ -46,6 +49,7 @@ exports.listarAgendamentos = (req, res) => {
 
       rows.forEach((r) => {
         r.dias = JSON.parse(r.dias);
+        r.connection_ids = normalizeConnectionIds(r.connection_ids);
       });
 
       res.json(rows);
@@ -66,7 +70,8 @@ exports.removerAgendamento = (req, res) => {
 
 exports.editarAgendamento = (req, res) => {
   const id = req.params.id;
-  const { contato_id = null, grupo_id = null, mensagem_id, horario, dias } = req.body;
+  const { contato_id = null, grupo_id = null, mensagem_id, horario, dias, connection_ids = [] } = req.body;
+  const connectionIds = normalizeConnectionIds(connection_ids);
 
   db.run(
     `
@@ -76,10 +81,11 @@ exports.editarAgendamento = (req, res) => {
       grupo_id = ?,
       mensagem_id = ?,
       horario = ?,
-      dias = ?
+      dias = ?,
+      connection_ids = ?
     WHERE id = ?
     `,
-    [contato_id, grupo_id, mensagem_id, horario, JSON.stringify(dias), id],
+    [contato_id, grupo_id, mensagem_id, horario, JSON.stringify(dias), JSON.stringify(connectionIds), id],
     (err) => {
       if (err) {
         return res.status(500).json({ ok: false, err: err.message });

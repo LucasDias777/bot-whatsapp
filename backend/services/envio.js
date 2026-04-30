@@ -4,7 +4,6 @@ function formatarMensagemWhatsApp(texto) {
   let msg = String(texto);
 
   msg = msg.replace(/\\n/g, "\n");
-  msg = msg.replace(/[•●◦]/g, "•");
   msg = msg.replace(/\u00A0/g, " ");
   msg = msg.replace(/\n{3,}/g, "\n\n");
   msg = msg.trim();
@@ -12,26 +11,62 @@ function formatarMensagemWhatsApp(texto) {
   return msg;
 }
 
-async function sendMessageToNumber(client, rawNumero, mensagem) {
-  try {
-    if (!mensagem || !client) return;
+function normalizarNumero(rawNumero) {
+  return String(rawNumero || "").replace(/\D/g, "");
+}
 
-    const numero = String(rawNumero).replace(/\D/g, "");
+async function resolverChatId(client, numero) {
+  const candidatos = [numero, `${numero}@c.us`];
 
-    const numberDetails = await client.getNumberId(numero);
-    if (!numberDetails) {
-      console.log(`❌ O número ${numero} não possui WhatsApp`);
-      return;
+  for (const candidato of candidatos) {
+    const numberDetails = await client.getNumberId(candidato);
+    if (numberDetails?._serialized) {
+      return numberDetails._serialized;
     }
-    const chatId = numberDetails._serialized;
+  }
+
+  return null;
+}
+
+async function sendMessageToNumber(client, rawNumero, mensagem) {
+  if (!mensagem || !client) {
+    return {
+      ok: false,
+      reason: "client_unavailable",
+      error: "Cliente WhatsApp indisponivel.",
+    };
+  }
+
+  const numero = normalizarNumero(rawNumero);
+
+  try {
+    const chatId = await resolverChatId(client, numero);
+
+    if (!chatId) {
+      console.log(`Numero ${numero} nao possui WhatsApp`);
+      return {
+        ok: false,
+        reason: "number_not_found",
+        error: `Numero ${numero} nao possui WhatsApp.`,
+      };
+    }
 
     const mensagemFormatada = formatarMensagemWhatsApp(mensagem);
 
-    await client.sendMessage(chatId, mensagemFormatada);
+    await client.sendMessage(chatId, mensagemFormatada, {
+      sendSeen: false,
+      waitUntilMsgSent: true,
+    });
 
-    console.log(`✅ Mensagem enviada para ${numero}`);
+    console.log(`Mensagem enviada para ${numero}`);
+    return { ok: true, chatId };
   } catch (err) {
-    console.error("❌ Erro ao enviar mensagem:", err.message);
+    console.error("Erro ao enviar mensagem:", err?.message || err);
+    return {
+      ok: false,
+      reason: "send_failed",
+      error: err?.message || "Falha ao enviar mensagem.",
+    };
   }
 }
 
